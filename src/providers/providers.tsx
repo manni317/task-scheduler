@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { createBrowserClient } from '@supabase/ssr'
 import { SupabaseProvider } from '@/lib/supabase-provider'
+import { Toaster as SonnerToaster } from 'sonner'
 import { Toaster } from '@/components/ui/toaster'
 import { useState, type ReactNode } from 'react'
 
@@ -40,6 +41,7 @@ export function Providers({ children }: ProvidersProps) {
           <SupabaseProvider client={supabaseClient}>
             {children}
             <Toaster />
+            <SonnerToaster position="top-center" />
           </SupabaseProvider>
         </QueryClientProvider>
       </SessionProvider>
