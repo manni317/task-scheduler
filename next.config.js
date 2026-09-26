@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: 'dist',
   // output: 'export', // Export is incompatible with NextAuth API routes
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
