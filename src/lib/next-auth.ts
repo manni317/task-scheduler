@@ -7,17 +7,17 @@ import { createClient } from '@supabase/supabase-js'
 
 export const authOptions: NextAuthOptions = {
   adapter: SupabaseAdapter({
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    secret: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder',
   }),
   providers: [
     GitHubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
+      clientId: process.env.GITHUB_ID || 'placeholder',
+      clientSecret: process.env.GITHUB_SECRET || 'placeholder',
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || 'placeholder',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'placeholder',
     }),
     EmailProvider({
       server: {
@@ -70,8 +70,8 @@ export const authOptions: NextAuthOptions = {
     async createUser({ user }) {
       // Create profile for new user
       const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder'
       )
       await supabase.from('profiles').insert({
         user_id: user.id,
