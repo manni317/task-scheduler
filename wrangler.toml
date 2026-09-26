@@ -8,14 +8,6 @@ name = "muze-satwik-task-manager-preview"
 [env.production]
 name = "muze-satwik-task-manager"
 
-# Environment variables (set in Cloudflare Pages dashboard)
-# SUPABASE_URL = ""
-# SUPABASE_ANON_KEY = ""
-# SUPABASE_SERVICE_ROLE_KEY = ""
-# INNGEST_SIGNING_KEY = ""
-# INNGEST_EVENT_KEY = ""
-# RESEND_API_KEY = ""
-# GOOGLE_CLIENT_ID = ""
-# GOOGLE_CLIENT_SECRET = ""
-# NEXT_PUBLIC_APP_URL = ""
-# CRON_SECRET = ""
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://eiznewvggntckhggmjqz.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpem5ld3ZnZ250Y2toZ2dtanF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAyNDQ3NzgsImV4cCI6MjEwNTgyMDc3OH0.Z-2puujxYEWNgfXSdLWlbyBf09gl6D1nZct82vzs-hI"
