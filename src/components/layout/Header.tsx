@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
+import { createBrowserClient } from '@supabase/ssr'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
@@ -120,7 +121,22 @@ export function Header() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500 focus:text-red-500" onClick={() => {}}>
+              <DropdownMenuItem 
+                className="text-red-500 focus:text-red-500 cursor-pointer" 
+                onClick={async () => {
+                  try {
+                    const supabase = createBrowserClient(
+                      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                    )
+                    await supabase.auth.signOut()
+                    window.location.href = '/login'
+                  } catch (error) {
+                    console.error('Logout failed:', error)
+                    window.location.href = '/login'
+                  }
+                }}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Log out
               </DropdownMenuItem>
