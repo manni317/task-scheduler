@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@supabase/supabase-js'
 import { KanbanBoard } from '@/components/task/KanbanBoard'
 import { Task, User } from '@/types/task'
@@ -142,6 +142,7 @@ const mockProjects = [
 ]
 
 export default function TasksPage() {
+  const queryClient = useQueryClient()
   const { openCreateTaskModal, refreshCount } = useUIStore()
   const { data: { tasks = [], users = [], projects = [] } = {}, isLoading: loading } = useQuery({
     queryKey: ['tasks', refreshCount],
@@ -166,7 +167,7 @@ export default function TasksPage() {
       }))
       
       let mappedTasks: Task[] = []
-      if (tasksData) {
+      if (tasksData && tasksData.length > 0) {
         mappedTasks = tasksData.map((t: any) => ({
           id: t.id,
           title: t.title,
@@ -193,9 +194,11 @@ export default function TasksPage() {
           createdAt: new Date(t.created_at || Date.now()),
           updatedAt: new Date(t.updated_at || Date.now())
         }))
+      } else {
+        mappedTasks = mockTasks
       }
       
-      return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [] }
+      return { tasks: mappedTasks, users: mappedUsers.length > 0 ? mappedUsers : mockUsers, projects: projectsData || mockProjects }
     }
   })
 
@@ -304,6 +307,12 @@ export default function TasksPage() {
                   onTaskClick={(task) => console.log('Task clicked:', task)}
                   onTaskDragEnd={async (taskId, newStatus, newOrder) => {
                     try {
+                      // Optimistic UI update for mock data
+                      if (taskId) {
+                        const taskToUpdate = mockTasks.find(t => t.id === taskId);
+                        if (taskToUpdate) taskToUpdate.status = newStatus;
+                      }
+
                       const supabase = createClient(
                         process.env.NEXT_PUBLIC_SUPABASE_URL!,
                         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -312,10 +321,13 @@ export default function TasksPage() {
                       await supabase.from('tasks')
                         .update({ status: newStatus, order_index: newOrder })
                         .eq('id', taskId)
+                        
+                      queryClient.invalidateQueries({ queryKey: ['tasks'] })
                     } catch (error) {
                       console.error('Failed to update task:', error)
                     }
                   }}
+                      
                   onAddTask={(status) => openCreateTaskModal({ status })}
                   users={users}
                   projects={projects}

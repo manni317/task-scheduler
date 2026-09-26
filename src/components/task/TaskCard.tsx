@@ -13,6 +13,7 @@ interface TaskCardProps {
   task: Task
   onClick?: () => void
   onDragStart?: (e: React.DragEvent) => void
+  onStatusChange?: (taskId: string, newStatus: TaskStatus) => void
   draggable?: boolean
   compact?: boolean
 }
@@ -21,6 +22,7 @@ export function TaskCard({
   task, 
   onClick, 
   onDragStart, 
+  onStatusChange,
   draggable = true, 
   compact = false 
 }: TaskCardProps) {
@@ -210,6 +212,32 @@ export function TaskCard({
               </span>
             )}
           </div>
+          
+          {task.status === 'review' && onStatusChange && (
+            <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onStatusChange(task.id, 'in_progress')
+                }}
+              >
+                Reject (Needs Work)
+              </Button>
+              <Button 
+                size="sm" 
+                className="bg-green-600 hover:bg-green-700 text-white"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onStatusChange(task.id, 'done')
+                }}
+              >
+                Approve (Done)
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

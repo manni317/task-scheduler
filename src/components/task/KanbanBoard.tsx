@@ -33,9 +33,10 @@ interface KanbanColumnProps {
   onTaskClick: (task: Task) => void
   onTaskDragStart: (event: React.DragEvent, task: Task) => void
   onAddTask: (status: TaskStatus) => void
+  onTaskStatusChange: (taskId: string, newStatus: TaskStatus) => void
 }
 
-function KanbanColumn({ status, title, tasks, onTaskClick, onTaskDragStart, onAddTask }: KanbanColumnProps) {
+function KanbanColumn({ status, title, tasks, onTaskClick, onTaskDragStart, onAddTask, onTaskStatusChange }: KanbanColumnProps) {
   return (
     <div className="flex flex-col min-w-[280px] max-w-[320px] flex-shrink-0">
       <div className="flex items-center justify-between px-3 py-2">
@@ -55,6 +56,7 @@ function KanbanColumn({ status, title, tasks, onTaskClick, onTaskDragStart, onAd
               task={task}
               onClick={() => onTaskClick(task)}
               onDragStart={(e) => onTaskDragStart(e, task)}
+              onStatusChange={onTaskStatusChange}
               draggable
             />
           ))}
@@ -153,6 +155,10 @@ export function KanbanBoard({
             onTaskClick={onTaskClick}
             onTaskDragStart={() => {}}
             onAddTask={handleAddTask}
+            onTaskStatusChange={(taskId, newStatus) => {
+              const newOrder = tasks.filter(t => t.status === newStatus).length;
+              onTaskDragEnd(taskId, newStatus, newOrder);
+            }}
           />
         ))}
       </div>
