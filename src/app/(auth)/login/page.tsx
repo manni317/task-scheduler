@@ -14,30 +14,12 @@ export default function LoginPage() {
   const handleEmailAuth = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    try {
-      const formData = new FormData(e.currentTarget)
-      let result;
-      if (isSignUp) {
-        result = await signUpWithEmail(formData)
-        if (result?.error) {
-          toast.error(result.error)
-          return
-        }
-        toast.success('Account created! Logging you in...')
-      } else {
-        result = await loginWithEmail(formData)
-        if (result?.error) {
-          toast.error(result.error)
-          return
-        }
-        toast.success('Logged in successfully!')
-      }
+    
+    // AUTH BYPASSED FOR NOW: Instantly go to dashboard
+    toast.success('Auth bypassed! Taking you to dashboard...')
+    setTimeout(() => {
       router.push('/dashboard')
-    } catch (error: any) {
-      toast.error('Authentication failed')
-    } finally {
-      setIsLoading(false)
-    }
+    }, 1000)
   }
 
   return (
