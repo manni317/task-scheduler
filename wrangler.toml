@@ -1,0 +1,21 @@
+name = "muze-satwik-task-manager"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = ".vercel/output/static"
+
+[env.preview]
+name = "muze-satwik-task-manager-preview"
+
+[env.production]
+name = "muze-satwik-task-manager"
+
+# Environment variables (set in Cloudflare Pages dashboard)
+# SUPABASE_URL = ""
+# SUPABASE_ANON_KEY = ""
+# SUPABASE_SERVICE_ROLE_KEY = ""
+# INNGEST_SIGNING_KEY = ""
+# INNGEST_EVENT_KEY = ""
+# RESEND_API_KEY = ""
+# GOOGLE_CLIENT_ID = ""
+# GOOGLE_CLIENT_SECRET = ""
+# NEXT_PUBLIC_APP_URL = ""
+# CRON_SECRET = ""
