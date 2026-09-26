@@ -32,21 +32,30 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950 px-4 font-sans text-slate-100">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/20 blur-[120px] mix-blend-screen pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/20 blur-[120px] mix-blend-screen pointer-events-none" />
+      
+      <div className="relative z-10 w-full max-w-md p-8 sm:p-10 bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
+          <div className="mx-auto w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/20">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-white">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
             {isSignUp ? 'Create an account' : 'Welcome back'}
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-slate-400 mt-2 text-sm">
             {isSignUp ? 'Enter your details to get started' : 'Sign in to your account to continue'}
           </p>
         </div>
 
-        <div className="space-y-4">
-          <form onSubmit={handleEmailAuth} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="label-field">
+        <div className="space-y-5">
+          <form onSubmit={handleEmailAuth} className="space-y-5">
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-slate-300">
                 Email
               </label>
               <input
@@ -55,12 +64,12 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="input-field mt-1"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
                 placeholder="you@example.com"
               />
             </div>
-            <div>
-              <label htmlFor="password" className="label-field">
+            <div className="space-y-1.5">
+              <label htmlFor="password" className="text-sm font-medium text-slate-300">
                 Password
               </label>
               <input
@@ -68,23 +77,31 @@ export default function LoginPage() {
                 name="password"
                 type="password"
                 required
-                className="input-field mt-1"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-200"
                 placeholder="••••••••"
               />
             </div>
-            <button type="submit" disabled={isLoading} className="btn-primary w-full flex items-center justify-center gap-2">
-              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {isLoading ? (isSignUp ? 'Creating account...' : 'Signing in...') : (isSignUp ? 'Sign up' : 'Sign in to Dashboard')}
-            </button>
+            
+            <div className="pt-2">
+              <button 
+                type="submit" 
+                disabled={isLoading} 
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white font-medium rounded-xl shadow-lg shadow-indigo-500/25 transition-all duration-200 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
+                {isLoading ? (isSignUp ? 'Creating account...' : 'Signing in...') : (isSignUp ? 'Sign up' : 'Sign in to Dashboard')}
+              </button>
+            </div>
           </form>
           
-          <div className="text-center mt-4">
+          <div className="text-center pt-4 border-t border-white/10">
             <button 
               type="button" 
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-indigo-500 hover:text-indigo-400"
+              className="text-sm text-slate-400 hover:text-white transition-colors duration-200"
             >
-              {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+              {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+              <span className="text-indigo-400 font-medium hover:text-indigo-300">{isSignUp ? 'Sign in' : 'Sign up'}</span>
             </button>
           </div>
         </div>
