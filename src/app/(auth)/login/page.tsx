@@ -16,16 +16,25 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       const formData = new FormData(e.currentTarget)
+      let result;
       if (isSignUp) {
-        await signUpWithEmail(formData)
+        result = await signUpWithEmail(formData)
+        if (result?.error) {
+          toast.error(result.error)
+          return
+        }
         toast.success('Account created! Logging you in...')
       } else {
-        await loginWithEmail(formData)
+        result = await loginWithEmail(formData)
+        if (result?.error) {
+          toast.error(result.error)
+          return
+        }
         toast.success('Logged in successfully!')
       }
       router.push('/dashboard')
     } catch (error: any) {
-      toast.error(error.message || 'Authentication failed')
+      toast.error('Authentication failed')
     } finally {
       setIsLoading(false)
     }

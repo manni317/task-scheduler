@@ -33,11 +33,10 @@ export async function loginWithEmail(formData: FormData) {
   })
 
   if (error) {
-    throw new Error(error.message)
+    return { error: error.message }
   }
 
-  // Next.js redirect needs to happen outside try/catch block if catching Next.js errors
-  // but here we just return success or redirect directly
+  return { success: true }
 }
 
 export async function signUpWithEmail(formData: FormData) {
@@ -69,6 +68,8 @@ export async function signUpWithEmail(formData: FormData) {
   })
 
   if (error) {
-    throw new Error(error.message)
+    return { error: error.message }
   }
+  
+  return { success: true }
 }
