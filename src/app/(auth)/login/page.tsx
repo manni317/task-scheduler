@@ -39,16 +39,16 @@ export default function LoginPage() {
       
       <div className="relative z-10 w-full max-w-md p-8 sm:p-10 bg-white/[0.03] border border-white/10 backdrop-blur-2xl rounded-[2rem] shadow-[0_0_40px_rgba(0,0,0,0.5)]">
         <div className="text-center mb-8">
-          <div className="mx-auto w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/20">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-white">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 transform rotate-12 hover:rotate-0 transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 text-white transform -rotate-12 hover:rotate-0 transition-all duration-300">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-            {isSignUp ? 'Create an account' : 'Welcome back'}
+          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-white">
+            Satwik Task Tracker
           </h1>
           <p className="text-slate-400 mt-2 text-sm">
-            {isSignUp ? 'Enter your details to get started' : 'Sign in to your account to continue'}
+            {isSignUp ? 'Create your account to join the team' : 'Sign in to access your workflow'}
           </p>
         </div>
 
