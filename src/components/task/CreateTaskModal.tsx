@@ -166,6 +166,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       if (dueDate) formData.append('dueDate', dueDate.toISOString())
       if (taskDefaults?.status) formData.append('status', taskDefaults.status)
       
+      const currentUserId = localStorage.getItem('userId')
+      if (currentUserId) formData.append('reporterId', currentUserId)
+      
       if (tags.length > 0) formData.append('tags', JSON.stringify(tags))
       if (checklistItems.length > 0) formData.append('checklistItems', JSON.stringify(checklistItems))
       

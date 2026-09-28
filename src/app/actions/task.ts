@@ -24,14 +24,7 @@ export async function createTask(formData: FormData) {
     }
   )
 
-  let { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    // Fallback for dev: find the admin user
-    const { data: adminUser } = await supabase.from('profiles').select('id').limit(1).single()
-    if (!adminUser) throw new Error('Not authenticated')
-    user = { id: adminUser.id } as any
-  }
+  const reporterId = formData.get('reporterId') as string || 'dummy-id'
 
   const title = formData.get('title') as string
   const description = formData.get('description') as string
@@ -58,7 +51,7 @@ export async function createTask(formData: FormData) {
       description,
       project_id: projectId || null,
       assignee_id: assigneeId && assigneeId !== 'unassigned' ? assigneeId : null,
-      reporter_id: user.id,
+      reporter_id: reporterId,
       status: status,
       priority: priorityNum,
       due_date: dueDate || null,
