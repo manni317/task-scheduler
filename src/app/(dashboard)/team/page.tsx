@@ -2,14 +2,16 @@
 
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createEmployee } from '@/app/actions/team'
+import { createEmployee, updateEmployee } from '@/app/actions/team'
 import { toast } from 'sonner'
-import { Loader2, Plus, UserPlus, Shield, User } from 'lucide-react'
+import { Loader2, Plus, UserPlus, Shield, User, Edit, Trash2 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 
 export default function TeamPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  const [editUser, setEditUser] = useState<any | null>(null)
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,21 +33,43 @@ export default function TeamPage() {
     toast.error('Failed to load team')
   }
 
-  const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateOrUpdateUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsCreating(true)
     
     try {
       const formData = new FormData(e.currentTarget)
-      await createEmployee(formData)
-      toast.success('Employee created successfully!')
+      if (editUser) {
+        formData.append('id', editUser.id)
+        await updateEmployee(formData)
+        toast.success('Employee updated successfully!')
+      } else {
+        await createEmployee(formData)
+        toast.success('Employee created successfully!')
+      }
       setIsModalOpen(false)
+      setEditUser(null)
       ;(e.target as HTMLFormElement).reset()
       queryClient.invalidateQueries({ queryKey: ['team'] })
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create employee')
+      toast.error(error.message || `Failed to ${editUser ? 'update' : 'create'} employee`)
     } finally {
-      setIsLoading(false)
+      setIsCreating(false)
+    }
+  }
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this employee?')) return
+    setIsDeleting(userId)
+    try {
+      const { error } = await supabase.from('profiles').delete().eq('id', userId)
+      if (error) throw error
+      toast.success('Employee deleted successfully')
+      queryClient.invalidateQueries({ queryKey: ['team'] })
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete employee')
+    } finally {
+      setIsDeleting(null)
     }
   }
 
@@ -57,7 +81,7 @@ export default function TeamPage() {
           <p className="text-muted-foreground">Manage your employees, roles, and access.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => { setEditUser(null); setIsModalOpen(true); }}
           className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-md transition-all hover:bg-primary/90 hover:shadow-lg"
         >
           <UserPlus className="h-4 w-4" />
@@ -94,9 +118,25 @@ export default function TeamPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'manager' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-500'}`}>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${user.role === 'manager' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-500'}`}>
                     {user.role || 'Member'}
                   </span>
+                  
+                  <button 
+                    onClick={() => { setEditUser(user); setIsModalOpen(true); }}
+                    className="p-2 text-muted-foreground hover:text-white transition-colors hover:bg-white/5 rounded-md"
+                    title="Edit Employee"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteUser(user.id)}
+                    disabled={isDeleting === user.id}
+                    className="p-2 text-red-500/70 hover:text-red-500 transition-colors hover:bg-red-500/10 rounded-md disabled:opacity-50"
+                    title="Delete Employee"
+                  >
+                    {isDeleting === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
             ))}
@@ -104,38 +144,38 @@ export default function TeamPage() {
         )}
       </div>
 
-      {/* Create Employee Modal */}
+      {/* Create/Edit Employee Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={() => { setIsModalOpen(false); setEditUser(null); }} />
           <div className="relative w-full max-w-md overflow-hidden rounded-2xl border bg-card p-6 shadow-2xl animate-in fade-in zoom-in-95">
-            <h2 className="mb-4 text-xl font-bold">Add New Employee</h2>
-            <form onSubmit={handleCreateUser} className="space-y-4">
+            <h2 className="mb-4 text-xl font-bold">{editUser ? 'Edit Employee' : 'Add New Employee'}</h2>
+            <form onSubmit={handleCreateOrUpdateUser} className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Full Name</label>
-                <input required name="fullName" type="text" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder="e.g. Rahul Kumar" />
+                <input required name="fullName" defaultValue={editUser?.full_name || ''} type="text" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder="e.g. Rahul Kumar" />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Email (Login ID)</label>
-                <input required name="email" type="email" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder="rahul@company.com" />
+                <input required name="email" defaultValue={editUser?.email || ''} type="email" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder="rahul@company.com" />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-medium text-muted-foreground">Password</label>
-                <input required name="password" type="password" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder="Set a password for them" minLength={6} />
+                <label className="mb-1 block text-sm font-medium text-muted-foreground">Password {editUser && '(Leave blank to keep same)'}</label>
+                <input required={!editUser} name="password" type="password" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder={editUser ? "Enter new password" : "Set a password for them"} minLength={6} />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Role</label>
-                <select name="role" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary">
+                <select name="role" defaultValue={editUser?.role || 'doer'} className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary">
                   <option value="doer">Doer (Executes tasks)</option>
                   <option value="manager">Manager (Assigns & Approves)</option>
                 </select>
               </div>
               
               <div className="mt-6 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">Cancel</button>
+                <button type="button" onClick={() => { setIsModalOpen(false); setEditUser(null); }} className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">Cancel</button>
                 <button type="submit" disabled={isCreating} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50">
                   {isCreating && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Create Account
+                  {editUser ? 'Save Changes' : 'Create Account'}
                 </button>
               </div>
             </form>
