@@ -241,39 +241,81 @@ export default function TasksPage() {
                   </div>
                 ) : (
                   filteredTasks.map(task => (
-                    <div key={task.id} className="p-4 bg-card border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start gap-3">
-                        <input type="checkbox" className="mt-1 h-4 w-4" />
+                    <div
+                      key={task.id}
+                      className="p-4 bg-card border rounded-lg hover:bg-muted/30 hover:border-primary/30 transition-all cursor-pointer group"
+                      onClick={() => router.push(`/tasks/${task.id}`)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 flex-shrink-0"
+                          onClick={e => e.stopPropagation()}
+                        />
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-medium">{task.title}</h3>
-                            <span className="text-sm text-muted-foreground">{task.projectId}</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{task.description}</p>
-                          <div className="flex flex-wrap gap-2 mt-2 text-sm text-muted-foreground">
-                            <span className={cn('px-2 py-0.5 rounded-full', 
-                              task.priority === 'urgent' && 'bg-red-100 text-red-700',
-                              task.priority === 'high' && 'bg-orange-100 text-orange-700',
-                              task.priority === 'medium' && 'bg-yellow-100 text-yellow-700',
-                              task.priority === 'low' && 'bg-blue-100 text-blue-700'
-                            )}>
-                              {task.priority}
-                            </span>
-                            <span className="px-2 py-0.5 rounded-full bg-muted">
-                              {task.status.replace('_', ' ')}
-                            </span>
-                            {task.assignee && (
-                              <span>{task.assignee.name}</span>
-                            )}
-                            {task.dueDate && (
-                              <span>Due: {new Date(task.dueDate).toLocaleDateString()}</span>
-                            )}
-                            {task.tags.map(tag => (
-                              <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs">
-                                {tag}
+                          <div className="flex items-center justify-between gap-4">
+                            {/* Left: title + description */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold group-hover:text-primary transition-colors truncate">
+                                {task.title}
+                              </h3>
+                              {task.description && (
+                                <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
+                                  {task.description}
+                                </p>
+                              )}
+                            </div>
+                            {/* Right: metadata */}
+                            <div className="flex items-center gap-3 flex-shrink-0 text-sm">
+                              {/* Priority */}
+                              <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium',
+                                task.priority === 'urgent' && 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+                                task.priority === 'high' && 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400',
+                                task.priority === 'medium' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+                                task.priority === 'low' && 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+                              )}>
+                                {task.priority}
                               </span>
-                            ))}
+                              {/* Status */}
+                              <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium',
+                                task.status === 'todo' && 'bg-gray-100 text-gray-700',
+                                task.status === 'in_progress' && 'bg-blue-100 text-blue-700',
+                                task.status === 'review' && 'bg-purple-100 text-purple-700',
+                                task.status === 'done' && 'bg-green-100 text-green-700',
+                              )}>
+                                {task.status.replace('_', ' ')}
+                              </span>
+                              {/* Assignee */}
+                              {task.assignee && (
+                                <span className="flex items-center gap-1 text-muted-foreground text-xs">
+                                  <span className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
+                                    {task.assignee.name[0]}
+                                  </span>
+                                  {task.assignee.name}
+                                </span>
+                              )}
+                              {/* Due date */}
+                              {task.dueDate && (
+                                <span className={cn('text-xs', new Date(task.dueDate) < new Date() && task.status !== 'done' ? 'text-red-500' : 'text-muted-foreground')}>
+                                  Due {new Date(task.dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                </span>
+                              )}
+                              {/* Last updated */}
+                              <span className="text-xs text-muted-foreground hidden sm:block">
+                                Updated {new Date(task.updatedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
                           </div>
+                          {/* Tags */}
+                          {task.tags && task.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {task.tags.map(tag => (
+                                <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
