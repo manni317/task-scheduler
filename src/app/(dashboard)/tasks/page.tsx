@@ -91,6 +91,7 @@ export default function TasksPage() {
           createdAt: new Date(t.created_at || Date.now()),
           updatedAt: new Date(t.updated_at || Date.now())
         }))
+      }
       return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [] }
     }
   })
