@@ -24,117 +24,7 @@ const mockUsers: User[] = [
   { id: '4', name: 'David Brown', email: 'david@example.com', avatar: '', role: 'member' },
 ]
 
-const mockTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Design new dashboard layout',
-    description: 'Create wireframes and mockups for the new dashboard',
-    status: 'todo',
-    priority: 'high',
-    projectId: '1',
-    assigneeId: '1',
-    assignee: mockUsers[0],
-    reporterId: '2',
-    reporter: mockUsers[1],
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    estimatedHours: 8,
-    tags: ['design', 'ui'],
-    checklistItems: [
-      { id: '1', title: 'Wireframes', completed: true, order: 0 },
-      { id: '2', title: 'Mockups', completed: false, order: 1 },
-      { id: '3', title: 'Review', completed: false, order: 2 },
-    ],
-    comments: [],
-    commentsCount: 0,
-    attachments: [],
-    timeEntries: [],
-    dependencies: [],
-    activityLog: [],
-    order: 0,
-    isCompleted: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    title: 'Implement API endpoints',
-    description: 'Build REST API for task management',
-    status: 'in_progress',
-    priority: 'urgent',
-    projectId: '1',
-    assigneeId: '2',
-    assignee: mockUsers[1],
-    reporterId: '1',
-    reporter: mockUsers[0],
-    dueDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    estimatedHours: 16,
-    tags: ['backend', 'api'],
-    checklistItems: [],
-    comments: [],
-    commentsCount: 0,
-    attachments: [],
-    timeEntries: [],
-    dependencies: [],
-    activityLog: [],
-    order: 1,
-    isCompleted: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '3',
-    title: 'Write unit tests',
-    description: 'Add unit tests for the new components',
-    status: 'review',
-    priority: 'medium',
-    projectId: '2',
-    assigneeId: '3',
-    assignee: mockUsers[2],
-    reporterId: '1',
-    reporter: mockUsers[0],
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    estimatedHours: 4,
-    tags: ['testing'],
-    checklistItems: [],
-    comments: [],
-    commentsCount: 0,
-    attachments: [],
-    timeEntries: [],
-    dependencies: [],
-    activityLog: [],
-    order: 2,
-    isCompleted: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '4',
-    title: 'Setup CI/CD pipeline',
-    description: 'Configure GitHub Actions for deployment',
-    status: 'done',
-    priority: 'high',
-    projectId: '1',
-    assigneeId: '1',
-    assignee: mockUsers[0],
-    reporterId: '2',
-    reporter: mockUsers[1],
-    dueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    estimatedHours: 6,
-    tags: ['devops', 'ci-cd'],
-    checklistItems: [],
-    comments: [],
-    commentsCount: 0,
-    attachments: [],
-    timeEntries: [],
-    dependencies: [],
-    activityLog: [],
-    order: 3,
-    isCompleted: true,
-    completedAt: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-]
+const mockTasks: Task[] = []
 
 const mockProjects = [
   { id: '1', name: 'Website Redesign', key: 'WEB' },
@@ -201,11 +91,7 @@ export default function TasksPage() {
           createdAt: new Date(t.created_at || Date.now()),
           updatedAt: new Date(t.updated_at || Date.now())
         }))
-      } else {
-        mappedTasks = mockTasks
-      }
-      
-      return { tasks: mappedTasks, users: mappedUsers.length > 0 ? mappedUsers : mockUsers, projects: projectsData || mockProjects }
+      return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [] }
     }
   })
 
@@ -325,12 +211,6 @@ export default function TasksPage() {
                   onTaskClick={(task) => router.push(`/tasks/${task.id}`)}
                   onTaskDragEnd={async (taskId, newStatus, newOrder) => {
                     try {
-                      // Optimistic UI update for mock data
-                      if (taskId) {
-                        const taskToUpdate = mockTasks.find(t => t.id === taskId);
-                        if (taskToUpdate) taskToUpdate.status = newStatus;
-                      }
-
                       const supabase = createClient(
                         process.env.NEXT_PUBLIC_SUPABASE_URL!,
                         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
