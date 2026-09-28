@@ -102,8 +102,7 @@ export default function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all')
   const [projectFilter, setProjectFilter] = useState<string>('all')
-
-
+  const router = useRouter()
 
   const [userRole, setUserRole] = useState('manager')
   const [userId, setUserId] = useState('')
