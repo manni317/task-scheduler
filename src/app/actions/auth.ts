@@ -15,8 +15,8 @@ export async function bypassedLogin(email: string) {
   const { data, error } = await supabaseAdmin.from('profiles').select('id, role, full_name').eq('email', email).single()
   
   if (error || !data) {
-    // If user not found, return dummy data as manager so admin can still log in with random email
-    return { id: 'dummy-id', role: 'manager', full_name: 'Admin User', email }
+    // If user not found, default to 'doer' instead of manager for safety
+    return { id: 'dummy-id', role: 'doer', full_name: 'Unknown User', email }
   }
 
   return { id: data.id, role: data.role || 'doer', full_name: data.full_name, email }
