@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@supabase/supabase-js'
 import { KanbanBoard } from '@/components/task/KanbanBoard'
@@ -142,6 +143,7 @@ const mockProjects = [
 ]
 
 export default function TasksPage() {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { openCreateTaskModal, refreshCount } = useUIStore()
   const { data: { tasks = [], users = [], projects = [] } = {}, isLoading: loading } = useQuery({
@@ -155,7 +157,7 @@ export default function TasksPage() {
       const [{ data: profilesData }, { data: projectsData }, { data: tasksData }] = await Promise.all([
         supabase.from('profiles').select('*'),
         supabase.from('projects').select('*'),
-        supabase.from('tasks').select('*')
+        supabase.from('tasks').select('*, sub_tasks(*)')
       ])
 
       const mappedUsers = (profilesData || []).map((u: any) => ({
@@ -181,8 +183,13 @@ export default function TasksPage() {
           reporter: mappedUsers.find(u => u.id === t.reporter_id),
           dueDate: t.due_date ? new Date(t.due_date) : undefined,
           estimatedHours: t.time_spent || 0,
-          tags: [],
-          checklistItems: [],
+          tags: t.tags || [],
+          checklistItems: t.sub_tasks ? t.sub_tasks.map((st: any) => ({
+            id: st.id,
+            title: st.title,
+            completed: st.is_completed,
+            order: st.order_index
+          })) : [],
           comments: [],
           commentsCount: 0,
           attachments: [],
@@ -304,7 +311,7 @@ export default function TasksPage() {
             <TabsContent value="board" className="min-h-[600px]">
                 <KanbanBoard
                   tasks={filteredTasks}
-                  onTaskClick={(task) => console.log('Task clicked:', task)}
+                  onTaskClick={(task) => router.push(`/tasks/${task.id}`)}
                   onTaskDragEnd={async (taskId, newStatus, newOrder) => {
                     try {
                       // Optimistic UI update for mock data

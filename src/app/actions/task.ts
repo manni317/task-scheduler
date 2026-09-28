@@ -41,6 +41,11 @@ export async function createTask(formData: FormData) {
   const dueDate = formData.get('dueDate') as string
   const status = formData.get('status') as string || 'todo'
 
+  const tagsStr = formData.get('tags') as string
+  const checklistStr = formData.get('checklistItems') as string
+  const tags = tagsStr ? JSON.parse(tagsStr) : []
+  const checklistItems = checklistStr ? JSON.parse(checklistStr) : []
+
   let priorityNum = 2 // medium
   if (priorityStr === 'low') priorityNum = 1
   if (priorityStr === 'high') priorityNum = 3
@@ -52,18 +57,34 @@ export async function createTask(formData: FormData) {
       title,
       description,
       project_id: projectId || null,
-      assignee_id: assigneeId || null,
+      assignee_id: assigneeId && assigneeId !== 'unassigned' ? assigneeId : null,
       reporter_id: user.id,
       status: status,
       priority: priorityStr,
       due_date: dueDate || null,
-      task_key: `TSK-${Math.floor(Math.random() * 10000)}` // Mock task key
+      tags: tags,
+      task_key: `TSK-${Math.floor(Math.random() * 10000)}`
     })
     .select()
 
   if (error) {
     console.error('Error creating task:', error)
     throw new Error('Failed to create task: ' + error.message)
+  }
+
+  if (data && data[0] && checklistItems.length > 0) {
+    const taskId = data[0].id
+    const subTasksToInsert = checklistItems.map((item: any, index: number) => ({
+      task_id: taskId,
+      title: item.title,
+      is_completed: item.completed,
+      order_index: index
+    }))
+    
+    const { error: subTaskError } = await supabase.from('sub_tasks').insert(subTasksToInsert)
+    if (subTaskError) {
+      console.error('Error creating checklist items:', subTaskError)
+    }
   }
 
   revalidatePath('/dashboard')

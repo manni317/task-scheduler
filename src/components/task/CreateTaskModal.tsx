@@ -162,7 +162,10 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       if (dueDate) formData.append('dueDate', dueDate.toISOString())
       if (taskDefaults?.status) formData.append('status', taskDefaults.status)
       
-      await createTask(formData) // Checklist and tags can be appended as JSON string if backend supports it
+      if (tags.length > 0) formData.append('tags', JSON.stringify(tags))
+      if (checklistItems.length > 0) formData.append('checklistItems', JSON.stringify(checklistItems))
+      
+      await createTask(formData)
       
       toast.success('Task created successfully!')
       setTaskTitle('')
