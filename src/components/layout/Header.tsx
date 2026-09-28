@@ -14,8 +14,8 @@ import { createBrowserClient } from '@supabase/ssr'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
-  { name: 'Projects', href: '/projects', icon: 'FolderKanban' },
   { name: 'Tasks', href: '/tasks', icon: 'CheckSquare' },
+  { name: 'Projects', href: '/projects', icon: 'FolderKanban' },
   { name: 'Analytics', href: '/analytics', icon: 'BarChart' },
   { name: 'Settings', href: '/settings', icon: 'Settings' },
 ]

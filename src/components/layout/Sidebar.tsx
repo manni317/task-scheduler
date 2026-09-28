@@ -21,8 +21,8 @@ import { useUIStore } from '@/hooks/use-ui-store'
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+  { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'Analytics', href: '/analytics', icon: BarChart },
 ]
 
