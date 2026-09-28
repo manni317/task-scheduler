@@ -28,6 +28,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   
   const [availableProjects, setAvailableProjects] = useState<{id: string, name: string}[]>([])
+  const [availableUsers, setAvailableUsers] = useState<{id: string, full_name: string}[]>([])
 
   // Form states
   const [projectId, setProjectId] = useState(taskDefaults?.projectId || '')
@@ -134,13 +135,16 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
     if (isOpen) {
       if (taskDefaults?.projectId) setProjectId(taskDefaults.projectId)
       
-      // Fetch available projects
+      // Fetch available projects and users
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
       supabase.from('projects').select('id, name').then(({ data }) => {
         if (data) setAvailableProjects(data)
+      })
+      supabase.from('profiles').select('id, full_name').then(({ data }) => {
+        if (data) setAvailableUsers(data)
       })
     }
   }, [isOpen, taskDefaults])
@@ -244,9 +248,9 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 </SelectTrigger>
                 <SelectContent className="z-[110] bg-[#0f111a]/95 border-white/10 text-white backdrop-blur-xl">
                   <SelectItem value="unassigned">Unassigned</SelectItem>
-                  <SelectItem value="user1">Alice Johnson</SelectItem>
-                  <SelectItem value="user2">Bob Smith</SelectItem>
-                  <SelectItem value="user3">Carol Williams</SelectItem>
+                  {availableUsers.map(u => (
+                    <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
