@@ -162,6 +162,7 @@ export default function TaskDetailPage() {
           activityLog: [],
           order: taskData.order_index || 0,
           isCompleted: taskData.status === 'done',
+          audioUrl: taskData.audio_url || null,
           createdAt: new Date(taskData.created_at || Date.now()),
           updatedAt: new Date(taskData.updated_at || Date.now())
         }

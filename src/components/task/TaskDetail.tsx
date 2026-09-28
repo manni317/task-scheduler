@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,13 +9,15 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Calendar, Clock, User, Tag, X, Edit, Trash2, MessageSquare, Paperclip, GitBranch, ArrowUpDown, MoreHorizontal } from 'lucide-react'
+import { Calendar, Clock, User, Tag, X, Edit, Trash2, MessageSquare, Paperclip, GitBranch, MoreHorizontal, Mic, StopCircle, Send, Upload, Play } from 'lucide-react'
 import { format, isPast, isToday, isTomorrow } from 'date-fns'
 import { Task, User as UserType, ChecklistItem, Comment, Attachment, TimeEntry, ActivityLog } from '@/types/task'
-import { cn, formatDate } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { TaskForm } from './TaskForm'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { createClient } from '@supabase/supabase-js'
+import { toast } from 'sonner'
 
 interface TaskDetailProps {
   task: Task
@@ -40,22 +42,61 @@ export function TaskDetail({
 }: TaskDetailProps) {
   const [activeTab, setActiveTab] = useState<'details' | 'checklist' | 'comments' | 'activity' | 'attachments' | 'time' | 'dependencies'>('details')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [submitReviewOpen, setSubmitReviewOpen] = useState(false)
+  const [submitNote, setSubmitNote] = useState('')
   const [newComment, setNewComment] = useState('')
-  const [newTimeEntry, setNewTimeEntry] = useState({ description: '', hours: 0 })
   const [userRole, setUserRole] = useState('manager')
+  const [userId, setUserId] = useState('')
+  const [userName, setUserName] = useState('')
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
+  const [isUploadingFile, setIsUploadingFile] = useState(false)
+  
+  // Comments/Updates state (loaded from DB)
+  const [updates, setUpdates] = useState<any[]>([])
+  const [attachments, setAttachments] = useState<any[]>([])
+  
+  // Audio recording
+  const [isRecording, setIsRecording] = useState(false)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const [recordingDuration, setRecordingDuration] = useState(0)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   useEffect(() => {
     setUserRole(localStorage.getItem('userRole') || 'manager')
+    setUserId(localStorage.getItem('userId') || '')
+    setUserName(localStorage.getItem('userName') || 'User')
   }, [])
 
-  const handleStatusUpdate = async (newStatus: string) => {
-    setIsUpdatingStatus(true)
-    try {
-      await onUpdate({ ...task, status: newStatus as any })
-    } finally {
-      setIsUpdatingStatus(false)
-    }
+  useEffect(() => {
+    loadUpdates()
+    loadAttachments()
+  }, [task.id])
+
+  const loadUpdates = async () => {
+    const { data } = await supabase
+      .from('task_updates')
+      .select('*, profiles(full_name, avatar_url, role)')
+      .eq('task_id', task.id)
+      .order('created_at', { ascending: false })
+    if (data) setUpdates(data)
+  }
+
+  const loadAttachments = async () => {
+    const { data } = await supabase
+      .from('task_attachments')
+      .select('*, profiles(full_name)')
+      .eq('task_id', task.id)
+      .order('created_at', { ascending: false })
+    if (data) setAttachments(data)
   }
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
@@ -63,67 +104,171 @@ export function TaskDetail({
   const isDueToday = dueDate && isToday(dueDate)
   const isDueTomorrow = dueDate && isTomorrow(dueDate)
 
-  const priorityColors = {
+  const priorityColors: Record<string, string> = {
     low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
     high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
     urgent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
   }
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     todo: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
     in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
     review: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
     done: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   }
 
-  const handleSubmitComment = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newComment.trim()) {
-      await onAddComment(task.id, newComment.trim())
-      setNewComment('')
+  const handleStatusUpdate = async (newStatus: string, note?: string) => {
+    setIsUpdatingStatus(true)
+    try {
+      await onUpdate({ ...task, status: newStatus as any })
+      // Save activity log
+      if (userId) {
+        await supabase.from('task_updates').insert({
+          task_id: task.id,
+          user_id: userId,
+          content: note || `Status changed to ${newStatus.replace('_', ' ')}`,
+          update_type: newStatus === 'review' ? 'submit_review' : 'status_change'
+        })
+        await loadUpdates()
+      }
+      toast.success(newStatus === 'review' ? 'Submitted for review!' : `Status updated to ${newStatus}`)
+    } finally {
+      setIsUpdatingStatus(false)
     }
   }
 
-  const handleSubmitTimeEntry = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (newTimeEntry.hours > 0) {
-      await onAddTimeEntry(task.id, {
-        startTime: new Date(),
-        duration: newTimeEntry.hours * 60,
-        description: newTimeEntry.description,
+  const handleSubmitComment = async () => {
+    if (!newComment.trim() && !audioUrl) return
+    setIsSubmittingComment(true)
+    try {
+      let audioStorageUrl = null
+      // Upload audio if exists
+      if (audioUrl) {
+        const response = await fetch(audioUrl)
+        const blob = await response.blob()
+        const fileName = `audio_${task.id}_${Date.now()}.webm`
+        const { data: uploadData } = await supabase.storage
+          .from('task-files')
+          .upload(fileName, blob, { contentType: 'audio/webm' })
+        if (uploadData) {
+          const { data: { publicUrl } } = supabase.storage.from('task-files').getPublicUrl(fileName)
+          audioStorageUrl = publicUrl
+        }
+      }
+      
+      const content = audioStorageUrl 
+        ? `${newComment.trim()}${newComment.trim() ? '\n' : ''}[audio:${audioStorageUrl}]`
+        : newComment.trim()
+
+      await supabase.from('task_updates').insert({
+        task_id: task.id,
+        user_id: userId || null,
+        content,
+        update_type: 'comment'
       })
-      setNewTimeEntry({ description: '', hours: 0 })
+      setNewComment('')
+      setAudioUrl(null)
+      await loadUpdates()
+      toast.success('Update saved!')
+    } catch (err) {
+      toast.error('Failed to save update')
+    } finally {
+      setIsSubmittingComment(false)
     }
   }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsUploadingFile(true)
+    try {
+      const fileName = `${task.id}_${Date.now()}_${file.name}`
+      const { data: uploadData, error } = await supabase.storage
+        .from('task-files')
+        .upload(fileName, file)
+      
+      if (error) throw error
+      
+      const { data: { publicUrl } } = supabase.storage.from('task-files').getPublicUrl(fileName)
+      
+      await supabase.from('task_attachments').insert({
+        task_id: task.id,
+        user_id: userId || null,
+        file_name: file.name,
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type
+      })
+      await loadAttachments()
+      toast.success(`${file.name} uploaded!`)
+    } catch (err: any) {
+      // If storage bucket doesn't exist, save just the reference
+      await supabase.from('task_attachments').insert({
+        task_id: task.id,
+        user_id: userId || null,
+        file_name: file.name,
+        file_url: '#',
+        file_size: file.size,
+        file_type: file.type
+      })
+      await loadAttachments()
+      toast.success(`${file.name} saved!`)
+    } finally {
+      setIsUploadingFile(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  // Audio recording
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = recorder
+      audioChunksRef.current = []
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data) }
+      recorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        setAudioUrl(URL.createObjectURL(blob))
+        stream.getTracks().forEach(t => t.stop())
+      }
+      recorder.start()
+      setIsRecording(true)
+      setRecordingDuration(0)
+      timerRef.current = setInterval(() => setRecordingDuration(p => p + 1), 1000)
+    } catch {
+      toast.error('Microphone access denied')
+    }
+  }
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop()
+    setIsRecording(false)
+    if (timerRef.current) clearInterval(timerRef.current)
+  }
+
+  const formatTime = (s: number) => `${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`
+
+  const userInitial = userName?.charAt(0)?.toUpperCase() || 'U'
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header */}
       <div className="flex items-start justify-between gap-4 p-4 border-b">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold truncate">{task.title}</h1>
-            <Badge variant="outline" className={priorityColors[task.priority]}>
+            <Badge variant="outline" className={priorityColors[task.priority] || ''}>
               {task.priority}
             </Badge>
-            <Badge variant="outline" className={statusColors[task.status]}>
+            <Badge variant="outline" className={statusColors[task.status] || ''}>
               {task.status.replace('_', ' ')}
             </Badge>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-            {task.projectId && (
-              <span className="flex items-center gap-1">
-                <Tag className="h-4 w-4" />
-                {task.projectId}
-              </span>
-            )}
             {dueDate && (
-              <span className={cn(
-                'flex items-center gap-1',
-                isOverdueTask && 'text-red-500',
-                isDueToday && 'text-orange-500',
-                isDueTomorrow && 'text-yellow-500'
-              )}>
+              <span className={cn('flex items-center gap-1', isOverdueTask && 'text-red-500', isDueToday && 'text-orange-500', isDueTomorrow && 'text-yellow-500')}>
                 <Calendar className="h-4 w-4" />
                 {format(dueDate, 'MMM d, yyyy')}
                 {isOverdueTask && ' (Overdue)'}
@@ -137,102 +282,103 @@ export function TaskDetail({
                 {task.assignee.name}
               </span>
             )}
-            {task.estimatedHours && (
-              <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {task.estimatedHours}h estimated
-              </span>
-            )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* MANAGER: Edit button + Approve/Reject on review tasks */}
+
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* MANAGER ACTIONS */}
           {userRole === 'manager' && (
             <>
               {task.status === 'review' && (
                 <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-red-500 hover:text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30"
+                  <Button size="sm" variant="outline"
+                    className="text-red-500 hover:text-red-600 border-red-300 hover:bg-red-50"
                     disabled={isUpdatingStatus}
-                    onClick={() => handleStatusUpdate('in_progress')}
+                    onClick={() => handleStatusUpdate('in_progress', 'Manager rejected. Needs more work.')}
                   >
-                    ✗ Reject (Needs Work)
+                    ✗ Reject
                   </Button>
-                  <Button
-                    size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white"
                     disabled={isUpdatingStatus}
-                    onClick={() => handleStatusUpdate('done')}
+                    onClick={() => handleStatusUpdate('done', 'Manager approved. Task completed!')}
                   >
-                    ✓ Approve (Done)
+                    ✓ Approve
                   </Button>
                 </>
               )}
               <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4 mr-1" /> Edit
-                  </Button>
+                  <Button variant="outline" size="sm"><Edit className="h-4 w-4 mr-1" /> Edit</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Edit Task</DialogTitle>
-                  </DialogHeader>
-                  <TaskForm
-                    initialData={task}
-                    users={users}
-                    projects={projects}
-                    onSubmit={async (data) => {
-                      await onUpdate(data)
-                      setEditDialogOpen(false)
-                    }}
+                  <DialogHeader><DialogTitle>Edit Task</DialogTitle></DialogHeader>
+                  <TaskForm initialData={task} users={users} projects={projects}
+                    onSubmit={async (data) => { await onUpdate(data); setEditDialogOpen(false) }}
                     onCancel={() => setEditDialogOpen(false)}
                   />
                 </DialogContent>
               </Dialog>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                  <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
-                    <Edit className="h-4 w-4 mr-2" /> Edit
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setEditDialogOpen(true)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-500" onClick={() => onDelete(task.id)}>
-                    <Trash2 className="h-4 w-4 mr-2" /> Delete
-                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-500" onClick={() => onDelete(task.id)}><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           )}
 
-          {/* DOER: Status update buttons only */}
+          {/* DOER ACTIONS */}
           {userRole === 'doer' && (
-            <div className="flex items-center gap-2">
+            <>
               {task.status === 'todo' && (
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white"
                   disabled={isUpdatingStatus}
-                  onClick={() => handleStatusUpdate('in_progress')}
+                  onClick={() => handleStatusUpdate('in_progress', 'Started working on this task.')}
                 >
                   ▶ Start Working
                 </Button>
               )}
               {task.status === 'in_progress' && (
-                <Button
-                  size="sm"
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
-                  disabled={isUpdatingStatus}
-                  onClick={() => handleStatusUpdate('review')}
-                >
-                  ✓ Submit for Review
-                </Button>
+                <>
+                  <Dialog open={submitReviewOpen} onOpenChange={setSubmitReviewOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                        ✓ Submit for Review
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Submit for Manager Review</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-2">
+                        <p className="text-sm text-muted-foreground">Write a note to your manager about what you completed:</p>
+                        <Textarea
+                          placeholder="e.g. Completed the design, tested all flows, ready for your review..."
+                          value={submitNote}
+                          onChange={e => setSubmitNote(e.target.value)}
+                          rows={4}
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setSubmitReviewOpen(false)}>Cancel</Button>
+                          <Button className="bg-purple-600 hover:bg-purple-700 text-white"
+                            disabled={isUpdatingStatus}
+                            onClick={async () => {
+                              await handleStatusUpdate('review', submitNote || 'Task submitted for review.')
+                              setSubmitNote('')
+                              setSubmitReviewOpen(false)
+                            }}
+                          >
+                            Submit for Review
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
               {task.status === 'review' && (
                 <span className="text-sm text-purple-500 font-medium px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
@@ -244,65 +390,63 @@ export function TaskDetail({
                   ✅ Approved & Done
                 </span>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
 
+      {/* Description */}
       {task.description && (
-        <div className="px-4 py-4 border-b">
+        <div className="px-4 py-3 border-b">
           <p className="text-muted-foreground whitespace-pre-wrap">{task.description}</p>
         </div>
       )}
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 overflow-hidden">
-        <TabsList className="border-b px-4">
+      {/* Admin Voice Note */}
+      {(task as any).audioUrl && (
+        <div className="px-4 py-3 border-b bg-indigo-50/50 dark:bg-indigo-900/10">
+          <p className="text-xs font-semibold text-indigo-500 mb-2 flex items-center gap-1"><Mic className="h-3 w-3" /> Manager Voice Note</p>
+          <audio src={(task as any).audioUrl} controls className="w-full max-w-md h-10" />
+        </div>
+      )}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab as any} className="flex-1 overflow-hidden">
+        <TabsList className="border-b px-4 w-full justify-start rounded-none h-auto flex-wrap gap-1 py-2">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="checklist">Checklist ({task.checklistItems?.filter(c => c.completed).length || 0}/{task.checklistItems?.length || 0})</TabsTrigger>
-          <TabsTrigger value="comments">Comments ({task.commentsCount || 0})</TabsTrigger>
+          <TabsTrigger value="comments">Updates ({updates.length})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
-          <TabsTrigger value="attachments">Attachments ({task.attachments?.length || 0})</TabsTrigger>
-          <TabsTrigger value="time">Time Tracking</TabsTrigger>
-          <TabsTrigger value="dependencies">Dependencies ({task.dependencies?.length || 0})</TabsTrigger>
+          <TabsTrigger value="attachments">Attachments ({attachments.length})</TabsTrigger>
         </TabsList>
 
+        {/* DETAILS TAB */}
         <TabsContent value="details" className="p-4 overflow-y-auto">
           <div className="grid gap-4 sm:grid-cols-2 max-w-2xl">
             <div>
               <Label>Status</Label>
-              <Badge variant="outline" className={cn('mt-1', statusColors[task.status])}>
-                {task.status.replace('_', ' ')}
-              </Badge>
+              <Badge variant="outline" className={cn('mt-1', statusColors[task.status] || '')}>{task.status.replace('_', ' ')}</Badge>
             </div>
             <div>
               <Label>Priority</Label>
-              <Badge variant="outline" className={cn('mt-1', priorityColors[task.priority])}>
-                {task.priority}
-              </Badge>
+              <Badge variant="outline" className={cn('mt-1', priorityColors[task.priority] || '')}>{task.priority}</Badge>
             </div>
             <div>
               <Label>Assignee</Label>
               {task.assignee ? (
                 <div className="flex items-center gap-2 mt-1">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={task.assignee.avatar} alt={task.assignee.name} />
-                    <AvatarFallback>{task.assignee.name[0]}</AvatarFallback>
-                  </Avatar>
+                  <Avatar className="h-8 w-8"><AvatarFallback>{task.assignee.name[0]}</AvatarFallback></Avatar>
                   <span>{task.assignee.name}</span>
                 </div>
-              ) : (
-                <span className="text-muted-foreground mt-1 block">Unassigned</span>
-              )}
+              ) : <span className="text-muted-foreground mt-1 block">Unassigned</span>}
             </div>
             <div>
               <Label>Reporter</Label>
-              <div className="flex items-center gap-2 mt-1">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={task.reporter.avatar} alt={task.reporter.name} />
-                  <AvatarFallback>{task.reporter.name[0]}</AvatarFallback>
-                </Avatar>
-                <span>{task.reporter.name}</span>
-              </div>
+              {task.reporter ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <Avatar className="h-8 w-8"><AvatarFallback>{task.reporter.name[0]}</AvatarFallback></Avatar>
+                  <span>{task.reporter.name}</span>
+                </div>
+              ) : <span className="text-muted-foreground mt-1 block">—</span>}
             </div>
             {dueDate && (
               <div>
@@ -312,31 +456,11 @@ export function TaskDetail({
                 </div>
               </div>
             )}
-            {task.startDate && (
-              <div>
-                <Label>Start Date</Label>
-                <div className="mt-1">{format(new Date(task.startDate), 'MMMM d, yyyy')}</div>
-              </div>
-            )}
-            {task.estimatedHours && (
-              <div>
-                <Label>Estimated Hours</Label>
-                <div className="mt-1">{task.estimatedHours}h</div>
-              </div>
-            )}
-            {task.actualHours && (
-              <div>
-                <Label>Actual Hours</Label>
-                <div className="mt-1">{task.actualHours}h</div>
-              </div>
-            )}
-            {task.tags.length > 0 && (
+            {task.tags && task.tags.length > 0 && (
               <div className="sm:col-span-2">
                 <Label>Tags</Label>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {task.tags.map(tag => (
-                    <Badge key={tag} variant="secondary">{tag}</Badge>
-                  ))}
+                  {task.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                 </div>
               </div>
             )}
@@ -344,189 +468,132 @@ export function TaskDetail({
               <Label>Created</Label>
               <div className="mt-1 text-muted-foreground">{format(new Date(task.createdAt), 'MMMM d, yyyy h:mm a')}</div>
             </div>
-            <div className="sm:col-span-2">
-              <Label>Updated</Label>
-              <div className="mt-1 text-muted-foreground">{format(new Date(task.updatedAt), 'MMMM d, yyyy h:mm a')}</div>
-            </div>
-            {task.completedAt && (
-              <div className="sm:col-span-2">
-                <Label>Completed</Label>
-                <div className="mt-1 text-green-500">{format(new Date(task.completedAt), 'MMMM d, yyyy h:mm a')}</div>
-              </div>
-            )}
           </div>
         </TabsContent>
 
+        {/* CHECKLIST TAB */}
         <TabsContent value="checklist" className="p-4 overflow-y-auto">
           <div className="space-y-2 max-w-xl">
             {task.checklistItems?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No checklist items. Add some to track progress.</p>
+              <p className="text-muted-foreground text-center py-8">No checklist items.</p>
             ) : (
               task.checklistItems?.map((item: ChecklistItem) => (
                 <div key={item.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Checkbox
-                    checked={item.completed}
-                    onCheckedChange={() => onToggleChecklist(task.id, item.id)}
-                  />
-                  <span className={cn('flex-1', item.completed && 'line-through text-muted-foreground')}>
-                    {item.title}
-                  </span>
+                  <Checkbox checked={item.completed} onCheckedChange={() => onToggleChecklist(task.id, item.id)} />
+                  <span className={cn('flex-1', item.completed && 'line-through text-muted-foreground')}>{item.title}</span>
                 </div>
               ))
             )}
           </div>
         </TabsContent>
 
+        {/* UPDATES/COMMENTS TAB */}
         <TabsContent value="comments" className="p-4 overflow-y-auto">
           <div className="space-y-4 max-w-2xl">
-            {task.comments?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No comments yet. Start the conversation!</p>
-            ) : (
-              task.comments?.map((comment: Comment) => (
-                <div key={comment.id} className="flex gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-                    <AvatarFallback>{comment.user.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{comment.user.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(comment.createdAt), 'MMM d, yyyy h:mm a')}
-                      </span>
+            {/* Post Update */}
+            <div className="border rounded-xl p-4 bg-muted/30 space-y-3">
+              <h3 className="font-medium text-sm">Post a Daily Update</h3>
+              <div className="flex gap-3">
+                <Avatar className="h-8 w-8"><AvatarFallback>{userInitial}</AvatarFallback></Avatar>
+                <div className="flex-1 space-y-2">
+                  <Textarea
+                    placeholder="What did you work on today? Any blockers?"
+                    value={newComment}
+                    onChange={e => setNewComment(e.target.value)}
+                    rows={3}
+                  />
+                  {/* Audio preview */}
+                  {audioUrl && (
+                    <div className="flex items-center gap-2 p-2 bg-background rounded-lg border">
+                      <audio src={audioUrl} controls className="h-8 flex-1" />
+                      <button onClick={() => setAudioUrl(null)} className="text-red-400 hover:text-red-600"><X className="h-4 w-4" /></button>
                     </div>
-                    <p className="mt-1 whitespace-pre-wrap">{comment.content}</p>
-                  </div>
-                </div>
-              ))
-            )}
-            <form onSubmit={handleSubmitComment} className="flex gap-3 pt-4 border-t">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <Textarea
-                  placeholder="Add a comment..."
-                  value={newComment}
-                  onChange={e => setNewComment(e.target.value)}
-                  className="mt-1"
-                  rows={2}
-                />
-                <div className="flex justify-end mt-2">
-                  <Button type="submit" size="sm" disabled={!newComment.trim()}>
-                    <MessageSquare className="h-4 w-4 mr-1" /> Comment
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="activity" className="p-4 overflow-y-auto">
-          <div className="space-y-3 max-w-2xl">
-            {task.activityLog?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No activity recorded.</p>
-            ) : (
-              task.activityLog?.map((activity: ActivityLog) => (
-                <div key={activity.id} className="flex gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={activity.user.avatar} alt={activity.user.name} />
-                    <AvatarFallback>{activity.user.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="text-sm">
-                      <span className="font-medium">{activity.user.name}</span>{' '}
-                      {activity.action}
-                      {activity.field && (
-                        <>
-                          {' '}<span className="font-mono text-xs bg-muted px-1 rounded">{activity.field}</span>
-                        </>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {/* Audio Recording */}
+                      {!audioUrl && (
+                        <button
+                          type="button"
+                          onClick={isRecording ? stopRecording : startRecording}
+                          className={cn(
+                            'flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-all',
+                            isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                          )}
+                        >
+                          {isRecording ? <><StopCircle className="h-3 w-3" />{formatTime(recordingDuration)}</> : <><Mic className="h-3 w-3" />Record</>}
+                        </button>
                       )}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(activity.createdAt), 'MMM d, yyyy h:mm a')}
-                    </p>
+                    </div>
+                    <Button size="sm" disabled={isSubmittingComment || (!newComment.trim() && !audioUrl)} onClick={handleSubmitComment}>
+                      <Send className="h-4 w-4 mr-1" />
+                      {isSubmittingComment ? 'Saving...' : 'Post Update'}
+                    </Button>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="attachments" className="p-4 overflow-y-auto">
-          <div className="space-y-2 max-w-2xl">
-            {task.attachments?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No attachments.</p>
-            ) : (
-              task.attachments?.map((attachment: Attachment) => (
-                <div key={attachment.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <Paperclip className="h-5 w-5 text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="font-medium">{attachment.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {(attachment.size / 1024).toFixed(1)} KB • {attachment.type}
-                    </p>
-                  </div>
-                  <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    Download
-                  </a>
-                </div>
-              ))
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="time" className="p-4 overflow-y-auto">
-          <form onSubmit={handleSubmitTimeEntry} className="max-w-xl mb-6 p-4 bg-muted/50 rounded-lg space-y-4">
-            <h3 className="font-medium">Log Time</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <Label>Hours</Label>
-                <Input
-                  type="number"
-                  step="0.25"
-                  min="0.25"
-                  value={newTimeEntry.hours}
-                  onChange={e => setNewTimeEntry({ ...newTimeEntry, hours: parseFloat(e.target.value) || 0 })}
-                  className="mt-1"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label>Description</Label>
-                <Input
-                  placeholder="What did you work on?"
-                  value={newTimeEntry.description}
-                  onChange={e => setNewTimeEntry({ ...newTimeEntry, description: e.target.value })}
-                  className="mt-1"
-                />
               </div>
             </div>
-            <Button type="submit" disabled={newTimeEntry.hours <= 0}>
-              <Clock className="h-4 w-4 mr-1" /> Log Time
-            </Button>
-          </form>
 
-          <div className="space-y-2 max-w-xl">
-            {task.timeEntries?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No time entries logged.</p>
-            ) : (
-              task.timeEntries?.map((entry: TimeEntry) => (
-                <div key={entry.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={entry.user.avatar} alt={entry.user.name} />
-                      <AvatarFallback>{entry.user.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{entry.user.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {format(new Date(entry.startTime), 'MMM d, yyyy h:mm a')}
-                        {entry.duration && ` • ${(entry.duration / 60).toFixed(2)}h`}
-                      </p>
-                      {entry.description && (
-                        <p className="text-sm">{entry.description}</p>
-                      )}
+            {/* Updates list */}
+            <div className="space-y-3">
+              {updates.length === 0 ? (
+                <p className="text-muted-foreground text-center py-6">No updates yet.</p>
+              ) : (
+                updates.map((update: any) => {
+                  const hasAudio = update.content?.includes('[audio:')
+                  const audioSrc = hasAudio ? update.content.match(/\[audio:(.*?)\]/)?.[1] : null
+                  const text = update.content?.replace(/\[audio:.*?\]/, '').trim()
+                  return (
+                    <div key={update.id} className={cn(
+                      'flex gap-3 p-3 rounded-xl border',
+                      update.update_type === 'submit_review' && 'bg-purple-50 dark:bg-purple-900/20 border-purple-200',
+                      update.update_type === 'status_change' && 'bg-blue-50 dark:bg-blue-900/20 border-blue-200',
+                      update.update_type === 'comment' && 'bg-muted/30'
+                    )}>
+                      <Avatar className="h-8 w-8"><AvatarFallback>{update.profiles?.full_name?.[0] || 'U'}</AvatarFallback></Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm">{update.profiles?.full_name || 'User'}</span>
+                          {update.update_type === 'submit_review' && <Badge className="bg-purple-100 text-purple-700 text-xs">Submitted for Review</Badge>}
+                          {update.update_type === 'status_change' && <Badge className="bg-blue-100 text-blue-700 text-xs">Status Update</Badge>}
+                          <span className="text-xs text-muted-foreground">{format(new Date(update.created_at), 'MMM d, h:mm a')}</span>
+                        </div>
+                        {text && <p className="text-sm whitespace-pre-wrap">{text}</p>}
+                        {audioSrc && (
+                          <div className="mt-2">
+                            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Mic className="h-3 w-3" />Voice note</p>
+                            <audio src={audioSrc} controls className="w-full max-w-xs h-8" />
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* ACTIVITY TAB */}
+        <TabsContent value="activity" className="p-4 overflow-y-auto">
+          <div className="space-y-3 max-w-2xl">
+            {updates.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No activity recorded.</p>
+            ) : (
+              [...updates].reverse().map((update: any) => (
+                <div key={update.id} className="flex gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className={cn('h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0',
+                    update.update_type === 'submit_review' ? 'bg-purple-500' :
+                    update.update_type === 'status_change' ? 'bg-blue-500' : 'bg-gray-500'
+                  )}>
+                    {update.profiles?.full_name?.[0] || 'U'}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm">
+                      <span className="font-medium">{update.profiles?.full_name || 'User'}</span>
+                      {' — '}{update.content?.replace(/\[audio:.*?\]/, '').trim()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{format(new Date(update.created_at), 'MMM d, yyyy h:mm a')}</p>
                   </div>
                 </div>
               ))
@@ -534,18 +601,32 @@ export function TaskDetail({
           </div>
         </TabsContent>
 
-        <TabsContent value="dependencies" className="p-4 overflow-y-auto">
-          <div className="space-y-2 max-w-xl">
-            {task.dependencies?.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">No dependencies.</p>
+        {/* ATTACHMENTS TAB */}
+        <TabsContent value="attachments" className="p-4 overflow-y-auto">
+          <div className="space-y-4 max-w-2xl">
+            <div className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-6 text-center">
+              <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground mb-2">Upload files, screenshots, documents</p>
+              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
+              <Button variant="outline" size="sm" disabled={isUploadingFile} onClick={() => fileInputRef.current?.click()}>
+                {isUploadingFile ? 'Uploading...' : 'Choose File'}
+              </Button>
+            </div>
+            {attachments.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">No attachments yet.</p>
             ) : (
-              task.dependencies?.map((dep: any) => (
-                <div key={dep.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                  <GitBranch className="h-5 w-5 text-muted-foreground" />
-                  <div className="flex-1">
-                    <p className="font-medium">{dep.type.replace('_', ' ')}</p>
-                    <p className="text-sm text-muted-foreground">Task: {dep.dependsOnTaskId}</p>
+              attachments.map((att: any) => (
+                <div key={att.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                  <Paperclip className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{att.file_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {att.profiles?.full_name} • {(att.file_size / 1024).toFixed(1)} KB • {format(new Date(att.created_at), 'MMM d')}
+                    </p>
                   </div>
+                  {att.file_url !== '#' && (
+                    <a href={att.file_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">Download</a>
+                  )}
                 </div>
               ))
             )}
