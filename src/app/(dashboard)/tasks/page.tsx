@@ -98,7 +98,8 @@ export default function TasksPage() {
           latestUpdate: latestUpdate ? {
             content: latestUpdate.content,
             user: latestUpdate.profiles?.full_name,
-            createdAt: latestUpdate.created_at
+            createdAt: latestUpdate.created_at,
+            audioUrl: latestUpdate.content?.match(/\[audio:(.*?)\]/)?.[1] || null
           } : null
         }
       })
@@ -332,10 +333,16 @@ export default function TasksPage() {
                               <span className="font-medium text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded flex-shrink-0">
                                 {task.latestUpdate.user}
                               </span>
-                              <span className="text-muted-foreground line-clamp-1 italic text-xs mt-0.5 flex items-center gap-1">
-                                {task.latestUpdate.content?.includes('[audio:') && <Mic className="h-3 w-3 flex-shrink-0" />}
-                                {task.latestUpdate.content?.replace(/\[audio:.*?\]/, '').trim() || 'Voice note'}
-                              </span>
+                              <div className="flex items-center gap-2 text-muted-foreground text-xs mt-0.5">
+                                {task.latestUpdate.audioUrl && (
+                                  <div onClick={e => e.stopPropagation()} className="flex items-center flex-shrink-0">
+                                    <audio src={task.latestUpdate.audioUrl} controls className="h-7 w-48 max-w-full" />
+                                  </div>
+                                )}
+                                <span className="line-clamp-1 italic">
+                                  {task.latestUpdate.content?.replace(/\[audio:.*?\]/, '').trim() || (!task.latestUpdate.audioUrl ? 'Voice note' : '')}
+                                </span>
+                              </div>
                             </div>
                           )}
                         </div>
