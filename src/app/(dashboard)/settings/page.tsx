@@ -17,7 +17,7 @@ import { useTheme } from 'next-themes'
 const timezones = [
   'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
   'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Tokyo', 'Asia/Shanghai',
-  'Australia/Sydney', 'Pacific/Auckland'
+  'Asia/Kolkata', 'Australia/Sydney', 'Pacific/Auckland'
 ]
 
 const languages = [
@@ -379,7 +379,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="timezone">Timezone</Label>
-                      <Select defaultValue="America/Los_Angeles">
+                      <Select defaultValue="Asia/Kolkata">
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
