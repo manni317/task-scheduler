@@ -218,6 +218,14 @@ export default function TasksPage() {
 
 
 
+  const [userRole, setUserRole] = useState('manager')
+  const [userId, setUserId] = useState('')
+  
+  useEffect(() => {
+    setUserRole(localStorage.getItem('userRole') || 'manager')
+    setUserId(localStorage.getItem('userId') || '')
+  }, [])
+
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -225,7 +233,8 @@ export default function TasksPage() {
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter
     const matchesAssignee = assigneeFilter === 'all' || task.assigneeId === assigneeFilter
     const matchesProject = projectFilter === 'all' || task.projectId === projectFilter
-    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesProject
+    const matchesRole = userRole === 'manager' || task.assigneeId === userId
+    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesProject && matchesRole
   })
 
   return (
@@ -235,10 +244,12 @@ export default function TasksPage() {
               <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
               <p className="text-muted-foreground">Manage and track all your tasks</p>
             </div>
-            <Button onClick={openCreateTaskModal} className="gap-2 bg-primary">
-              <Plus className="h-4 w-4" />
-              New Task
-            </Button>
+            {userRole === 'manager' && (
+              <Button onClick={openCreateTaskModal} className="gap-2 bg-primary">
+                <Plus className="h-4 w-4" />
+                New Task
+              </Button>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-4 mb-6">

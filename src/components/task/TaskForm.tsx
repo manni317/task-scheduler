@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -56,8 +56,12 @@ export function TaskForm({
   projects, 
   onSubmit, 
   onCancel, 
-  isLoading 
 }: TaskFormProps) {
+  const [userRole, setUserRole] = useState('manager')
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem('userRole') || 'manager')
+  }, [])
   const [tags, setTags] = useState<string[]>(initialData?.tags || [])
   const [newTag, setNewTag] = useState('')
   const [checklistItems, setChecklistItems] = useState<TaskFormData['checklistItems']>(
@@ -142,6 +146,7 @@ export function TaskForm({
             placeholder="Enter task title"
             {...form.register('title')}
             className="mt-1"
+            disabled={userRole === 'doer'}
           />
         </div>
 
@@ -153,6 +158,7 @@ export function TaskForm({
             {...form.register('description')}
             className="mt-1"
             rows={4}
+            disabled={userRole === 'doer'}
           />
         </div>
 
@@ -161,6 +167,7 @@ export function TaskForm({
           <Select
             onValueChange={form.setValue('projectId')}
             defaultValue={form.getValues('projectId')}
+            disabled={userRole === 'doer'}
           >
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select project" />
@@ -180,6 +187,7 @@ export function TaskForm({
           <Select
             onValueChange={form.setValue('reporterId')}
             defaultValue={form.getValues('reporterId')}
+            disabled={userRole === 'doer'}
           >
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select reporter" />
@@ -205,6 +213,7 @@ export function TaskForm({
           <Select
             onValueChange={form.setValue('assigneeId')}
             defaultValue={form.getValues('assigneeId')}
+            disabled={userRole === 'doer'}
           >
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Unassigned" />
@@ -249,6 +258,7 @@ export function TaskForm({
           <Select
             onValueChange={form.setValue('priority')}
             defaultValue={form.getValues('priority')}
+            disabled={userRole === 'doer'}
           >
             <SelectTrigger className="mt-1">
               <SelectValue placeholder="Select priority" />
@@ -273,6 +283,7 @@ export function TaskForm({
                 variant="outline"
                 className={cn('w-full justify-start text-left font-normal', !form.getValues('dueDate') && 'text-muted-foreground')}
                 {...form.register('dueDate')}
+                disabled={userRole === 'doer'}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {form.getValues('dueDate') 
@@ -299,6 +310,7 @@ export function TaskForm({
                 variant="outline"
                 className={cn('w-full justify-start text-left font-normal', !form.getValues('startDate') && 'text-muted-foreground')}
                 {...form.register('startDate')}
+                disabled={userRole === 'doer'}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {form.getValues('startDate') 
@@ -327,6 +339,7 @@ export function TaskForm({
             placeholder="0"
             {...form.register('estimatedHours', { valueAsNumber: true })}
             className="mt-1"
+            disabled={userRole === 'doer'}
           />
         </div>
       </div>

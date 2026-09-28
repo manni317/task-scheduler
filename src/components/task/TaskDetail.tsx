@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -42,6 +42,11 @@ export function TaskDetail({
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [newComment, setNewComment] = useState('')
   const [newTimeEntry, setNewTimeEntry] = useState({ description: '', hours: 0 })
+  const [userRole, setUserRole] = useState('manager')
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem('userRole') || 'manager')
+  }, [])
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
   const isOverdueTask = dueDate && isPast(dueDate) && !isToday(dueDate)
@@ -139,7 +144,7 @@ export function TaskDetail({
             </DialogTrigger>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Edit Task</DialogTitle>
+                <DialogTitle>{userRole === 'manager' ? 'Edit Task' : 'Update Task Status'}</DialogTitle>
               </DialogHeader>
               <TaskForm
                 initialData={task}
@@ -164,10 +169,14 @@ export function TaskDetail({
               <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
                 <Edit className="h-4 w-4 mr-2" /> Edit
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500" onClick={() => onDelete(task.id)}>
-                <Trash2 className="h-4 w-4 mr-2" /> Delete
-              </DropdownMenuItem>
+              {userRole === 'manager' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="text-red-500" onClick={() => onDelete(task.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

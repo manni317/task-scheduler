@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { loginWithEmail, signUpWithEmail } from '@/app/actions/auth'
+import { loginWithEmail, signUpWithEmail, bypassedLogin } from '@/app/actions/auth'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
@@ -17,11 +17,22 @@ export default function LoginPage() {
     
     // AUTH BYPASSED FOR NOW: Instantly go to dashboard
     const email = e.currentTarget.email.value;
-    localStorage.setItem('userEmail', email);
-    toast.success('Auth bypassed! Taking you to dashboard...')
-    setTimeout(() => {
-      router.push('/dashboard')
-    }, 1000)
+    
+    try {
+      const userProfile = await bypassedLogin(email);
+      localStorage.setItem('userEmail', userProfile.email);
+      localStorage.setItem('userRole', userProfile.role);
+      localStorage.setItem('userId', userProfile.id);
+      localStorage.setItem('userName', userProfile.full_name);
+      
+      toast.success(`Logged in as ${userProfile.role}! Taking you to dashboard...`)
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 1000)
+    } catch (err) {
+      toast.error('Failed to log in')
+      setIsLoading(false)
+    }
   }
 
   return (

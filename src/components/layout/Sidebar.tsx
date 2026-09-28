@@ -46,12 +46,17 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
 
   const [userEmail, setUserEmail] = useState('user@example.com')
   const [userName, setUserName] = useState('User Name')
+  const [userRole, setUserRole] = useState('manager')
 
   useEffect(() => {
     const email = localStorage.getItem('userEmail')
+    const role = localStorage.getItem('userRole')
     if (email) {
       setUserEmail(email)
       setUserName(email.split('@')[0])
+    }
+    if (role) {
+      setUserRole(role)
     }
   }, [])
 
@@ -141,7 +146,9 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
             )}
             {!collapsedSections.secondary && (
               <ul className="space-y-1" role="list">
-                {secondaryNavigation.map(item => {
+                {secondaryNavigation
+                  .filter(item => userRole === 'manager' || item.name !== 'Team')
+                  .map(item => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                   const Icon = item.icon
                   return (
@@ -167,7 +174,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
             )}
           </div>
 
-          {isOpen && (
+          {isOpen && userRole === 'manager' && (
             <div className="pt-4 border-t">
               <Button
                 variant="outline"
