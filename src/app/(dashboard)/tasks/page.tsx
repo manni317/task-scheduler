@@ -257,11 +257,6 @@ export default function TasksPage() {
                       onClick={() => router.push(`/tasks/${task.id}`)}
                     >
                       <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4 flex-shrink-0"
-                          onClick={e => e.stopPropagation()}
-                        />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-4">
                             {/* Left: title + description */}
