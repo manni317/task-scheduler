@@ -7,6 +7,7 @@ import { createTask } from '@/app/actions/task'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import { createClient } from '@supabase/supabase-js'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -168,6 +169,28 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       
       const currentUserId = localStorage.getItem('userId')
       if (currentUserId) formData.append('reporterId', currentUserId)
+      
+      // Upload audio to Supabase Storage if recorded
+      if (audioUrl) {
+        try {
+          const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          )
+          const response = await fetch(audioUrl)
+          const blob = await response.blob()
+          const fileName = `task_audio_${Date.now()}.webm`
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('task-files')
+            .upload(fileName, blob, { contentType: 'audio/webm' })
+          if (uploadData && !uploadError) {
+            const { data: { publicUrl } } = supabase.storage.from('task-files').getPublicUrl(fileName)
+            formData.append('audioUrl', publicUrl)
+          }
+        } catch (audioErr) {
+          console.error('Audio upload failed (non-fatal):', audioErr)
+        }
+      }
       
       if (tags.length > 0) formData.append('tags', JSON.stringify(tags))
       if (checklistItems.length > 0) formData.append('checklistItems', JSON.stringify(checklistItems))

@@ -44,6 +44,8 @@ export async function createTask(formData: FormData) {
   if (priorityStr === 'high') priorityNum = 3
   if (priorityStr === 'urgent') priorityNum = 4
 
+  const audioUrl = formData.get('audioUrl') as string
+
   const { data, error } = await supabase
     .from('tasks')
     .insert({
@@ -56,7 +58,8 @@ export async function createTask(formData: FormData) {
       priority: priorityNum,
       due_date: dueDate || null,
       tags: tags,
-      task_key: `TSK-${Math.floor(Math.random() * 10000)}`
+      task_key: `TSK-${Math.floor(Math.random() * 10000)}`,
+      audio_url: audioUrl || null,
     })
     .select()
 
