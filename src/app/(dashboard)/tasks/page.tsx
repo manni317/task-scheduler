@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Filter, Funnel, Plus } from 'lucide-react'
+import { Search, Filter, Funnel, Plus, Mic } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUIStore } from '@/hooks/use-ui-store'
 
@@ -332,8 +332,9 @@ export default function TasksPage() {
                               <span className="font-medium text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded flex-shrink-0">
                                 {task.latestUpdate.user}
                               </span>
-                              <span className="text-muted-foreground line-clamp-1 italic text-xs mt-0.5">
-                                "{task.latestUpdate.content?.replace(/\[audio:.*?\]/, '').trim()}"
+                              <span className="text-muted-foreground line-clamp-1 italic text-xs mt-0.5 flex items-center gap-1">
+                                {task.latestUpdate.content?.includes('[audio:') && <Mic className="h-3 w-3 flex-shrink-0" />}
+                                {task.latestUpdate.content?.replace(/\[audio:.*?\]/, '').trim() || 'Voice note'}
                               </span>
                             </div>
                           )}
