@@ -81,7 +81,16 @@ export default function TeamPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-sm">{user.full_name || 'Unknown User'}</h3>
-                    <p className="text-xs text-muted-foreground">{user.email || 'No Email'}</p>
+                    <div className="mt-1 space-y-0.5">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="font-semibold text-slate-300">ID:</span> 
+                        {user.email || `${user.full_name?.toLowerCase().replace(/\s+/g, '')}@taskflow.com`}
+                      </p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="font-semibold text-slate-300">Pass:</span> 
+                        123456
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
