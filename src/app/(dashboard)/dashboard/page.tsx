@@ -10,6 +10,7 @@ import { Task, User } from '@/types/task'
 import { createClient } from '@supabase/supabase-js'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
+import { useUIStore } from '@/hooks/use-ui-store'
 
 const mockVelocity = [
   { sprint: 'Sprint 1', completed: 34, committed: 40, velocity: 34 },
@@ -28,8 +29,10 @@ export default function DashboardPage() {
     setUserId(localStorage.getItem('userId') || '')
   }, [])
 
+  const { refreshCount } = useUIStore()
+
   const { data: { tasks = [], users = [] } = {}, isLoading } = useQuery({
-    queryKey: ['dashboard_tasks'],
+    queryKey: ['dashboard_tasks', refreshCount],
     queryFn: async () => {
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,7 +59,7 @@ export default function DashboardPage() {
           title: t.title,
           description: t.description || '',
           status: t.status || 'todo',
-          priority: t.priority === 1 ? 'high' : t.priority === 2 ? 'medium' : 'low',
+          priority: (() => { const p = Number(t.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
           projectId: t.project_id || '1',
           assigneeId: t.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === t.assignee_id),
