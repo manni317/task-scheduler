@@ -16,7 +16,7 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUIStore } from '@/hooks/use-ui-store'
 
 const mainNavigation = [
@@ -43,6 +43,17 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
   const toggleSection = (section: string) => {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
+
+  const [userEmail, setUserEmail] = useState('user@example.com')
+  const [userName, setUserName] = useState('User Name')
+
+  useEffect(() => {
+    const email = localStorage.getItem('userEmail')
+    if (email) {
+      setUserEmail(email)
+      setUserName(email.split('@')[0])
+    }
+  }, [])
 
   return (
     <aside
@@ -174,17 +185,17 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
           {isOpen ? (
             <div className="flex items-center gap-3 px-2">
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-medium">U</span>
+                <span className="text-sm font-medium uppercase">{userName.charAt(0)}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">User Name</p>
-                <p className="text-xs text-muted-foreground truncate">user@example.com</p>
+                <p className="text-sm font-medium truncate capitalize">{userName}</p>
+                <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-center">
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-medium">U</span>
+                <span className="text-sm font-medium uppercase">{userName.charAt(0)}</span>
               </div>
             </div>
           )}

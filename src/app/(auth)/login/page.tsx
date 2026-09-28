@@ -16,6 +16,8 @@ export default function LoginPage() {
     setIsLoading(true)
     
     // AUTH BYPASSED FOR NOW: Instantly go to dashboard
+    const email = e.currentTarget.email.value;
+    localStorage.setItem('userEmail', email);
     toast.success('Auth bypassed! Taking you to dashboard...')
     setTimeout(() => {
       router.push('/dashboard')

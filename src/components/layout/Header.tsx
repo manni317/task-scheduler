@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,17 @@ export function Header() {
   const { theme, setTheme } = useTheme()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+
+  const [userEmail, setUserEmail] = useState('user@example.com')
+  const [userName, setUserName] = useState('User Name')
+
+  useEffect(() => {
+    const email = localStorage.getItem('userEmail')
+    if (email) {
+      setUserEmail(email)
+      setUserName(email.split('@')[0])
+    }
+  }, [])
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -95,16 +106,16 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src="/avatar.png" alt="User" />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarImage src="/avatar.png" alt={userName} />
+                  <AvatarFallback className="uppercase">{userName.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">User Name</p>
-                  <p className="text-xs leading-none text-muted-foreground">user@example.com</p>
+                  <p className="text-sm font-medium leading-none capitalize">{userName}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{userEmail}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -130,6 +141,7 @@ export function Header() {
                       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
                     )
                     await supabase.auth.signOut()
+                    localStorage.removeItem('userEmail')
                     window.location.href = '/login'
                   } catch (error) {
                     console.error('Logout failed:', error)
