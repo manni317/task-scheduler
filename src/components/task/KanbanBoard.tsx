@@ -38,7 +38,7 @@ interface KanbanColumnProps {
 
 function KanbanColumn({ status, title, tasks, onTaskClick, onTaskDragStart, onAddTask, onTaskStatusChange }: KanbanColumnProps) {
   return (
-    <div className="flex flex-col min-w-[280px] max-w-[320px] flex-shrink-0">
+    <div className="flex flex-col min-w-[220px] flex-1">
       <div className="flex items-center justify-between px-3 py-2">
         <h3 className="font-semibold text-sm text-muted-foreground">{title}</h3>
         <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
