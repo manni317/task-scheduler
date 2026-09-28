@@ -3,105 +3,6 @@
 import { useParams } from 'next/navigation'
 import { TaskDetail } from '@/components/task/TaskDetail'
 import { Task, User } from '@/types/task'
-
-const mockUsers: User[] = [
-  { id: '1', name: 'Alice Johnson', email: 'alice@example.com', avatar: '', role: 'admin' },
-  { id: '2', name: 'Bob Smith', email: 'bob@example.com', avatar: '', role: 'member' },
-  { id: '3', name: 'Carol Williams', email: 'carol@example.com', avatar: '', role: 'member' },
-]
-
-const mockTask: Task = {
-  id: '1',
-  title: 'Design new dashboard layout',
-  description: 'Create wireframes and mockups for the new dashboard. Need to consider responsive design for mobile, tablet, and desktop.',
-  status: 'in_progress',
-  priority: 'high',
-  projectId: '1',
-  assigneeId: '1',
-  assignee: mockUsers[0],
-  reporterId: '2',
-  reporter: mockUsers[1],
-  dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-  startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-  estimatedHours: 8,
-  actualHours: 4.5,
-  tags: ['design', 'ui', 'dashboard'],
-  checklistItems: [
-    { id: '1', title: 'Wireframes', completed: true, order: 0 },
-    { id: '2', title: 'Mockups', completed: false, order: 1 },
-    { id: '3', title: 'Review with team', completed: false, order: 2 },
-    { id: '4', title: 'Final revisions', completed: false, order: 3 },
-  ],
-  comments: [
-    {
-      id: '1',
-      taskId: '1',
-      userId: '2',
-      user: mockUsers[1],
-      content: 'Started working on the wireframes. Will share initial concepts by EOD.',
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: '2',
-      taskId: '1',
-      userId: '1',
-      user: mockUsers[0],
-      content: 'Wireframes look good! Moving to mockups now.',
-      createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    },
-  ],
-  commentsCount: 2,
-  attachments: [],
-  timeEntries: [
-    {
-      id: '1',
-      taskId: '1',
-      userId: '1',
-      user: mockUsers[0],
-      startTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      endTime: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000),
-      duration: 120,
-      description: 'Created initial wireframes',
-    },
-    {
-      id: '2',
-      taskId: '1',
-      userId: '1',
-      user: mockUsers[0],
-      startTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      endTime: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000 + 2.5 * 60 * 60 * 1000),
-      duration: 150,
-      description: 'Designed mockups',
-    },
-  ],
-  dependencies: [],
-  activityLog: [
-    {
-      id: '1',
-      taskId: '1',
-      userId: '1',
-      user: mockUsers[0],
-      action: 'created',
-      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-    },
-    {
-      id: '2',
-      taskId: '1',
-      userId: '1',
-      user: mockUsers[0],
-      action: 'updated',
-      field: 'status',
-      oldValue: 'todo',
-      newValue: 'in_progress',
-      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    },
-  ],
-  order: 0,
-  isCompleted: false,
-  createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-  updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-}
-
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@supabase/supabase-js'
 
@@ -139,7 +40,7 @@ export default function TaskDetailPage() {
           title: taskData.title,
           description: taskData.description || '',
           status: taskData.status || 'todo',
-          priority: taskData.priority || 'medium',
+          priority: (() => { const p = Number(taskData.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
           projectId: taskData.project_id || null,
           assigneeId: taskData.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === taskData.assignee_id),
@@ -167,7 +68,7 @@ export default function TaskDetailPage() {
           updatedAt: new Date(taskData.updated_at || Date.now())
         }
       } else {
-        mappedTask = mockTask
+        mappedTask = null
       }
       
       return { task: mappedTask, users: mappedUsers.length > 0 ? mappedUsers : mockUsers, projects: projectsData || [] }

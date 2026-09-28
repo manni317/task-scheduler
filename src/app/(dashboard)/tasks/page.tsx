@@ -65,7 +65,7 @@ export default function TasksPage() {
           title: t.title,
           description: t.description || '',
           status: t.status || 'todo',
-          priority: t.priority || 'medium',
+          priority: (() => { const p = Number(t.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
           projectId: t.project_id || null,
           assigneeId: t.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === t.assignee_id),
