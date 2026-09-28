@@ -47,7 +47,7 @@ export default function TasksPage() {
       const [{ data: profilesData }, { data: projectsData }, { data: tasksData }] = await Promise.all([
         supabase.from('profiles').select('*'),
         supabase.from('projects').select('*'),
-        supabase.from('tasks').select('*, sub_tasks(*)')
+        supabase.from('tasks').select('*, sub_tasks(*), task_updates(*, profiles(*))')
       ])
 
       const mappedUsers = (profilesData || []).map((u: any) => ({
@@ -58,9 +58,14 @@ export default function TasksPage() {
         role: u.role || 'member'
       }))
       
-      let mappedTasks: Task[] = []
+      let mappedTasks: any[] = []
       if (tasksData && tasksData.length > 0) {
-        mappedTasks = tasksData.map((t: any) => ({
+        mappedTasks = tasksData.map((t: any) => {
+          // Find the latest update from a non-admin (doer)
+          const nonAdminUpdates = t.task_updates?.filter((upd: any) => upd.profiles?.role !== 'admin' && upd.profiles?.role !== 'manager') || []
+          const latestUpdate = nonAdminUpdates.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+
+          return {
           id: t.id,
           title: t.title,
           description: t.description || '',
@@ -89,8 +94,14 @@ export default function TasksPage() {
           order: t.order_index || 0,
           isCompleted: t.status === 'done',
           createdAt: new Date(t.created_at || Date.now()),
-          updatedAt: new Date(t.updated_at || Date.now())
-        }))
+          updatedAt: new Date(t.updated_at || Date.now()),
+          latestUpdate: latestUpdate ? {
+            content: latestUpdate.content,
+            user: latestUpdate.profiles?.full_name,
+            createdAt: latestUpdate.created_at
+          } : null
+        }
+      })
       }
       return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [] }
     }
@@ -312,6 +323,18 @@ export default function TasksPage() {
                                   {tag}
                                 </span>
                               ))}
+                            </div>
+                          )}
+                          
+                          {/* Latest Update */}
+                          {task.latestUpdate && (
+                            <div className="mt-3 p-2 rounded-lg bg-muted/40 border border-muted-foreground/10 text-sm flex items-start gap-2">
+                              <span className="font-medium text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded flex-shrink-0">
+                                {task.latestUpdate.user}
+                              </span>
+                              <span className="text-muted-foreground line-clamp-1 italic text-xs mt-0.5">
+                                "{task.latestUpdate.content?.replace(/\[audio:.*?\]/, '').trim()}"
+                              </span>
                             </div>
                           )}
                         </div>
