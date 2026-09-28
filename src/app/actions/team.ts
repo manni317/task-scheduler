@@ -43,6 +43,7 @@ export async function createEmployee(formData: FormData) {
   
   const { error: upsertError } = await supabaseAdmin.from('profiles').upsert({
     id: userId,
+    email: email,
     full_name: fullName,
     role: role,
     created_at: new Date().toISOString(),

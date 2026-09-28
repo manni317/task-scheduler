@@ -159,11 +159,11 @@ export default function TeamPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Email (Login ID)</label>
-                <input required name="email" defaultValue={editUser?.email || ''} type="email" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder="rahul@company.com" />
+                <input required name="email" defaultValue={editUser?.email || (editUser ? `${editUser.full_name?.toLowerCase().replace(/\s+/g, '')}@taskflow.com` : '')} type="email" autoComplete="off" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder="rahul@company.com" />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Password {editUser && '(Leave blank to keep same)'}</label>
-                <input required={!editUser} name="password" type="password" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder={editUser ? "Enter new password" : "Set a password for them"} minLength={6} />
+                <input required={!editUser} name="password" type="password" autoComplete="new-password" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" placeholder={editUser ? "Enter new password" : "Set a password for them"} minLength={6} />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Role</label>
