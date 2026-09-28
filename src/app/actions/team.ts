@@ -51,7 +51,7 @@ export async function createEmployee(formData: FormData) {
 
   if (upsertError) {
     console.error('Upsert profile error:', upsertError)
-    throw new Error(upsertError.message)
+    return { error: upsertError.message }
   }
 
   revalidatePath('/team')
@@ -82,7 +82,8 @@ export async function updateEmployee(formData: FormData) {
   }).eq('id', id)
 
   if (upsertError) {
-    throw new Error(upsertError.message)
+    console.error('Upsert profile error:', upsertError)
+    return { error: upsertError.message }
   }
 
   // If password is provided, we should ideally update auth, but for demo we just update profile.

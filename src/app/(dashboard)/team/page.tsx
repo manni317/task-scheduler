@@ -41,10 +41,12 @@ export default function TeamPage() {
       const formData = new FormData(e.currentTarget)
       if (editUser) {
         formData.append('id', editUser.id)
-        await updateEmployee(formData)
+        const res = await updateEmployee(formData)
+        if (res.error) throw new Error(res.error)
         toast.success('Employee updated successfully!')
       } else {
-        await createEmployee(formData)
+        const res = await createEmployee(formData)
+        if (res.error) throw new Error(res.error)
         toast.success('Employee created successfully!')
       }
       setIsModalOpen(false)
