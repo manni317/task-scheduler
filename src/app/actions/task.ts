@@ -60,7 +60,7 @@ export async function createTask(formData: FormData) {
       assignee_id: assigneeId && assigneeId !== 'unassigned' ? assigneeId : null,
       reporter_id: user.id,
       status: status,
-      priority: priorityStr,
+      priority: priorityNum,
       due_date: dueDate || null,
       tags: tags,
       task_key: `TSK-${Math.floor(Math.random() * 10000)}`
