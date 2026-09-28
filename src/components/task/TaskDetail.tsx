@@ -43,10 +43,20 @@ export function TaskDetail({
   const [newComment, setNewComment] = useState('')
   const [newTimeEntry, setNewTimeEntry] = useState({ description: '', hours: 0 })
   const [userRole, setUserRole] = useState('manager')
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   useEffect(() => {
     setUserRole(localStorage.getItem('userRole') || 'manager')
   }, [])
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    setIsUpdatingStatus(true)
+    try {
+      await onUpdate({ ...task, status: newStatus as any })
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
   const isOverdueTask = dueDate && isPast(dueDate) && !isToday(dueDate)
@@ -136,49 +146,106 @@ export function TaskDetail({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm">
-                <Edit className="h-4 w-4 mr-1" /> Edit
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>{userRole === 'manager' ? 'Edit Task' : 'Update Task Status'}</DialogTitle>
-              </DialogHeader>
-              <TaskForm
-                initialData={task}
-                users={users}
-                projects={projects}
-                onSubmit={async (data) => {
-                  await onUpdate(data)
-                  setEditDialogOpen(false)
-                }}
-                onCancel={() => setEditDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
-                <Edit className="h-4 w-4 mr-2" /> Edit
-              </DropdownMenuItem>
-              {userRole === 'manager' && (
+          {/* MANAGER: Edit button + Approve/Reject on review tasks */}
+          {userRole === 'manager' && (
+            <>
+              {task.status === 'review' && (
                 <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-500 hover:text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    disabled={isUpdatingStatus}
+                    onClick={() => handleStatusUpdate('in_progress')}
+                  >
+                    ✗ Reject (Needs Work)
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    disabled={isUpdatingStatus}
+                    onClick={() => handleStatusUpdate('done')}
+                  >
+                    ✓ Approve (Done)
+                  </Button>
+                </>
+              )}
+              <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4 mr-1" /> Edit
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Edit Task</DialogTitle>
+                  </DialogHeader>
+                  <TaskForm
+                    initialData={task}
+                    users={users}
+                    projects={projects}
+                    onSubmit={async (data) => {
+                      await onUpdate(data)
+                      setEditDialogOpen(false)
+                    }}
+                    onCancel={() => setEditDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setEditDialogOpen(true)}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-red-500" onClick={() => onDelete(task.id)}>
                     <Trash2 className="h-4 w-4 mr-2" /> Delete
                   </DropdownMenuItem>
-                </>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+
+          {/* DOER: Status update buttons only */}
+          {userRole === 'doer' && (
+            <div className="flex items-center gap-2">
+              {task.status === 'todo' && (
+                <Button
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  disabled={isUpdatingStatus}
+                  onClick={() => handleStatusUpdate('in_progress')}
+                >
+                  ▶ Start Working
+                </Button>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              {task.status === 'in_progress' && (
+                <Button
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  disabled={isUpdatingStatus}
+                  onClick={() => handleStatusUpdate('review')}
+                >
+                  ✓ Submit for Review
+                </Button>
+              )}
+              {task.status === 'review' && (
+                <span className="text-sm text-purple-500 font-medium px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  ⏳ Awaiting Manager Review
+                </span>
+              )}
+              {task.status === 'done' && (
+                <span className="text-sm text-green-600 font-medium px-3 py-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                  ✅ Approved & Done
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

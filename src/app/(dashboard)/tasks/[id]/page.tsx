@@ -184,26 +184,25 @@ export default function TaskDetailPage() {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
       
-      // Update task fields including tags
-      if (data.title) {
-        await supabase.from('tasks').update({
-          title: data.title,
-          description: data.description,
-          tags: data.tags,
-          priority: data.priority,
-          status: data.status,
-          project_id: data.projectId,
-          assignee_id: data.assigneeId === 'unassigned' || !data.assigneeId ? null : data.assigneeId,
-          due_date: data.dueDate?.toISOString(),
-        }).eq('id', taskId)
+      // Build update object - always update status if provided
+      const updateObj: any = {
+        updated_at: new Date().toISOString(),
       }
+      if (data.status) updateObj.status = data.status
+      if (data.title) updateObj.title = data.title
+      if (data.description !== undefined) updateObj.description = data.description
+      if (data.tags) updateObj.tags = data.tags
+      if (data.priority) updateObj.priority = data.priority
+      if (data.projectId !== undefined) updateObj.project_id = data.projectId
+      if (data.assigneeId !== undefined) updateObj.assignee_id = data.assigneeId === 'unassigned' ? null : data.assigneeId
+      if (data.dueDate !== undefined) updateObj.due_date = data.dueDate?.toISOString() || null
 
-      // Sync checklist items
-      if (data.checklistItems) {
-        // Delete old sub_tasks
+      await supabase.from('tasks').update(updateObj).eq('id', taskId)
+
+      // Sync checklist items if provided
+      if (data.checklistItems && data.title) {
         await supabase.from('sub_tasks').delete().eq('task_id', taskId)
         
-        // Insert new sub_tasks
         if (data.checklistItems.length > 0) {
           const subTasksToInsert = data.checklistItems.map((item: any, index: number) => ({
             task_id: taskId,
