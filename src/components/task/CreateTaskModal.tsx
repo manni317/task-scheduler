@@ -14,7 +14,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarPicker } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { useUIStore } from '@/hooks/use-ui-store'
-import { createClient } from '@supabase/supabase-js'
 
 interface CreateTaskModalProps {
   isOpen: boolean
