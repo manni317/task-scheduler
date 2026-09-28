@@ -22,6 +22,7 @@ export default function ProjectDetailPage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [userRole, setUserRole] = useState('manager')
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,6 +30,8 @@ export default function ProjectDetailPage() {
   )
 
   useEffect(() => {
+    const role = localStorage.getItem('userRole') || 'manager'
+    setUserRole(role)
     async function fetchData() {
       setIsLoading(true)
       try {
@@ -118,10 +121,12 @@ export default function ProjectDetailPage() {
                 <h1 className="text-2xl font-bold">{project.name}</h1>
                 <p className="text-muted-foreground">{project.description}</p>
               </div>
-              <Button onClick={() => openCreateTaskModal({ projectId })} className="gap-2 bg-primary">
-                <Plus className="h-4 w-4" />
-                New Task
-              </Button>
+              {userRole !== 'doer' && (
+                <Button onClick={() => openCreateTaskModal({ projectId })} className="gap-2 bg-primary">
+                  <Plus className="h-4 w-4" />
+                  New Task
+                </Button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-mono rounded-full">

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -23,6 +24,11 @@ const navigation = [
 export function BottomNav() {
   const pathname = usePathname()
   const { openCreateTaskModal } = useUIStore()
+  const [userRole, setUserRole] = useState('manager')
+
+  useEffect(() => {
+    setUserRole(localStorage.getItem('userRole') || 'manager')
+  }, [])
 
   return (
     <nav
@@ -53,15 +59,17 @@ export function BottomNav() {
             </Link>
           )
         })}
-        <div className="relative -top-3">
-          <button
-            onClick={openCreateTaskModal}
-            className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-indigo-500 text-primary-foreground shadow-lg shadow-primary/30 transition-transform duration-300 hover:scale-110 hover:shadow-primary/50"
-            aria-label="Create new project or task"
-          >
-            <Plus className="h-6 w-6" />
-          </button>
-        </div>
+        {userRole !== 'doer' && (
+          <div className="relative -top-3">
+            <button
+              onClick={openCreateTaskModal}
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-indigo-500 text-primary-foreground shadow-lg shadow-primary/30 transition-transform duration-300 hover:scale-110 hover:shadow-primary/50"
+              aria-label="Create new project or task"
+            >
+              <Plus className="h-6 w-6" />
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   )

@@ -12,6 +12,8 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [userRole, setUserRole] = useState('manager')
+  const [userId, setUserId] = useState('')
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,10 +21,14 @@ export default function ProjectsPage() {
   )
 
   useEffect(() => {
-    fetchData()
+    const role = localStorage.getItem('userRole') || 'manager'
+    const id = localStorage.getItem('userId') || ''
+    setUserRole(role)
+    setUserId(id)
+    fetchData(role, id)
   }, [])
 
-  const fetchData = async () => {
+  const fetchData = async (role: string, currentUserId: string) => {
     try {
       setIsLoading(true)
       const { data: usersData, error: usersError } = await supabase.from('profiles').select('*')
@@ -37,8 +43,14 @@ export default function ProjectsPage() {
       }))
       setUsers(mappedUsers)
 
-      const { data: projectsData, error: projError } = await supabase.from('projects').select('*')
+      let { data: projectsData, error: projError } = await supabase.from('projects').select('*')
       if (projError) throw projError
+
+      if (role === 'doer' && currentUserId) {
+        const { data: userTasks } = await supabase.from('tasks').select('project_id').eq('assignee_id', currentUserId)
+        const allowedProjectIds = new Set((userTasks || []).map(t => t.project_id))
+        projectsData = (projectsData || []).filter(p => allowedProjectIds.has(p.id))
+      }
 
       const mappedProjects = (projectsData || []).map((p: any) => ({
         id: p.id,
@@ -76,7 +88,7 @@ export default function ProjectsPage() {
       if (error) throw error
       
       toast.success('Project created successfully!')
-      fetchData()
+      fetchData(userRole, userId)
     } catch (error: any) {
       console.error(error)
       toast.error('Failed to create project: ' + error.message)
@@ -92,7 +104,7 @@ export default function ProjectsPage() {
       
       if (error) throw error
       toast.success('Project updated!')
-      fetchData()
+      fetchData(userRole, userId)
     } catch (error: any) {
       console.error(error)
       toast.error('Failed to update project')
@@ -104,7 +116,7 @@ export default function ProjectsPage() {
       const { error } = await supabase.from('projects').delete().eq('id', id)
       if (error) throw error
       toast.success('Project deleted!')
-      fetchData()
+      fetchData(userRole, userId)
     } catch (error: any) {
       console.error(error)
       toast.error('Failed to delete project')
@@ -122,6 +134,7 @@ export default function ProjectsPage() {
         <div className="flex-1 flex items-center justify-center">Loading projects...</div>
       ) : (
         <ProjectList
+          userRole={userRole}
           projects={projects}
           users={users}
           onProjectClick={(project) => router.push(`/projects/${project.id}`)}

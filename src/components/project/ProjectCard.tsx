@@ -12,13 +12,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface ProjectCardProps {
   project: Project
+  userRole?: string
   onClick: () => void
   onEdit?: () => void
   onDelete?: () => void
   onArchive?: () => void
 }
-
-export function ProjectCard({ project, onClick, onEdit, onDelete, onArchive }: ProjectCardProps) {
+export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, onDelete, onArchive }: ProjectCardProps) {
   const totalTasks = project.tasks?.length || 0
   const completedTasks = project.tasks?.filter(t => t.isCompleted).length || 0
   const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
@@ -43,33 +43,35 @@ export function ProjectCard({ project, onClick, onEdit, onDelete, onArchive }: P
               <span className="text-sm text-muted-foreground font-mono">{project.key}</span>
             </div>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {onEdit && (
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-                  <Edit className="h-4 w-4 mr-2" /> Edit
-                </DropdownMenuItem>
-              )}
-              {onArchive && (
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onArchive(); }}>
-                  <Archive className="h-4 w-4 mr-2" /> {project.isArchived ? 'Unarchive' : 'Archive'}
-                </DropdownMenuItem>
-              )}
-              {onDelete && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-500" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
-                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+          {userRole !== 'doer' && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onEdit && (
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit
                   </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                )}
+                {onArchive && (
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onArchive(); }}>
+                    <Archive className="h-4 w-4 mr-2" /> {project.isArchived ? 'Unarchive' : 'Archive'}
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-red-500" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+                      <Trash2 className="h-4 w-4 mr-2" /> Delete
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       

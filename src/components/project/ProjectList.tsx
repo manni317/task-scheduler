@@ -12,6 +12,7 @@ import { Plus, Search, Filter, Grid, List } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ProjectListProps {
+  userRole?: string
   projects: Project[]
   users: User[]
   onProjectClick: (project: Project) => void
@@ -22,6 +23,7 @@ interface ProjectListProps {
 }
 
 export function ProjectList({ 
+  userRole = 'manager',
   projects, 
   users, 
   onProjectClick, 
@@ -108,7 +110,7 @@ export function ProjectList({
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button disabled={userRole === 'doer'} className={userRole === 'doer' ? 'hidden' : ''}>
                 <Plus className="h-4 w-4 mr-2" /> New Project
               </Button>
             </DialogTrigger>
@@ -133,6 +135,7 @@ export function ProjectList({
             <ProjectCard
               key={project.id}
               project={project}
+              userRole={userRole}
               onClick={() => onProjectClick(project)}
               onEdit={() => handleEditClick(project)}
               onDelete={() => handleDeleteClick(project.id)}
@@ -166,14 +169,16 @@ export function ProjectList({
                   <span>{project.tasks?.length || 0} tasks</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); handleEditClick(project); }}>
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="text-red-500" onClick={e => { e.stopPropagation(); handleDeleteClick(project.id); }}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+              {userRole !== 'doer' && (
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); handleEditClick(project); }}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-red-500" onClick={e => { e.stopPropagation(); handleDeleteClick(project.id); }}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </div>
