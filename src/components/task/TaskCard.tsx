@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Calendar, Clock, Flag, User, MessageSquare, Paperclip, GitBranch } from 'lucide-react'
+import { Calendar, Clock, Flag, User, MessageSquare, Paperclip, GitBranch, Mic } from 'lucide-react'
 import { format, isPast, isToday, isTomorrow } from 'date-fns'
 import { Task } from '@/types/task'
 
@@ -212,6 +212,24 @@ export function TaskCard({
               </span>
             )}
           </div>
+          
+          {task.latestUpdate && (
+            <div className="mt-4 pt-3 border-t">
+              <div className="text-xs font-medium text-primary mb-1 flex items-center justify-between">
+                <span>Latest Update by {task.latestUpdate.user}</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground text-xs mt-0.5" onClick={e => e.stopPropagation()}>
+                {task.latestUpdate.audioUrl && (
+                  <div className="flex items-center flex-shrink-0">
+                    <audio src={task.latestUpdate.audioUrl} controls className="h-7 w-48 max-w-[200px]" />
+                  </div>
+                )}
+                <span className="line-clamp-2 italic">
+                  {task.latestUpdate.content?.replace(/\[audio:.*?\]/, '').trim() || (!task.latestUpdate.audioUrl ? 'Voice note' : '')}
+                </span>
+              </div>
+            </div>
+          )}
           
           {task.status === 'review' && onStatusChange && (
             <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">

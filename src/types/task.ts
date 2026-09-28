@@ -91,6 +91,12 @@ export interface Task {
   completedAt?: Date
   createdAt: Date
   updatedAt: Date
+  latestUpdate?: {
+    content?: string
+    user?: string
+    createdAt?: string
+    audioUrl?: string | null
+  }
 }
 
 export interface Project {
