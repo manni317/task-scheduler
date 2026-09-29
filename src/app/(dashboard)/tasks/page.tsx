@@ -108,7 +108,7 @@ export default function TasksPage() {
     }
   })
 
-  const [activeTab, setActiveTab] = useState<'board' | 'list' | 'calendar'>('board')
+  const [activeTab, setActiveTab] = useState<'board' | 'list' | 'calendar'>('list')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')

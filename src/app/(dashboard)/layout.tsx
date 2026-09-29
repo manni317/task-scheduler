@@ -23,7 +23,7 @@ export default function DashboardLayout({
 
       <div
         className={cn(
-          "flex-1 flex flex-col transition-all duration-200 w-full min-h-screen",
+          "flex-1 flex flex-col transition-all duration-200 w-full min-w-0 min-h-screen",
           sidebarOpen ? "md:pl-64" : "md:pl-16"
         )}
       >
@@ -31,7 +31,7 @@ export default function DashboardLayout({
 
 
         {/* Page content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 pb-24 md:pb-6 overflow-auto">
           {children}
         </main>
 
