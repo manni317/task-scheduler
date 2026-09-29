@@ -92,10 +92,47 @@ export function Header() {
             )}
           </div>
 
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative cursor-pointer">
+                <Bell className="h-5 w-5" />
+                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="max-h-[300px] overflow-y-auto">
+                <DropdownMenuItem className="cursor-pointer p-3 flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
+                    <span className="font-medium text-sm">New Task Assigned</span>
+                    <span className="text-xs text-muted-foreground ml-auto">2m ago</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-4 line-clamp-1">Gaurav assigned you to "Update Landing Page"</p>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer p-3 flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
+                    <span className="font-medium text-sm">Task Completed</span>
+                    <span className="text-xs text-muted-foreground ml-auto">1h ago</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground pl-4 line-clamp-1">"Setup Database" has been moved to Done</p>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer p-3 flex flex-col items-start gap-1 opacity-60">
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="font-medium text-sm">Welcome to TaskFlow</span>
+                    <span className="text-xs text-muted-foreground ml-auto">1d ago</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">Your account has been successfully created. Start by creating a project!</p>
+                </DropdownMenuItem>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer justify-center text-primary font-medium">
+                Mark all as read
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
