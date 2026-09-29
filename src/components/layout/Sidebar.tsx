@@ -63,7 +63,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-50 h-full border-r bg-card transition-all duration-200',
+        'hidden md:flex flex-col fixed left-0 top-0 z-50 h-full border-r bg-card transition-all duration-200',
         isOpen ? 'w-64' : 'w-16'
       )}
       aria-label="Sidebar"

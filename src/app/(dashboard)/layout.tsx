@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { CreateTaskModal } from '@/components/task/CreateTaskModal'
 import { useUIStore } from '@/hooks/use-ui-store'
+import { cn } from '@/lib/utils'
 
 export default function DashboardLayout({
   children,
@@ -21,8 +22,10 @@ export default function DashboardLayout({
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div
-        className="flex-1 flex flex-col transition-all duration-200 w-full"
-        style={{ paddingLeft: sidebarOpen ? '16rem' : '4rem' }}
+        className={cn(
+          "flex-1 flex flex-col transition-all duration-200 w-full min-h-screen",
+          sidebarOpen ? "md:pl-64" : "md:pl-16"
+        )}
       >
         <Header />
 

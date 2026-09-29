@@ -51,13 +51,13 @@ export default function SettingsPage() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="profile">Profile</TabsTrigger>
-              <TabsTrigger value="notifications">Notifications</TabsTrigger>
-              <TabsTrigger value="appearance">Appearance</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              <TabsTrigger value="preferences">Preferences</TabsTrigger>
-              <TabsTrigger value="danger">Danger Zone</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 h-auto p-1 gap-1">
+              <TabsTrigger value="profile" className="py-2">Profile</TabsTrigger>
+              <TabsTrigger value="notifications" className="py-2">Notifications</TabsTrigger>
+              <TabsTrigger value="appearance" className="py-2">Appearance</TabsTrigger>
+              <TabsTrigger value="security" className="py-2">Security</TabsTrigger>
+              <TabsTrigger value="preferences" className="py-2">Preferences</TabsTrigger>
+              <TabsTrigger value="danger" className="py-2">Danger</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile" className="space-y-6">
