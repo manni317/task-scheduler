@@ -210,10 +210,10 @@ export default function TasksPage() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-            <TabsList className="mb-4">
-              <TabsTrigger value="board">Kanban Board</TabsTrigger>
-              <TabsTrigger value="list">List View</TabsTrigger>
-              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsList className="mb-4 flex flex-wrap h-auto w-full sm:w-auto">
+              <TabsTrigger value="board" className="flex-1 sm:flex-none py-2">Kanban Board</TabsTrigger>
+              <TabsTrigger value="list" className="flex-1 sm:flex-none py-2">List View</TabsTrigger>
+              <TabsTrigger value="calendar" className="flex-1 sm:flex-none py-2">Calendar</TabsTrigger>
             </TabsList>
 
             <TabsContent value="board" className="min-h-[600px]">
@@ -258,9 +258,9 @@ export default function TasksPage() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                             {/* Left: title + description */}
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 mb-2 sm:mb-0">
                               <h3 className="font-semibold group-hover:text-primary transition-colors truncate">
                                 {task.title}
                               </h3>
@@ -271,7 +271,7 @@ export default function TasksPage() {
                               )}
                             </div>
                             {/* Right: metadata */}
-                            <div className="flex items-center gap-3 flex-shrink-0 text-sm">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 flex-shrink-0 text-sm">
                               {/* Priority */}
                               <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium',
                                 task.priority === 'urgent' && 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
