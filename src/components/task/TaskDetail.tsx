@@ -258,10 +258,10 @@ export function TaskDetail({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 p-4 border-b">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-bold truncate">{task.title}</h1>
+      <div className="flex flex-col lg:flex-row items-start justify-between gap-4 p-4 border-b">
+        <div className="flex-1 min-w-0 w-full">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <h1 className="text-xl md:text-2xl font-bold w-full lg:w-auto">{task.title}</h1>
             <Badge variant="outline" className={priorityColors[task.priority] || ''}>
               {task.priority}
             </Badge>
@@ -288,7 +288,7 @@ export function TaskDetail({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap justify-end">
+        <div className="flex items-center gap-2 flex-wrap justify-start lg:justify-end w-full lg:w-auto mt-2 lg:mt-0">
           {/* MANAGER ACTIONS */}
           {userRole === 'manager' && (
             <>

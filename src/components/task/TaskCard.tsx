@@ -16,6 +16,7 @@ interface TaskCardProps {
   onStatusChange?: (taskId: string, newStatus: TaskStatus) => void
   draggable?: boolean
   compact?: boolean
+  userRole?: string
 }
 
 import { useState, useEffect } from 'react'
@@ -26,12 +27,15 @@ export function TaskCard({
   onDragStart, 
   onStatusChange,
   draggable = true, 
-  compact = false 
+  compact = false,
+  userRole: propUserRole
 }: TaskCardProps) {
-  const [userRole, setUserRole] = useState('manager')
+  const [userRole, setUserRole] = useState(propUserRole || 'doer')
   useEffect(() => {
-    setUserRole(localStorage.getItem('userRole') || 'manager')
-  }, [])
+    if (!propUserRole) {
+      setUserRole(localStorage.getItem('userRole') || 'doer')
+    }
+  }, [propUserRole])
 
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
   const isOverdueTask = dueDate && isPast(dueDate) && !isToday(dueDate)
