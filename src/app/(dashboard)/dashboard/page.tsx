@@ -151,20 +151,20 @@ export default function DashboardPage() {
 
       {userRole === 'manager' ? (
         <>
-          <div className="grid gap-6 lg:grid-cols-2">
-            <UpcomingDeadlines tasks={displayTasks} users={users} />
-            <TeamVelocityChart data={mockVelocity} />
+          <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
+            <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>
+            <div className="min-w-0"><TeamVelocityChart data={mockVelocity} /></div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <OverdueTable tasks={displayTasks} users={users} />
-            <EmployeePerformanceTable data={performanceData} users={users} />
+          <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
+            <div className="min-w-0"><OverdueTable tasks={displayTasks} users={users} /></div>
+            <div className="min-w-0"><EmployeePerformanceTable data={performanceData} users={users} /></div>
           </div>
         </>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <UpcomingDeadlines tasks={displayTasks} users={users} />
-          <OverdueTable tasks={displayTasks} users={users} />
+        <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
+          <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>
+          <div className="min-w-0"><OverdueTable tasks={displayTasks} users={users} /></div>
         </div>
       )}
     </div>

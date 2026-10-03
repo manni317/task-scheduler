@@ -17,13 +17,13 @@ export default function DashboardLayout({
   const { isCreateTaskModalOpen, closeCreateTaskModal } = useUIStore()
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex w-full max-w-[100vw] overflow-x-hidden">
       {/* Sidebar */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div
         className={cn(
-          "flex-1 flex flex-col transition-all duration-200 w-full min-w-0 min-h-screen",
+          "flex-1 flex flex-col transition-all duration-200 w-full min-w-0 min-h-screen overflow-x-hidden",
           sidebarOpen ? "md:pl-64" : "md:pl-16"
         )}
       >
@@ -31,7 +31,7 @@ export default function DashboardLayout({
 
 
         {/* Page content */}
-        <main className="flex-1 p-6 pb-24 md:pb-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-x-hidden overflow-y-auto w-full">
           {children}
         </main>
 
