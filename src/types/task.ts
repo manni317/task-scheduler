@@ -97,6 +97,7 @@ export interface Task {
     createdAt?: string
     audioUrl?: string | null
   }
+  rejectionReason?: string
 }
 
 export interface Project {

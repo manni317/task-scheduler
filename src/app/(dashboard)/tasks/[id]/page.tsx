@@ -64,6 +64,7 @@ export default function TaskDetailPage() {
           order: taskData.order_index || 0,
           isCompleted: taskData.status === 'done',
           audioUrl: taskData.audio_url || null,
+          rejectionReason: taskData.rejection_reason || null,
           createdAt: new Date(taskData.created_at || Date.now()),
           updatedAt: new Date(taskData.updated_at || Date.now())
         }
@@ -98,6 +99,7 @@ export default function TaskDetailPage() {
       if (data.projectId !== undefined) updateObj.project_id = data.projectId
       if (data.assigneeId !== undefined) updateObj.assignee_id = data.assigneeId === 'unassigned' ? null : data.assigneeId
       if (data.dueDate !== undefined) updateObj.due_date = data.dueDate?.toISOString() || null
+      if (data.rejectionReason !== undefined) updateObj.rejection_reason = data.rejectionReason
 
       await supabase.from('tasks').update(updateObj).eq('id', taskId)
 

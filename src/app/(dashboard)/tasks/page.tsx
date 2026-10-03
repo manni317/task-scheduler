@@ -100,7 +100,8 @@ export default function TasksPage() {
             user: latestUpdate.profiles?.full_name,
             createdAt: latestUpdate.created_at,
             audioUrl: latestUpdate.content?.match(/\[audio:(.*?)\]/)?.[1] || null
-          } : null
+          } : null,
+          rejectionReason: t.rejection_reason || null
         }
       })
       }

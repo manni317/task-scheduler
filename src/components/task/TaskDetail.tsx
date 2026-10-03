@@ -118,10 +118,13 @@ export function TaskDetail({
     done: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   }
 
-  const handleStatusUpdate = async (newStatus: string, note?: string) => {
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
+
+  const handleStatusUpdate = async (newStatus: string, note?: string, extraUpdateData?: Partial<Task>) => {
     setIsUpdatingStatus(true)
     try {
-      await onUpdate({ ...task, status: newStatus as any })
+      await onUpdate({ ...task, status: newStatus as any, ...extraUpdateData })
       // Save activity log
       if (userId) {
         await supabase.from('task_updates').insert({
@@ -291,13 +294,43 @@ export function TaskDetail({
             <>
               {task.status === 'review' && (
                 <>
-                  <Button size="sm" variant="outline"
-                    className="text-red-500 hover:text-red-600 border-red-300 hover:bg-red-50"
-                    disabled={isUpdatingStatus}
-                    onClick={() => handleStatusUpdate('in_progress', 'Manager rejected. Needs more work.')}
-                  >
-                    ✗ Reject
-                  </Button>
+                  <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline"
+                        className="text-red-500 hover:text-red-600 border-red-300 hover:bg-red-50"
+                        disabled={isUpdatingStatus}
+                      >
+                        ✗ Reject
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Reject Task</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-2">
+                        <p className="text-sm text-muted-foreground">Provide a reason for rejecting this task so the assignee knows what needs to be fixed:</p>
+                        <Textarea
+                          placeholder="e.g. The logo is not properly aligned on mobile screens..."
+                          value={rejectReason}
+                          onChange={e => setRejectReason(e.target.value)}
+                          rows={4}
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
+                          <Button className="bg-red-600 hover:bg-red-700 text-white"
+                            disabled={isUpdatingStatus || !rejectReason.trim()}
+                            onClick={async () => {
+                              await handleStatusUpdate('in_progress', `Manager rejected: ${rejectReason}`, { rejectionReason: rejectReason })
+                              setRejectReason('')
+                              setRejectDialogOpen(false)
+                            }}
+                          >
+                            Confirm Rejection
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                   <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white"
                     disabled={isUpdatingStatus}
                     onClick={() => handleStatusUpdate('done', 'Manager approved. Task completed!')}
@@ -367,7 +400,7 @@ export function TaskDetail({
                           <Button className="bg-purple-600 hover:bg-purple-700 text-white"
                             disabled={isUpdatingStatus}
                             onClick={async () => {
-                              await handleStatusUpdate('review', submitNote || 'Task submitted for review.')
+                              await handleStatusUpdate('review', submitNote || 'Task submitted for review.', { rejectionReason: null as any })
                               setSubmitNote('')
                               setSubmitReviewOpen(false)
                             }}
@@ -394,6 +427,19 @@ export function TaskDetail({
           )}
         </div>
       </div>
+
+      {/* Rejection Banner */}
+      {task.rejectionReason && task.status !== 'review' && task.status !== 'done' && (
+        <div className="mx-4 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex gap-3">
+          <div className="mt-0.5">
+            <X className="h-5 w-5 text-red-500" />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-red-800">Task Rejected by Manager</h4>
+            <p className="text-sm text-red-700 mt-1">{task.rejectionReason}</p>
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       {task.description && (
