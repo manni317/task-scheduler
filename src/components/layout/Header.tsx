@@ -11,6 +11,8 @@ import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown } fr
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { createBrowserClient } from '@supabase/ssr'
+import { toast } from 'sonner'
+import { startOfDay } from 'date-fns'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
@@ -35,6 +37,50 @@ export function Header() {
       setUserEmail(email)
       setUserName(email.split('@')[0])
     }
+
+    // Notification check
+    const checkNotifications = async () => {
+      if (sessionStorage.getItem('notified_today')) return
+      sessionStorage.setItem('notified_today', 'true')
+
+      const role = localStorage.getItem('userRole') || 'manager'
+      const userId = localStorage.getItem('userId')
+
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+
+      const today = startOfDay(new Date()).toISOString()
+
+      try {
+        if (role === 'doer' && userId) {
+          const { count } = await supabase
+            .from('tasks')
+            .select('id', { count: 'exact' })
+            .eq('assignee_id', userId)
+            .gte('created_at', today)
+
+          if (count && count > 0) {
+            setTimeout(() => toast.info(`You have ${count} new task(s) assigned today! 📝`, { duration: 6000 }), 1000)
+          }
+        } else if (role === 'manager' && userId) {
+          const { count } = await supabase
+            .from('task_updates')
+            .select('id', { count: 'exact' })
+            .gte('created_at', today)
+            .neq('user_id', userId)
+          
+          if (count && count > 0) {
+            setTimeout(() => toast.info(`There are ${count} new task updates from your team today! 🔔`, { duration: 6000 }), 1000)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch notifications', err)
+      }
+    }
+
+    checkNotifications()
   }, [])
 
   return (
