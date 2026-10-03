@@ -23,6 +23,7 @@ export default function ProjectDetailPage() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [userRole, setUserRole] = useState('manager')
+  const [userId, setUserId] = useState('')
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,6 +33,7 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     const role = localStorage.getItem('userRole') || 'manager'
     setUserRole(role)
+    setUserId(localStorage.getItem('userId') || '')
     async function fetchData() {
       setIsLoading(true)
       try {
@@ -107,6 +109,8 @@ export default function ProjectDetailPage() {
   if (isLoading) return <div className="h-full flex items-center justify-center">Loading project details...</div>
   if (!project) return <div className="h-full flex items-center justify-center text-red-500">Project not found</div>
 
+  const displayTasks = userRole === 'manager' ? tasks : tasks.filter(t => t.assigneeId === userId)
+
   return (
     <div className="h-full flex flex-col">
           <div className="mb-6">
@@ -117,14 +121,14 @@ export default function ProjectDetailPage() {
               )}>
                 <span className="text-2xl">{project.icon}</span>
               </div>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">{project.name}</h1>
-                <p className="text-muted-foreground">{project.description}</p>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl font-bold truncate">{project.name}</h1>
+                <p className="text-muted-foreground truncate">{project.description}</p>
               </div>
               {userRole !== 'doer' && (
-                <Button onClick={() => openCreateTaskModal({ projectId })} className="gap-2 bg-primary">
+                <Button onClick={() => openCreateTaskModal({ projectId })} className="gap-2 bg-primary whitespace-nowrap">
                   <Plus className="h-4 w-4" />
-                  New Task
+                  <span className="hidden sm:inline">New Task</span>
                 </Button>
               )}
             </div>
@@ -136,13 +140,13 @@ export default function ProjectDetailPage() {
                 {project.members?.length || 0} members
               </span>
               <span className="px-3 py-1 bg-muted text-muted-foreground text-sm rounded-full">
-                {tasks.length} tasks
+                {displayTasks.length} tasks
               </span>
             </div>
           </div>
 
-          <Tabs defaultValue="board" className="h-[calc(100%-200px)]">
-            <TabsList className="mb-4">
+          <Tabs defaultValue="list" className="h-[calc(100%-200px)]">
+            <TabsList className="mb-4 h-auto flex-wrap w-full justify-start">
               <TabsTrigger value="board">Kanban Board</TabsTrigger>
               <TabsTrigger value="list">List View</TabsTrigger>
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
@@ -151,7 +155,7 @@ export default function ProjectDetailPage() {
 
             <TabsContent value="board" className="h-[calc(100%-50px)]">
               <KanbanBoard
-                tasks={tasks}
+                tasks={displayTasks}
                 onTaskClick={(task) => console.log('Task clicked:', task)}
                 onTaskDragEnd={async (taskId, newStatus, newOrder) => {
                   try {
@@ -173,7 +177,7 @@ export default function ProjectDetailPage() {
 
             <TabsContent value="list" className="h-[calc(100%-50px)] overflow-y-auto">
               <div className="space-y-2">
-                {tasks.map(task => (
+                {displayTasks.map(task => (
                   <div key={task.id} className="p-4 bg-card border rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="flex items-start gap-3">
                       <input type="checkbox" className="mt-1 h-4 w-4" />

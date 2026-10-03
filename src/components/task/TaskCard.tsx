@@ -18,6 +18,8 @@ interface TaskCardProps {
   compact?: boolean
 }
 
+import { useState, useEffect } from 'react'
+
 export function TaskCard({ 
   task, 
   onClick, 
@@ -26,6 +28,11 @@ export function TaskCard({
   draggable = true, 
   compact = false 
 }: TaskCardProps) {
+  const [userRole, setUserRole] = useState('manager')
+  useEffect(() => {
+    setUserRole(localStorage.getItem('userRole') || 'manager')
+  }, [])
+
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
   const isOverdueTask = dueDate && isPast(dueDate) && !isToday(dueDate)
   const isDueToday = dueDate && isToday(dueDate)
@@ -229,9 +236,7 @@ export function TaskCard({
                 </span>
               </div>
             </div>
-          )}
-          
-          {task.status === 'review' && onStatusChange && (
+          {task.status === 'review' && onStatusChange && userRole === 'manager' && (
             <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">
               <Button 
                 variant="outline" 
