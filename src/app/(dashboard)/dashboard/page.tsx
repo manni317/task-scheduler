@@ -149,15 +149,24 @@ export default function DashboardPage() {
 
       <StatsCards stats={stats} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <UpcomingDeadlines tasks={displayTasks} users={users} />
-        {userRole === 'manager' && <TeamVelocityChart data={mockVelocity} />}
-      </div>
+      {userRole === 'manager' ? (
+        <>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <UpcomingDeadlines tasks={displayTasks} users={users} />
+            <TeamVelocityChart data={mockVelocity} />
+          </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <OverdueTable tasks={displayTasks} users={users} />
-        <EmployeePerformanceTable data={performanceData} users={users} />
-      </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <OverdueTable tasks={displayTasks} users={users} />
+            <EmployeePerformanceTable data={performanceData} users={users} />
+          </div>
+        </>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <UpcomingDeadlines tasks={displayTasks} users={users} />
+          <OverdueTable tasks={displayTasks} users={users} />
+        </div>
+      )}
     </div>
   )
 }
