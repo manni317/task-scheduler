@@ -5,6 +5,7 @@ import { StatsCards } from '@/components/dashboard/StatsCards'
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines'
 import { OverdueTable } from '@/components/dashboard/OverdueTable'
 import { EmployeePerformanceTable } from '@/components/dashboard/EmployeePerformanceTable'
+import { DashboardHero } from '@/components/dashboard/DashboardHero'
 import { Task, User } from '@/types/task'
 import { createClient } from '@supabase/supabase-js'
 import { useQuery } from '@tanstack/react-query'
@@ -128,14 +129,21 @@ export default function DashboardPage() {
     performanceData = performanceData.filter(p => p.userId === userId)
   }
 
+  // Check for tasks assigned today
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const newTasksToday = displayTasks.filter(t => 
+    t.assigneeId === userId && 
+    t.createdAt >= today
+  ).length
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's what's happening with your tasks.</p>
-        </div>
-      </div>
+      <DashboardHero 
+        userName={profile?.full_name || 'User'} 
+        newTasksCount={newTasksToday} 
+        avatarUrl={profile?.avatar_url}
+      />
 
       <StatsCards stats={stats} />
 

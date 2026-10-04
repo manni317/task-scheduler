@@ -18,21 +18,44 @@ function StatCard({ title, value, change, icon, iconClass, bgClass, description 
   const isPositive = change !== undefined ? change >= 0 : null
 
   return (
-    <div className="group relative bg-card rounded-2xl border border-border p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
-      {/* Glow blob in background */}
-      <div className={cn('absolute top-3 right-3 h-12 w-12 rounded-xl flex items-center justify-center', bgClass)}>
-        <span className={cn('', iconClass)}>{icon}</span>
-      </div>
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 pr-16">{title}</p>
-      <div className="text-3xl font-extrabold text-foreground mb-1">{value}</div>
-      {change !== undefined && (
-        <div className={cn('flex items-center gap-1 text-xs font-semibold', isPositive ? 'text-emerald-500' : 'text-red-500')}>
-          {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-          <span>{isPositive ? '+' : ''}{change}% vs last period</span>
+    <div className={cn(
+      "group relative rounded-[1.5rem] border p-4 transition-all duration-300 overflow-hidden",
+      "bg-card/50 backdrop-blur-xl border-border/50",
+      "hover:shadow-lg hover:-translate-y-1",
+      // Subdued neon glow at the bottom matching the card's color theme
+      title === 'Total Tasks' && "shadow-[0_8px_30px_rgb(59,130,246,0.12)] dark:shadow-[0_8px_30px_rgb(59,130,246,0.05)]",
+      title === 'Completed' && "shadow-[0_8px_30px_rgb(16,185,129,0.12)] dark:shadow-[0_8px_30px_rgb(16,185,129,0.05)]",
+      title === 'In Progress' && "shadow-[0_8px_30px_rgb(245,158,11,0.12)] dark:shadow-[0_8px_30px_rgb(245,158,11,0.05)]",
+      title === 'Overdue' && "shadow-[0_8px_30px_rgb(239,68,68,0.12)] dark:shadow-[0_8px_30px_rgb(239,68,68,0.05)]"
+    )}>
+      {/* Soft gradient background blob */}
+      <div className={cn(
+        "absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-[2xl] opacity-50 dark:opacity-30 pointer-events-none",
+        bgClass.replace('100', '300').replace('900/40', '600')
+      )} />
+
+      <div className="flex items-center gap-3 mb-4">
+        <div className={cn('h-10 w-10 rounded-2xl flex items-center justify-center shrink-0', bgClass)}>
+          <span className={cn('', iconClass)}>{icon}</span>
         </div>
-      )}
-      {description && !change && (
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-sm font-semibold text-foreground/80 tracking-tight leading-tight">{title}</p>
+      </div>
+
+      <div className="text-3xl font-black text-foreground mb-1 tracking-tighter">
+        {value.toString().padStart(2, '0')}
+      </div>
+      
+      {(change !== undefined || description) && (
+        <div className="mt-2">
+          {change !== undefined ? (
+            <div className={cn('flex items-center gap-1 text-xs font-semibold', isPositive ? 'text-emerald-500' : 'text-red-500')}>
+              {isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+              <span>{isPositive ? '+' : ''}{change}%</span>
+            </div>
+          ) : (
+            <p className="text-xs font-medium text-muted-foreground">{description}</p>
+          )}
+        </div>
       )}
     </div>
   )
@@ -86,7 +109,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   ]
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 w-full">
       {cards.map((card) => (
         <StatCard key={card.title} {...card} />
       ))}
