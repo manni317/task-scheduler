@@ -129,5 +129,5 @@ export function useProfile() {
     },
   })
 
-  return { profile, loading, isAuthenticated, updateProfile: updateProfile.mutate }
+  return { profile, loading, isAuthenticated, updateProfile: updateProfile.mutateAsync }
 }
