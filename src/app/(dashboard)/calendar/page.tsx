@@ -273,7 +273,9 @@ export default function CalendarPage() {
                                 priorityColors[task.priority]
                               )}
                             >
-                              {task.title}
+                              {(userRole === 'admin' || userRole === 'manager') && task.assignee?.name 
+                                ? `${task.assignee.name.split(' ')[0]}: ${task.title}`
+                                : task.title}
                             </div>
                           ))}
                         </div>
