@@ -103,6 +103,7 @@ export async function signUpWithEmail(formData: FormData) {
     await supabase.from('profiles').update({
       full_name: fullName,
       company_name: companyName,
+      email: email,
       role: 'admin'
     }).eq('id', data.user.id)
   }
