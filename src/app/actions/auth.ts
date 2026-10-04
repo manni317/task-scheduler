@@ -23,7 +23,7 @@ export async function bypassedLogin(email: string) {
 }
 
 export async function loginWithEmail(formData: FormData) {
-  const email = formData.get('email') as string
+  const email = (formData.get('email') as string).trim()
   const password = formData.get('password') as string
 
   const cookieStore = cookies()
@@ -58,7 +58,7 @@ export async function loginWithEmail(formData: FormData) {
 }
 
 export async function signUpWithEmail(formData: FormData) {
-  const email = formData.get('email') as string
+  const email = (formData.get('email') as string).trim()
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string || 'Admin User'
   const companyName = formData.get('companyName') as string || 'My Company'
