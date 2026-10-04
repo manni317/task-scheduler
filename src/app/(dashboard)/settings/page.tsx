@@ -13,9 +13,10 @@ import { Separator } from '@/components/ui/separator'
 import { User, Bell, Moon, Sun, Shield, Key, Palette, Globe, Download, Trash2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from 'next-themes'
-import { useAuth } from '@/hooks/useAuth'
-import { useProfile } from '@/hooks/useAuth'
+import { useAuth, useProfile } from '@/hooks/useAuth'
 import { toast } from 'sonner'
+import { useRef } from 'react'
+import { useSupabase } from '@/lib/supabase-provider'
 
 const timezones = [
   'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
@@ -36,18 +37,54 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
   const { profile } = useAuth()
   const { updateProfile } = useProfile()
+  const supabase = useSupabase()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState('profile')
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    taskAssigned: true,
-    taskUpdated: true,
-    comments: true,
-    mentions: true,
-    dailySummary: false,
-    weeklyReport: true,
-  })
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file')
+      return
+    }
+    
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image size should be less than 2MB')
+      return
+    }
+
+    setIsUploading(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${profile?.id}-${Date.now()}.${fileExt}`
+      const filePath = `${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      await updateProfile({ avatar_url: publicUrl })
+      toast.success('Avatar updated successfully')
+    } catch (error: any) {
+      console.error('Upload error:', error)
+      toast.error(error.message || 'Failed to upload avatar')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
 
   const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -89,12 +126,32 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <form onSubmit={handleSaveProfile}>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-4">
                     <Label>Avatar</Label>
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={profile?.avatar_url || "/avatar.png"} alt={profile?.full_name || "User"} />
-                      <AvatarFallback className="text-2xl">{profile?.full_name?.charAt(0) || 'U'}</AvatarFallback>
-                    </Avatar>
+                    <div className="flex items-center gap-6">
+                      <Avatar className="h-20 w-20">
+                        <AvatarImage src={profile?.avatar_url || "/avatar.png"} alt={profile?.full_name || "User"} />
+                        <AvatarFallback className="text-2xl">{profile?.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          ref={fileInputRef} 
+                          onChange={handleAvatarUpload} 
+                        />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                        >
+                          {isUploading ? 'Uploading...' : 'Change Avatar'}
+                        </Button>
+                        <p className="text-sm text-muted-foreground mt-1">JPG, PNG or GIF. Max 2MB.</p>
+                      </div>
+                    </div>
                   </div>
                   <Separator className="my-2" />
                   <div className="space-y-2">
