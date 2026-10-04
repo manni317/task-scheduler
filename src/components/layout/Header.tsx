@@ -15,6 +15,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { startOfDay } from 'date-fns'
 import { useAuth } from '@/hooks/useAuth'
+import { InstallPWA } from '@/components/pwa/InstallPWA'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
@@ -139,6 +140,8 @@ export function Header() {
             )}
           </div>
 
+          <InstallPWA />
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative cursor-pointer">
