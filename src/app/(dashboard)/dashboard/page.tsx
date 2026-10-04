@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines'
-import { TeamVelocityChart } from '@/components/dashboard/TeamVelocityChart'
 import { OverdueTable } from '@/components/dashboard/OverdueTable'
 import { EmployeePerformanceTable } from '@/components/dashboard/EmployeePerformanceTable'
 import { Task, User } from '@/types/task'
@@ -13,13 +12,6 @@ import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
 
-const mockVelocity = [
-  { sprint: 'Sprint 1', completed: 34, committed: 40, velocity: 34 },
-  { sprint: 'Sprint 2', completed: 38, committed: 38, velocity: 38 },
-  { sprint: 'Sprint 3', completed: 42, committed: 45, velocity: 42 },
-  { sprint: 'Sprint 4', completed: 36, committed: 40, velocity: 36 },
-  { sprint: 'Sprint 5', completed: 45, committed: 45, velocity: 45 },
-]
 
 export default function DashboardPage() {
   const { profile, loading: authLoading } = useAuth()
@@ -151,12 +143,11 @@ export default function DashboardPage() {
         <>
           <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
             <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>
-            <div className="min-w-0"><TeamVelocityChart data={mockVelocity} /></div>
+            <div className="min-w-0"><EmployeePerformanceTable data={performanceData} users={users} /></div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
+          <div className="grid gap-6 w-full min-w-0">
             <div className="min-w-0"><OverdueTable tasks={displayTasks} users={users} /></div>
-            <div className="min-w-0"><EmployeePerformanceTable data={performanceData} users={users} /></div>
           </div>
         </>
       ) : (
