@@ -2,60 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* EverSync inspired — clean off-white with Electric Blue accent */
+    --background: 220 20% 97%;
+    --foreground: 224 71% 8%;
+
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 224 71% 8%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 224 71% 8%;
+
+    /* Electric Blue — the hero color */
+    --primary: 221 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 93%;
+    --secondary-foreground: 224 71% 20%;
+
+    --muted: 220 20% 94%;
+    --muted-foreground: 220 15% 55%;
+
+    --accent: 221 100% 96%;
+    --accent-foreground: 221 100% 40%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 20% 90%;
+    --input: 220 20% 92%;
+    --ring: 221 100% 50%;
+
+    /* Bigger radius = rounder = friendlier = EverSync vibe */
+    --radius: 1rem;
+
     --success: 142 76% 36%;
-    --success-foreground: 355 100% 97%;
+    --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
-    --warning-foreground: 48 96% 89%;
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --warning-foreground: 0 0% 100%;
+
+    --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* Deep navy dark mode — still feels premium */
+    --background: 224 40% 7%;
+    --foreground: 220 20% 95%;
+
+    --card: 224 35% 11%;
+    --card-foreground: 220 20% 95%;
+
+    --popover: 224 35% 11%;
+    --popover-foreground: 220 20% 95%;
+
+    --primary: 221 100% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 224 30% 16%;
+    --secondary-foreground: 220 20% 85%;
+
+    --muted: 224 30% 15%;
+    --muted-foreground: 220 15% 55%;
+
+    --accent: 221 60% 18%;
+    --accent-foreground: 221 100% 75%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 224 25% 18%;
+    --input: 224 25% 17%;
+    --ring: 221 100% 58%;
+
     --success: 142 70% 45%;
-    --success-foreground: 355 100% 97%;
-    --warning: 48 96% 53%;
-    --warning-foreground: 48 96% 89%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
   }
 }
 
@@ -65,11 +90,19 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans), 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans), 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    @apply font-bold tracking-tight;
   }
 }
 
 @layer utilities {
+  /* ── Scrollbar ── */
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -77,24 +110,86 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
+  /* ── Text ── */
   .text-balance {
     text-wrap: balance;
   }
-  
-  .animate-in {
-    animation: animate-in 0.2s ease-out;
+
+  /* ── EverSync Card ── */
+  .card-eversync {
+    @apply bg-card rounded-[1.5rem] border border-border shadow-sm transition-all duration-300;
   }
-  
+  .card-eversync:hover {
+    @apply shadow-md -translate-y-0.5;
+  }
+
+  /* ── Pill button (EverSync style) ── */
+  .btn-pill {
+    @apply inline-flex items-center justify-center rounded-full px-6 py-3 font-semibold text-sm transition-all duration-200 active:scale-95;
+  }
+  .btn-pill-primary {
+    @apply btn-pill bg-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:brightness-110;
+  }
+  .btn-pill-ghost {
+    @apply btn-pill bg-muted text-foreground hover:bg-accent hover:text-accent-foreground;
+  }
+
+  /* ── Category badge chips ── */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .chip-blue { @apply chip bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300; }
+  .chip-green { @apply chip bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300; }
+  .chip-orange { @apply chip bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300; }
+  .chip-purple { @apply chip bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300; }
+  .chip-red { @apply chip bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300; }
+  .chip-yellow { @apply chip bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300; }
+
+  /* ── Glow Effect (Subtle) ── */
+  .glow-primary {
+    box-shadow: 0 0 20px 0 hsl(var(--primary) / 0.25);
+  }
+
+  /* ── Glass surface ── */
+  .glass {
+    @apply bg-background/70 backdrop-blur-xl border border-white/10 dark:border-white/5;
+  }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden bg-muted;
+  }
+  .progress-fill {
+    @apply h-full rounded-full bg-primary transition-all duration-500;
+  }
+
+  /* ── Animations ── */
+  .animate-in {
+    animation: animate-in 0.25s cubic-bezier(.16,1,.3,1);
+  }
+
   @keyframes animate-in {
-    from {
-      opacity: 0;
-      transform: translateY(4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.3s cubic-bezier(.16,1,.3,1);
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-pop {
+    animation: pop 0.2s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
   }
 }
 
@@ -102,32 +197,25 @@
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
   }
-  
   .card-hover {
-    @apply transition-all duration-200 hover:shadow-elevation-2 hover:-translate-y-0.5;
+    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
   }
-  
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply btn-pill-primary;
   }
-  
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground ring-offset-background transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
   }
-  
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
   }
-  
   .btn-destructive {
-    @apply inline-flex items-center justify-center rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground ring-offset-background transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-full bg-destructive px-4 py-2 text-sm font-semibold text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50;
   }
-  
   .input-field {
-    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply flex h-11 w-full rounded-xl border border-input bg-card px-4 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all;
   }
-  
   .label-field {
-    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+    @apply text-sm font-semibold leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
   }
 }

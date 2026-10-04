@@ -82,56 +82,59 @@ export function Header() {
   const userEmail = profile?.email || 'user@example.com'
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden"
+            className="lg:hidden rounded-xl h-9 w-9"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
           </Button>
 
-          <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">M</span>
+          <Link href="/dashboard" className="flex items-center gap-2.5 font-extrabold text-lg">
+            <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/30">
+              <span className="text-primary-foreground font-black text-sm">T</span>
             </div>
-            <span className="hidden sm:block">TaskFlow</span>
+            <span className="hidden sm:block tracking-tight">TaskFlow</span>
           </Link>
 
-          <div className="hidden md:flex md:gap-1">
-            {navigation.map(item => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                  pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                )}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
+          <nav className="hidden md:flex md:items-center md:gap-1 ml-2">
+            {navigation.map(item => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={cn(
+                    'px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                  )}
+                >
+                  {item.name}
+                </Link>
+              )
+            })}
+          </nav>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="hidden sm:block relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Search tasks, projects..."
-              className="h-9 w-64 pl-10 pr-4 text-sm"
-              onFocus={e => setSearchOpen(true)}
-              onBlur={e => setTimeout(() => setSearchOpen(false), 200)}
+              placeholder="Search tasks..."
+              className="h-9 w-56 pl-10 pr-4 text-sm rounded-full border-border/60 bg-muted/50 focus:bg-card focus:w-64 transition-all duration-300"
+              onFocus={() => setSearchOpen(true)}
+              onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
             />
             {searchOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border rounded-lg shadow-lg p-2 z-50">
-                <p className="text-sm text-muted-foreground px-2 py-1">Search results would appear here</p>
+              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-lg p-2 z-50 animate-pop">
+                <p className="text-sm text-muted-foreground px-3 py-2">Type to search tasks & projects…</p>
               </div>
             )}
           </div>
@@ -237,47 +240,73 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && typeof document !== 'undefined' && createPortal(
-        <div className="md:hidden fixed inset-0 z-[100] bg-background flex flex-col">
-          <div className="flex items-center justify-between p-4 border-b">
-            <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl" onClick={() => setMobileMenuOpen(false)}>
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">M</span>
-              </div>
-              <span>TaskFlow</span>
-            </Link>
-            <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>
-              <span className="h-5 w-5 flex items-center justify-center text-xl">×</span>
-            </Button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground px-2 mb-2">Main</p>
-              {navigation.map(item => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium transition-colors',
-                    pathname === item.href || pathname.startsWith(item.href + '/')
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-muted'
-                  )}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
+        <div className="fixed inset-0 z-[100] flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Drawer panel */}
+          <div className="relative z-10 w-72 max-w-[85vw] bg-background h-full flex flex-col shadow-2xl animate-slide-up" style={{ animation: 'slide-in-from-left 0.3s cubic-bezier(.16,1,.3,1)' }}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <Link href="/dashboard" className="flex items-center gap-2.5 font-extrabold text-lg" onClick={() => setMobileMenuOpen(false)}>
+                <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/30">
+                  <span className="text-primary-foreground font-black text-sm">T</span>
+                </div>
+                <span>TaskFlow</span>
+              </Link>
+              <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8" onClick={() => setMobileMenuOpen(false)}>
+                <span className="text-lg leading-none">×</span>
+              </Button>
             </div>
-            <div className="space-y-1 pt-4 border-t">
-              <p className="text-sm font-medium text-muted-foreground px-2 mb-2">More</p>
-              <Link href="/team" className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                Team
-              </Link>
-              <Link href="/archived" className="flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium text-muted-foreground hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                Archived
-              </Link>
+
+            {/* Nav links */}
+            <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground px-3 mb-3">Navigation</p>
+              {navigation.map(item => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-semibold transition-all duration-200',
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                )
+              })}
+              <div className="pt-4 border-t border-border mt-4 space-y-1">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground px-3 mb-3">More</p>
+                <Link href="/team" className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  Team
+                </Link>
+                <Link href="/archived" className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all" onClick={() => setMobileMenuOpen(false)}>
+                  Archived
+                </Link>
+              </div>
+            </div>
+
+            {/* User info at bottom */}
+            <div className="px-4 py-4 border-t border-border">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={profile?.avatar_url || ''} alt={userName} />
+                  <AvatarFallback className="uppercase font-bold text-sm bg-primary text-primary-foreground">{userName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold capitalize truncate">{userName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>,
