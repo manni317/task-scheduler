@@ -13,51 +13,51 @@
   "categories": ["productivity", "utilities"],
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icons/icon-72x72.svg",
       "sizes": "72x72",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-96x96.png",
+      "src": "/icons/icon-96x96.svg",
       "sizes": "96x96",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-128x128.png",
+      "src": "/icons/icon-128x128.svg",
       "sizes": "128x128",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icons/icon-144x144.svg",
       "sizes": "144x144",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icons/icon-152x152.svg",
       "sizes": "152x152",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/icon-192x192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-384x384.png",
+      "src": "/icons/icon-384x384.svg",
       "sizes": "384x384",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icons/icon-512x512.svg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
@@ -67,35 +67,35 @@
       "short_name": "New Task",
       "description": "Create a new task quickly",
       "url": "/tasks/new",
-      "icons": [{ "src": "/icons/shortcut-add.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/shortcut-add.svg", "sizes": "192x192" }]
     },
     {
       "name": "Today",
       "short_name": "Today",
       "description": "View tasks due today",
       "url": "/tasks?filter=today",
-      "icons": [{ "src": "/icons/shortcut-today.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/shortcut-today.svg", "sizes": "192x192" }]
     },
     {
       "name": "Calendar",
       "short_name": "Calendar",
       "description": "View calendar and synced events",
       "url": "/calendar",
-      "icons": [{ "src": "/icons/shortcut-calendar.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/shortcut-calendar.svg", "sizes": "192x192" }]
     }
   ],
   "screenshots": [
     {
-      "src": "/screenshots/desktop-dashboard.png",
+      "src": "/screenshots/desktop-dashboard.svg",
       "sizes": "1920x1080",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "form_factor": "wide",
       "label": "Dashboard view on desktop"
     },
     {
-      "src": "/screenshots/mobile-tasks.png",
+      "src": "/screenshots/mobile-tasks.svg",
       "sizes": "390x844",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "form_factor": "narrow",
       "label": "Task list on mobile"
     }
