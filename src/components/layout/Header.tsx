@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -237,8 +238,8 @@ export function Header() {
       </div>
 
       {/* Mobile Menu Overlay */}
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-background flex flex-col">
+      {mobileMenuOpen && typeof document !== 'undefined' && createPortal(
+        <div className="md:hidden fixed inset-0 z-[100] bg-background flex flex-col">
           <div className="flex items-center justify-between p-4 border-b">
             <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl" onClick={() => setMobileMenuOpen(false)}>
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
@@ -279,7 +280,8 @@ export function Header() {
               </Link>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   )
