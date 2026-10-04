@@ -24,7 +24,8 @@ export async function createTask(formData: FormData) {
     }
   )
 
-  const reporterId = formData.get('reporterId') as string || 'dummy-id'
+  const { data: { user } } = await supabase.auth.getUser()
+  const reporterId = user?.id || null
 
   const title = formData.get('title') as string
   const description = formData.get('description') as string
