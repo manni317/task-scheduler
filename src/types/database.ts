@@ -3,7 +3,8 @@ export interface Profile {
   user_id: string
   full_name: string | null
   avatar_url: string | null
-  role: 'admin' | 'member' | 'viewer'
+  email: string | null
+  role: 'admin' | 'manager' | 'employee' | 'viewer'
   created_at: string
   updated_at: string
 }
@@ -103,7 +104,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      user_role: 'admin' | 'member' | 'viewer'
+      user_role: 'admin' | 'manager' | 'employee' | 'viewer'
       project_role: 'owner' | 'admin' | 'member' | 'viewer'
       task_status: 'backlog' | 'todo' | 'in_progress' | 'review' | 'done'
       task_priority: 'low' | 'medium' | 'high' | 'urgent'

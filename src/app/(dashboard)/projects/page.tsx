@@ -46,7 +46,7 @@ export default function ProjectsPage() {
       const userRole = profile?.role || 'employee'
       const userId = profile?.id
 
-      if ((userRole === 'employee' || userRole === 'doer') && userId) {
+      if (userRole === 'employee' && userId) {
         const { data: userTasks } = await supabase.from('tasks').select('project_id').eq('assignee_id', userId)
         const allowedProjectIds = new Set((userTasks || []).map(t => t.project_id))
         projectsData = (projectsData || []).filter(p => allowedProjectIds.has(p.id))

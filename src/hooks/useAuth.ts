@@ -38,17 +38,23 @@ export function useAuth() {
     }
   }
 
-  const isAdmin = profile?.role === 'admin'
-  const isMember = profile?.role === 'member' || isAdmin
+  const role = profile?.role ?? 'viewer'
+  const isAdmin = role === 'admin'
+  const isManager = role === 'manager'
+  const isEmployee = role === 'employee'
+  const isViewer = role === 'viewer'
 
   return {
     session,
     profile,
     loading: status === 'loading' || loading,
+    isLoading: status === 'loading' || loading,
     isAuthenticated: status === 'authenticated',
     isAdmin,
-    isMember,
-    role: profile?.role ?? 'viewer',
+    isManager,
+    isEmployee,
+    isViewer,
+    role,
   }
 }
 

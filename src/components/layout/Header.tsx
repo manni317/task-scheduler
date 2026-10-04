@@ -31,50 +31,50 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
-    // Notification check
-    const checkNotifications = async () => {
-      if (sessionStorage.getItem('notified_today')) return
-      sessionStorage.setItem('notified_today', 'true')
+      // Notification check
+      const checkNotifications = async () => {
+        if (sessionStorage.getItem('notified_today')) return
+        sessionStorage.setItem('notified_today', 'true')
 
-      const userRole = profile?.role || 'employee'
-      const userId = profile?.id
+        const userRole = profile?.role || 'employee'
+        const userId = profile?.id
 
-      const supabase = createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
 
-      const today = startOfDay(new Date()).toISOString()
+        const today = startOfDay(new Date()).toISOString()
 
-      try {
-        if ((userRole === 'employee' || userRole === 'doer') && userId) {
-          const { count } = await supabase
-            .from('tasks')
-            .select('id', { count: 'exact' })
-            .eq('assignee_id', userId)
-            .gte('created_at', today)
+        try {
+          if (userRole === 'employee' && userId) {
+            const { count } = await supabase
+              .from('tasks')
+              .select('id', { count: 'exact' })
+              .eq('assignee_id', userId)
+              .gte('created_at', today)
 
-          if (count && count > 0) {
-            setTimeout(() => toast.info(`You have ${count} new task(s) assigned today! 📝`, { duration: 6000 }), 1000)
+            if (count && count > 0) {
+              setTimeout(() => toast.info(`You have ${count} new task(s) assigned today! 📝`, { duration: 6000 }), 1000)
+            }
+          } else if ((userRole === 'manager' || userRole === 'admin') && userId) {
+            const { count } = await supabase
+              .from('task_updates')
+              .select('id', { count: 'exact' })
+              .gte('created_at', today)
+              .neq('user_id', userId)
+        
+            if (count && count > 0) {
+              setTimeout(() => toast.info(`There are ${count} new task updates from your team today! 🔔`, { duration: 6000 }), 1000)
+            }
           }
-        } else if ((userRole === 'manager' || userRole === 'admin') && userId) {
-          const { count } = await supabase
-            .from('task_updates')
-            .select('id', { count: 'exact' })
-            .gte('created_at', today)
-            .neq('user_id', userId)
-         
-          if (count && count > 0) {
-            setTimeout(() => toast.info(`There are ${count} new task updates from your team today! 🔔`, { duration: 6000 }), 1000)
-          }
+        } catch (err) {
+          console.error('Failed to fetch notifications', err)
         }
-      } catch (err) {
-        console.error('Failed to fetch notifications', err)
       }
-    }
 
-    checkNotifications()
-  }, [profile])
+      checkNotifications()
+    }, [profile])
 
   const userName = profile?.full_name || 'User'
   const userEmail = profile?.email || 'user@example.com'

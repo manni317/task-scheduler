@@ -1,6 +1,6 @@
 import { Inngest } from 'inngest'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { formatDate, formatRelativeTime } from '@/lib/utils'
+import { formatDate, formatRelativeTime, formatTime } from '@/lib/utils'
 
 export const inngest = new Inngest({
   id: 'muze-satwik-task-manager',

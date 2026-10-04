@@ -3,7 +3,7 @@ export interface User {
   name: string
   email: string
   avatar?: string
-  role: 'admin' | 'member' | 'viewer'
+  role: 'admin' | 'manager' | 'employee' | 'viewer'
 }
 
 export interface ChecklistItem {
