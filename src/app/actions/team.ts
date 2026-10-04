@@ -35,7 +35,7 @@ export async function createEmployee(formData: FormData) {
 
   if (error) {
     console.error('Error creating employee in auth:', error.message)
-    // Maybe auth signup fails because of dupes, but we still want to ensure a profile is created
+    return { error: error.message }
   }
 
   // 2. Insert into profiles manually to guarantee they exist for the Team page

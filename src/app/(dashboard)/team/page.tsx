@@ -119,17 +119,17 @@ export default function TeamPage() {
         ) : (
           <div className="space-y-4">
             {users.map(user => (
-              <div key={user.id} className="flex items-center justify-between p-4 rounded-lg border bg-background">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase">
+              <div key={user.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border bg-background gap-4">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="h-10 w-10 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase">
                     {user.avatar_url ? <img src={user.avatar_url} className="rounded-full" /> : user.full_name?.charAt(0) || 'U'}
                   </div>
-                  <div>
-                    <h3 className="font-medium text-sm">{user.full_name || 'Unknown User'}</h3>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-sm truncate">{user.full_name || 'Unknown User'}</h3>
                     <div className="mt-1 space-y-0.5">
-                      <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <span className="font-semibold text-slate-300">ID:</span> 
-                        {user.email || `${user.full_name?.toLowerCase().replace(/\s+/g, '')}@taskflow.com`}
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
+                        <span className="font-semibold text-slate-300 shrink-0">ID:</span> 
+                        <span className="truncate">{user.email || `${user.full_name?.toLowerCase().replace(/\s+/g, '')}@taskflow.com`}</span>
                       </p>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <span className="font-semibold text-slate-300">Pass:</span> 
@@ -138,7 +138,7 @@ export default function TeamPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2 justify-end">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${user.role === 'admin' ? 'bg-amber-500/20 text-amber-500' : user.role === 'manager' ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>
                     {user.role === 'doer' ? 'Employee' : user.role || 'Employee'}
                   </span>
