@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Muze Tasks',
+    title: 'Task Manager',
   },
   formatDetection: {
     telephone: false,

@@ -60,6 +60,8 @@ export async function loginWithEmail(formData: FormData) {
 export async function signUpWithEmail(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const fullName = formData.get('fullName') as string || 'Admin User'
+  const companyName = formData.get('companyName') as string || 'My Company'
 
   const cookieStore = cookies()
   const supabase = createServerClient(
@@ -80,13 +82,29 @@ export async function signUpWithEmail(formData: FormData) {
     }
   )
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        full_name: fullName,
+        company_name: companyName
+      }
+    }
   })
 
   if (error) {
     return { error: error.message }
+  }
+  
+  if (data.user) {
+    // Attempt to manually update the profiles table immediately
+    // since we want them to default to admin with company_name
+    await supabase.from('profiles').update({
+      full_name: fullName,
+      company_name: companyName,
+      role: 'admin'
+    }).eq('id', data.user.id)
   }
   
   return { success: true }

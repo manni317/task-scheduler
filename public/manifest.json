@@ -1,6 +1,6 @@
 {
-  "name": "Muze Satwik Task Manager",
-  "short_name": "Muze Tasks",
+  "name": "Task Manager",
+  "short_name": "Task Manager",
   "description": "A beautiful, offline-first task manager with Google Calendar sync",
   "start_url": "/",
   "display": "standalone",

@@ -2,6 +2,7 @@ export interface Profile {
   id: string
   user_id: string
   full_name: string | null
+  company_name: string | null
   avatar_url: string | null
   email: string | null
   role: 'admin' | 'manager' | 'employee' | 'viewer'

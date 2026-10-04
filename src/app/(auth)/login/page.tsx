@@ -48,7 +48,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[hsl(220,20%,97%)] px-4">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background px-4">
       <AnimatedBackground />
 
       <div className="relative z-10 w-full max-w-sm">
@@ -61,13 +61,44 @@ export default function LoginPage() {
             {isSignUp ? 'Create Account' : 'Welcome back'}
           </h1>
           <p className="text-muted-foreground mt-1.5 text-sm">
-            {isSignUp ? 'Join your team on TaskFlow' : 'Sign in to access your workflow'}
+            {isSignUp ? 'Get started with Task Manager' : 'Sign in to Task Manager'}
           </p>
         </div>
 
         {/* Card */}
         <div className="bg-card border border-border rounded-3xl shadow-lg shadow-black/5 p-8">
           <form onSubmit={handleEmailAuth} className="space-y-4">
+            {isSignUp && (
+              <>
+                <div className="space-y-1.5">
+                  <label htmlFor="fullName" className="text-sm font-semibold text-foreground">
+                    Full Name
+                  </label>
+                  <input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-sm"
+                    placeholder="John Doe"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="companyName" className="text-sm font-semibold text-foreground">
+                    Company Name
+                  </label>
+                  <input
+                    id="companyName"
+                    name="companyName"
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-sm"
+                    placeholder="Acme Corp"
+                  />
+                </div>
+              </>
+            )}
+            
             <div className="space-y-1.5">
               <label htmlFor="email" className="text-sm font-semibold text-foreground">
                 Email
@@ -107,22 +138,6 @@ export default function LoginPage() {
               </button>
             </div>
           </form>
-
-          {/* Feature hints */}
-          {!isSignUp && (
-            <div className="mt-6 space-y-2.5">
-              {[
-                'Manage tasks with your team',
-                'Real-time updates & notifications',
-                'Mobile-first PWA experience',
-              ].map(hint => (
-                <div key={hint} className="flex items-center gap-2.5">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-xs text-muted-foreground">{hint}</span>
-                </div>
-              ))}
-            </div>
-          )}
           
           <div className="text-center pt-5 mt-4 border-t border-border">
             <button 
