@@ -97,7 +97,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: <CheckCircle className="h-5 w-5" />,
       iconClass: 'text-emerald-600 dark:text-emerald-400',
       bgClass: 'bg-emerald-100 dark:bg-emerald-900/40',
-      onClick: () => router.push('/tasks')
+      onClick: () => router.push('/tasks?status=done')
     },
     {
       title: 'In Progress',
@@ -106,7 +106,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       iconClass: 'text-amber-600 dark:text-amber-400',
       bgClass: 'bg-amber-100 dark:bg-amber-900/40',
       description: 'Currently active',
-      onClick: () => router.push('/tasks')
+      onClick: () => router.push('/tasks?status=in_progress')
     },
     {
       title: 'Overdue',
@@ -115,7 +115,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: <AlertTriangle className="h-5 w-5" />,
       iconClass: 'text-red-600 dark:text-red-400',
       bgClass: 'bg-red-100 dark:bg-red-900/40',
-      onClick: () => router.push('/tasks')
+      onClick: () => router.push('/tasks?status=overdue')
     },
   ]
 
