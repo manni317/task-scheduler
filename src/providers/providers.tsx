@@ -1,6 +1,6 @@
 'use client'
 
-import { SessionProvider } from 'next-auth/react'
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from 'next-themes'
 import { createBrowserClient } from '@supabase/ssr'
@@ -37,16 +37,14 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <SessionProvider>
-        <QueryClientProvider client={queryClient}>
-          <SupabaseProvider client={supabaseClient}>
-            {children}
-            <Toaster />
-            <SonnerToaster position="top-center" />
-            <SWRegister />
-          </SupabaseProvider>
-        </QueryClientProvider>
-      </SessionProvider>
+      <QueryClientProvider client={queryClient}>
+        <SupabaseProvider client={supabaseClient}>
+          {children}
+          <Toaster />
+          <SonnerToaster position="top-center" />
+          <SWRegister />
+        </SupabaseProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }

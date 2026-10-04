@@ -3,11 +3,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSupabase, useRealtime } from '@/lib/supabase-provider'
 import type { Notification, Database } from '@/types/database'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/hooks/useAuth'
 import { useEffect, useState } from 'react'
 
 export function useNotifications() {
-  const { data: session } = useSession()
+  const { session } = useAuth()
   const supabase = useSupabase()
   const queryClient = useQueryClient()
   const [unreadCount, setUnreadCount] = useState(0)

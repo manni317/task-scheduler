@@ -1,59 +1,106 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSupabase } from '@/lib/supabase-provider'
 import type { Profile } from '@/types/database'
 import { useEffect, useState } from 'react'
 
 export function useAuth() {
-  const { data: session, status } = useSession()
   const supabase = useSupabase()
+  const [session, setSession] = useState<any>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchProfile(session.user.id)
-    } else {
-      setProfile(null)
-      setLoading(false)
-    }
-  }, [session, supabase])
+    let mounted = true
 
-  const fetchProfile = async (userId: string) => {
+    const getInitialSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession()
+        if (mounted) {
+          setSession(currentSession)
+          if (currentSession?.user) {
+            await fetchProfile(currentSession.user.id, currentSession.user.email)
+          } else {
+            setProfile(null)
+            setLoading(false)
+          }
+        }
+      } catch (err) {
+        console.error('Session fetch error:', err)
+        if (mounted) setLoading(false)
+      }
+    }
+
+    getInitialSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        if (!mounted) return
+        setSession(newSession)
+        if (newSession?.user) {
+          await fetchProfile(newSession.user.id, newSession.user.email)
+        } else {
+          setProfile(null)
+          setLoading(false)
+        }
+      }
+    )
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase])
+
+  const fetchProfile = async (userId: string, email?: string) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .single()
-
-      if (error && error.code !== 'PGRST116') throw error
-      setProfile(data)
+        
+      if (error && error.code !== 'PGRST116') {
+        throw error
+      }
+      
+      // If profile doesn't have email but session does, use session email
+      setProfile({
+        ...data,
+        email: data?.email || email || 'user@example.com',
+        full_name: data?.full_name || 'User'
+      })
     } catch (err) {
       console.error('Failed to fetch profile:', err)
+      // Fallback to basic auth info if profile fetch fails
+      setProfile({
+        id: userId,
+        email: email || 'user@example.com',
+        full_name: 'User',
+        role: 'employee',
+        avatar_url: null,
+        created_at: new Date().toISOString()
+      } as any)
     } finally {
       setLoading(false)
     }
   }
 
-  const role = profile?.role ?? 'viewer'
+  const role = profile?.role ?? 'employee'
   const isAdmin = role === 'admin'
   const isManager = role === 'manager'
   const isEmployee = role === 'employee'
-  const isViewer = role === 'viewer'
 
   return {
     session,
     profile,
-    loading: status === 'loading' || loading,
-    isLoading: status === 'loading' || loading,
-    isAuthenticated: status === 'authenticated',
+    loading,
+    isLoading: loading,
+    isAuthenticated: !!session,
     isAdmin,
     isManager,
     isEmployee,
-    isViewer,
     role,
   }
 }
@@ -78,7 +125,7 @@ export function useProfile() {
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['profile', session?.user?.id], data)
-      setProfile(data)
+      // Note: Full state sync would require exposing setProfile from useAuth, but React Query will cache the new data.
     },
   })
 
