@@ -171,8 +171,7 @@ export default function SettingsPage() {
                     <Label htmlFor="role">Your Role</Label>
                     <Input id="role" name="role" defaultValue={profile?.role === 'doer' ? 'Employee' : profile?.role || ''} disabled className="capitalize" />
                   </div>
-                </div>
-                <Button type="submit" disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</Button>
+                <Button type="submit" disabled={isSaving} className="mt-6">{isSaving ? 'Saving...' : 'Save Changes'}</Button>
               </form>
             </CardContent>
           </Card>
