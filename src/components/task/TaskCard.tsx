@@ -8,16 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Calendar, Clock, Flag, User, MessageSquare, Paperclip, GitBranch, Mic } from 'lucide-react'
 import { format, isPast, isToday, isTomorrow } from 'date-fns'
 import { Task } from '@/types/task'
-
-interface TaskCardProps {
-  task: Task
-  onClick?: () => void
-  onDragStart?: (e: React.DragEvent) => void
-  onStatusChange?: (taskId: string, newStatus: TaskStatus) => void
-  draggable?: boolean
-  compact?: boolean
-  userRole?: string
-}
+import { TaskStatus } from '@/types/task'
 
 import { useState, useEffect } from 'react'
 
@@ -30,10 +21,10 @@ export function TaskCard({
   compact = false,
   userRole: propUserRole
 }: TaskCardProps) {
-  const [userRole, setUserRole] = useState(propUserRole || 'doer')
+  const [userRole, setUserRole] = useState(propUserRole || 'employee')
   useEffect(() => {
     if (!propUserRole) {
-      setUserRole(localStorage.getItem('userRole') || 'doer')
+      setUserRole(localStorage.getItem('userRole') || 'employee')
     }
   }, [propUserRole])
 
@@ -140,7 +131,7 @@ export function TaskCard({
               {task.priority}
             </Badge>
           </div>
-          
+         
           {task.description && (
             <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
               {task.description}
@@ -162,7 +153,7 @@ export function TaskCard({
                 {isDueTomorrow && ' (Tomorrow)'}
               </span>
             )}
-            
+           
             {task.estimatedHours && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
@@ -223,7 +214,7 @@ export function TaskCard({
               </span>
             )}
           </div>
-          
+         
           {task.latestUpdate && (
             <div className="mt-4 pt-3 border-t">
               <div className="text-xs font-medium text-primary mb-1 flex items-center justify-between">
@@ -240,7 +231,8 @@ export function TaskCard({
                 </span>
               </div>
             </div>
-          {task.status === 'review' && onStatusChange && userRole === 'manager' && (
+          )}
+          {task.status === 'review' && onStatusChange && (userRole === 'manager' || userRole === 'admin') && (
             <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">
               <Button 
                 variant="outline" 
@@ -269,4 +261,14 @@ export function TaskCard({
       </div>
     </div>
   )
+}
+
+interface TaskCardProps {
+  task: Task
+  onClick?: () => void
+  onDragStart?: (e: React.DragEvent) => void
+  onStatusChange?: (taskId: string, newStatus: TaskStatus) => void
+  draggable?: boolean
+  compact?: boolean
+  userRole?: string
 }

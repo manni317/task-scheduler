@@ -6,10 +6,12 @@ import { X, Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Sidebar } from './Sidebar'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const { profile } = useAuth()
 
   useEffect(() => {
     setMounted(true)

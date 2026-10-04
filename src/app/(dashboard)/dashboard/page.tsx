@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines'
 import { TeamVelocityChart } from '@/components/dashboard/TeamVelocityChart'
@@ -10,6 +10,7 @@ import { Task, User } from '@/types/task'
 import { createClient } from '@supabase/supabase-js'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
 
 const mockVelocity = [
@@ -21,15 +22,11 @@ const mockVelocity = [
 ]
 
 export default function DashboardPage() {
-  const [userRole, setUserRole] = useState('manager')
-  const [userId, setUserId] = useState('')
-
-  useEffect(() => {
-    setUserRole(localStorage.getItem('userRole') || 'manager')
-    setUserId(localStorage.getItem('userId') || '')
-  }, [])
-
+  const { profile, loading: authLoading } = useAuth()
   const { refreshCount } = useUIStore()
+
+  const userRole = profile?.role || 'employee'
+  const userId = profile?.id || ''
 
   const { data: { tasks = [], users = [] } = {}, isLoading } = useQuery({
     queryKey: ['dashboard_tasks', refreshCount],
@@ -82,10 +79,11 @@ export default function DashboardPage() {
         }))
       }
       return { tasks: mappedTasks, users: mappedUsers }
-    }
+    },
+    enabled: !!profile
   })
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex h-[600px] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -94,7 +92,7 @@ export default function DashboardPage() {
   }
 
   // Filter tasks based on role
-  const displayTasks = userRole === 'manager' 
+  const displayTasks = userRole === 'admin' || userRole === 'manager' 
     ? tasks 
     : tasks.filter(t => t.assigneeId === userId)
 
@@ -134,7 +132,7 @@ export default function DashboardPage() {
   })
 
   let performanceData = Array.from(performanceMap.values())
-  if (userRole !== 'manager') {
+  if (userRole !== 'admin' && userRole !== 'manager') {
     performanceData = performanceData.filter(p => p.userId === userId)
   }
 
@@ -149,7 +147,7 @@ export default function DashboardPage() {
 
       <StatsCards stats={stats} />
 
-      {userRole === 'manager' ? (
+      {(userRole === 'admin' || userRole === 'manager') ? (
         <>
           <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
             <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>

@@ -16,8 +16,9 @@ import {
   ChevronRight,
   ChevronDown,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useUIStore } from '@/hooks/use-ui-store'
+import { useAuth } from '@/hooks/useAuth'
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -35,6 +36,7 @@ const secondaryNavigation = [
 export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname()
   const { openCreateTaskModal } = useUIStore()
+  const { profile } = useAuth()
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     main: false,
     secondary: false,
@@ -44,21 +46,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
 
-  const [userEmail, setUserEmail] = useState('user@example.com')
-  const [userName, setUserName] = useState('User Name')
-  const [userRole, setUserRole] = useState('manager')
-
-  useEffect(() => {
-    const email = localStorage.getItem('userEmail')
-    const role = localStorage.getItem('userRole')
-    if (email) {
-      setUserEmail(email)
-      setUserName(email.split('@')[0])
-    }
-    if (role) {
-      setUserRole(role)
-    }
-  }, [])
+  const userRole = profile?.role || 'employee'
 
   return (
     <aside
@@ -147,7 +135,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
             {!collapsedSections.secondary && (
               <ul className="space-y-1" role="list">
                 {secondaryNavigation
-                  .filter(item => userRole === 'manager' || item.name !== 'Team')
+                  .filter(item => userRole === 'admin' || userRole === 'manager' || item.name !== 'Team')
                   .map(item => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                   const Icon = item.icon
@@ -174,7 +162,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
             )}
           </div>
 
-          {isOpen && userRole === 'manager' && (
+          {isOpen && (userRole === 'admin' || userRole === 'manager') && (
             <div className="pt-4 border-t">
               <Button
                 variant="outline"
@@ -192,17 +180,17 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
           {isOpen ? (
             <div className="flex items-center gap-3 px-2">
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-medium uppercase">{userName.charAt(0)}</span>
+                <span className="text-sm font-medium uppercase">{profile?.full_name?.charAt(0) || 'U'}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate capitalize">{userName}</p>
-                <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                <p className="text-sm font-medium truncate capitalize">{profile?.full_name || 'User'}</p>
+                <p className="text-xs text-muted-foreground truncate">{profile?.email || 'user@example.com'}</p>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-center">
               <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-medium uppercase">{userName.charAt(0)}</span>
+                <span className="text-sm font-medium uppercase">{profile?.full_name?.charAt(0) || 'U'}</span>
               </div>
             </div>
           )}

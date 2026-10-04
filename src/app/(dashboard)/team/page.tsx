@@ -6,6 +6,7 @@ import { createEmployee, updateEmployee } from '@/app/actions/team'
 import { toast } from 'sonner'
 import { Loader2, Plus, UserPlus, Shield, User, Edit, Trash2 } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function TeamPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -17,6 +18,10 @@ export default function TeamPage() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  const { profile } = useAuth()
+  const userRole = profile?.role || 'employee'
+  const userId = profile?.id
 
   const queryClient = useQueryClient()
 
@@ -75,6 +80,20 @@ export default function TeamPage() {
     }
   }
 
+  // Only admins can see team management
+  if (userRole !== 'admin') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Team Management</h1>
+            <p className="text-muted-foreground">You don't have permission to view this page.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -120,8 +139,8 @@ export default function TeamPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${user.role === 'manager' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-500'}`}>
-                    {user.role || 'Member'}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium mr-2 ${user.role === 'admin' ? 'bg-amber-500/20 text-amber-500' : user.role === 'manager' ? 'bg-blue-500/20 text-blue-500' : 'bg-green-500/20 text-green-500'}`}>
+                    {user.role || 'employee'}
                   </span>
                   
                   <button 
@@ -167,9 +186,10 @@ export default function TeamPage() {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-muted-foreground">Role</label>
-                <select name="role" defaultValue={editUser?.role || 'doer'} className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary">
-                  <option value="doer">Doer (Executes tasks)</option>
+                <select name="role" defaultValue={editUser?.role || 'employee'} className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary">
+                  <option value="employee">Employee (Executes tasks)</option>
                   <option value="manager">Manager (Assigns & Approves)</option>
+                  <option value="admin">Admin (Full access)</option>
                 </select>
               </div>
               

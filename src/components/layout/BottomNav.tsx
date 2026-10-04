@@ -13,6 +13,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { useUIStore } from '@/hooks/use-ui-store'
+import { useAuth } from '@/hooks/useAuth'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -24,11 +25,12 @@ const navigation = [
 export function BottomNav() {
   const pathname = usePathname()
   const { openCreateTaskModal } = useUIStore()
-  const [userRole, setUserRole] = useState('manager')
+  const { profile } = useAuth()
+  const [userRole, setUserRole] = useState('employee')
 
   useEffect(() => {
-    setUserRole(localStorage.getItem('userRole') || 'manager')
-  }, [])
+    setUserRole(profile?.role || 'employee')
+  }, [profile])
 
   return (
     <nav
@@ -59,7 +61,7 @@ export function BottomNav() {
             </Link>
           )
         })}
-        {userRole !== 'doer' && (
+        {(userRole === 'admin' || userRole === 'manager') && (
           <div className="relative -top-3">
             <button
               onClick={openCreateTaskModal}

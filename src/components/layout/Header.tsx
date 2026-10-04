@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { startOfDay } from 'date-fns'
+import { useAuth } from '@/hooks/useAuth'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
@@ -25,26 +26,18 @@ const navigation = [
 export function Header() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
+  const { profile } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
-  const [userEmail, setUserEmail] = useState('user@example.com')
-  const [userName, setUserName] = useState('User Name')
-
   useEffect(() => {
-    const email = localStorage.getItem('userEmail')
-    if (email) {
-      setUserEmail(email)
-      setUserName(email.split('@')[0])
-    }
-
     // Notification check
     const checkNotifications = async () => {
       if (sessionStorage.getItem('notified_today')) return
       sessionStorage.setItem('notified_today', 'true')
 
-      const role = localStorage.getItem('userRole') || 'manager'
-      const userId = localStorage.getItem('userId')
+      const userRole = profile?.role || 'employee'
+      const userId = profile?.id
 
       const supabase = createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,7 +47,7 @@ export function Header() {
       const today = startOfDay(new Date()).toISOString()
 
       try {
-        if (role === 'doer' && userId) {
+        if ((userRole === 'employee' || userRole === 'doer') && userId) {
           const { count } = await supabase
             .from('tasks')
             .select('id', { count: 'exact' })
@@ -64,13 +57,13 @@ export function Header() {
           if (count && count > 0) {
             setTimeout(() => toast.info(`You have ${count} new task(s) assigned today! 📝`, { duration: 6000 }), 1000)
           }
-        } else if (role === 'manager' && userId) {
+        } else if ((userRole === 'manager' || userRole === 'admin') && userId) {
           const { count } = await supabase
             .from('task_updates')
             .select('id', { count: 'exact' })
             .gte('created_at', today)
             .neq('user_id', userId)
-          
+         
           if (count && count > 0) {
             setTimeout(() => toast.info(`There are ${count} new task updates from your team today! 🔔`, { duration: 6000 }), 1000)
           }
@@ -81,7 +74,10 @@ export function Header() {
     }
 
     checkNotifications()
-  }, [])
+  }, [profile])
+
+  const userName = profile?.full_name || 'User'
+  const userEmail = profile?.email || 'user@example.com'
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -189,7 +185,7 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src="/avatar.png" alt={userName} />
+                  <AvatarImage src={profile?.avatar_url || "/avatar.png"} alt={userName} />
                   <AvatarFallback className="uppercase">{userName.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
@@ -224,7 +220,6 @@ export function Header() {
                       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
                     )
                     await supabase.auth.signOut()
-                    localStorage.removeItem('userEmail')
                     window.location.href = '/login'
                   } catch (error) {
                     console.error('Logout failed:', error)

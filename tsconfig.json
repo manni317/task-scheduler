@@ -39,6 +39,9 @@
       ],
       "@/types/*": [
         "./src/types/*"
+      ],
+      "@/inngest/*": [
+        "./inngest/*"
       ]
     }
   },

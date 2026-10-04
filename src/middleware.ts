@@ -76,11 +76,6 @@ const authRoutes = createRouteMatcher([
 ])
 
 export async function middleware(request: NextRequest) {
-  // DEV BYPASS: Skip auth checks in development mode for UI preview
-  if (process.env.NODE_ENV === 'development') {
-    return NextResponse.next()
-  }
-
   const { supabase, response } = await createMiddlewareSupabaseClient(request)
   const { data: { session } } = await supabase.auth.getSession()
 
@@ -89,16 +84,14 @@ export async function middleware(request: NextRequest) {
 
   // Redirect unauthenticated users to login
   if (isProtectedRoute && !session) {
-    // BYPASSED for development: let user see the UI without login
-    // const redirectUrl = new URL('/login', request.url)
-    // redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
-    // return NextResponse.redirect(redirectUrl)
+    const redirectUrl = new URL('/login', request.url)
+    redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
   }
 
   // Redirect authenticated users away from auth pages
   if (isAuthRoute && session) {
-    // BYPASSED
-    // return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // Role-based access control for admin routes
