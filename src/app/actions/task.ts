@@ -3,6 +3,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
+import { sendPushNotification } from '@/lib/push'
 
 export async function createTask(formData: FormData) {
   const cookieStore = cookies()
@@ -87,6 +88,17 @@ export async function createTask(formData: FormData) {
   revalidatePath('/dashboard')
   revalidatePath('/tasks')
   revalidatePath('/projects')
+  
+  // Send push notification to assignee if it's not the reporter
+  if (assigneeId && assigneeId !== 'unassigned' && assigneeId !== reporterId) {
+    // Send background push asynchronously
+    sendPushNotification(
+      assigneeId,
+      'New Task Assigned',
+      `You have been assigned to: ${title}`,
+      '/tasks'
+    ).catch(err => console.error('Push error:', err))
+  }
   
   return { success: true, task: data[0] }
 }
