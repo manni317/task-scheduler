@@ -15,22 +15,33 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
     
-    // AUTH BYPASSED FOR NOW: Instantly go to dashboard
-    const email = e.currentTarget.email.value;
+    const formData = new FormData(e.currentTarget)
     
     try {
-      const userProfile = await bypassedLogin(email);
-      localStorage.setItem('userEmail', userProfile.email);
-      localStorage.setItem('userRole', userProfile.role);
-      localStorage.setItem('userId', userProfile.id);
-      localStorage.setItem('userName', userProfile.full_name);
-      
-      toast.success(`Logged in as ${userProfile.role}! Taking you to dashboard...`)
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 1000)
+      if (isSignUp) {
+        const res = await signUpWithEmail(formData)
+        if (res.error) {
+          toast.error(res.error)
+          setIsLoading(false)
+          return
+        }
+        toast.success('Account created! Please check your email to verify (or try logging in).')
+        setIsSignUp(false)
+        setIsLoading(false)
+      } else {
+        const res = await loginWithEmail(formData)
+        if (res.error) {
+          toast.error(res.error)
+          setIsLoading(false)
+          return
+        }
+        toast.success('Logged in successfully! Taking you to dashboard...')
+        setTimeout(() => {
+          router.push('/dashboard')
+        }, 1000)
+      }
     } catch (err) {
-      toast.error('Failed to log in')
+      toast.error('An unexpected error occurred')
       setIsLoading(false)
     }
   }
