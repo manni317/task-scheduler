@@ -96,32 +96,12 @@ export function Header() {
             <Menu className="h-5 w-5" />
           </Button>
 
-          <Link href="/dashboard" className="flex items-center gap-2.5 font-extrabold text-lg">
+          <Link href="/dashboard" className="flex md:hidden items-center gap-2.5 font-extrabold text-lg">
             <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/30">
               <span className="text-primary-foreground font-black text-sm">T</span>
             </div>
             <span className="hidden sm:block tracking-tight">TaskFlow</span>
           </Link>
-
-          <nav className="hidden md:flex md:items-center md:gap-1 ml-2">
-            {navigation.map(item => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200',
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-                  )}
-                >
-                  {item.name}
-                </Link>
-              )
-            })}
-          </nav>
         </div>
 
         <div className="flex items-center gap-2">
