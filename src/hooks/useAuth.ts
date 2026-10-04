@@ -87,10 +87,10 @@ export function useAuth() {
     }
   }
 
-  const role = profile?.role ?? 'employee'
+  const role = profile?.role ?? 'doer'
   const isAdmin = role === 'admin'
   const isManager = role === 'manager'
-  const isEmployee = role === 'employee'
+  const isEmployee = role === 'doer'
 
   return {
     session,

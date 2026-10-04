@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
@@ -44,36 +44,39 @@ export function BottomNav() {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           const Icon = item.icon
 
-          // If manager, leave a gap in the middle for FAB
-          const isAfterFab = isManager && idx >= 2
+          // Insert an empty spacer div right before the 3rd item if we need space for FAB
+          const renderSpacer = isManager && idx === 2
 
           return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-2xl transition-all duration-200 relative',
-                isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground',
-                isAfterFab && isManager && 'ml-8'
+            <React.Fragment key={item.name}>
+              {renderSpacer && (
+                <div className="w-12 shrink-0 pointer-events-none" aria-hidden="true" />
               )}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              {/* active pill indicator */}
-              {isActive && (
-                <span className="absolute -top-px left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
-              )}
-              <div className={cn(
-                'flex items-center justify-center h-8 w-8 rounded-xl transition-all duration-200',
-                isActive ? 'bg-primary/10' : ''
-              )}>
-                <Icon className={cn('h-[18px] w-[18px]', isActive ? 'stroke-[2.5px]' : 'stroke-[1.8px]')} aria-hidden="true" />
-              </div>
-              <span className={cn('text-[10px] font-semibold leading-none', isActive ? 'text-primary' : '')}>
-                {item.name}
-              </span>
-            </Link>
+              <Link
+                href={item.href}
+                className={cn(
+                  'flex flex-col items-center justify-center gap-1 px-3 sm:px-4 py-2 rounded-2xl transition-all duration-200 relative flex-1',
+                  isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                {/* active pill indicator */}
+                {isActive && (
+                  <span className="absolute -top-px left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
+                )}
+                <div className={cn(
+                  'flex items-center justify-center h-8 w-8 rounded-xl transition-all duration-200',
+                  isActive ? 'bg-primary/10' : ''
+                )}>
+                  <Icon className={cn('h-[18px] w-[18px]', isActive ? 'stroke-[2.5px]' : 'stroke-[1.8px]')} aria-hidden="true" />
+                </div>
+                <span className={cn('text-[10px] font-semibold leading-none', isActive ? 'text-primary' : '')}>
+                  {item.name}
+                </span>
+              </Link>
+            </React.Fragment>
           )
         })}
 
