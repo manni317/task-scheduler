@@ -223,7 +223,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
 
       {/* Modal Container */}
       <div 
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-white/10 bg-[#0f111a]/80 p-6 shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200"
+        className="relative w-full sm:w-11/12 max-w-2xl max-h-[90vh] h-full sm:h-auto overflow-y-auto rounded-t-[2rem] sm:rounded-[2rem] border border-white/10 bg-slate-950 p-6 shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-300 fixed sm:relative bottom-0 sm:bottom-auto inset-x-0"
         style={{
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1)',
         }}

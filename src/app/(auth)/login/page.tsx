@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { loginWithEmail, signUpWithEmail, bypassedLogin } from '@/app/actions/auth'
 import { toast } from 'sonner'
 import { Loader2, CheckCircle2, Zap } from 'lucide-react'
+import { AnimatedBackground } from '@/components/ui/animated-background'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -48,10 +49,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[hsl(220,20%,97%)] px-4">
-      {/* EverSync-style background blobs */}
-      <div className="absolute top-[-15%] right-[-10%] w-[55%] h-[55%] rounded-full bg-blue-500/15 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-400/10 blur-[100px] pointer-events-none" />
-      <div className="absolute top-[30%] left-[5%] w-[30%] h-[30%] rounded-full bg-sky-300/10 blur-[80px] pointer-events-none" />
+      <AnimatedBackground />
 
       <div className="relative z-10 w-full max-w-sm">
         {/* Logo & title */}

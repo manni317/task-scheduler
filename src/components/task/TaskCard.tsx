@@ -9,7 +9,7 @@ import { Calendar, Clock, Flag, User, MessageSquare, Paperclip, GitBranch, Mic }
 import { format, isPast, isToday, isTomorrow } from 'date-fns'
 import { Task } from '@/types/task'
 import { TaskStatus } from '@/types/task'
-
+import { SwipeToComplete } from '@/components/ui/swipe-to-complete'
 import { useState, useEffect } from 'react'
 
 export function TaskCard({ 
@@ -255,6 +255,18 @@ export function TaskCard({
               >
                 Approve (Done)
               </Button>
+            </div>
+          )}
+          
+          {/* Swipe to Complete for Employees */}
+          {userRole === 'employee' && task.status !== 'done' && task.status !== 'review' && onStatusChange && (
+            <div className="mt-4 pt-4 border-t" onClick={e => e.stopPropagation()}>
+              <SwipeToComplete 
+                text={task.status === 'in_progress' ? 'Swipe to complete' : 'Swipe to start task'} 
+                onComplete={() => {
+                  onStatusChange(task.id, task.status === 'in_progress' ? 'review' : 'in_progress')
+                }} 
+              />
             </div>
           )}
         </div>

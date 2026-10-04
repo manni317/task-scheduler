@@ -54,6 +54,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
+    "framer-motion": "^14.0.0",
     "googleapis": "^144.0.0",
     "ical-generator": "^11.1.1",
     "inngest": "^3.28.0",
