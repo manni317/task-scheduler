@@ -53,7 +53,18 @@ export const metadata: Metadata = {
     shortcut: '/favicon-16x16.png',
     apple: '/apple-touch-icon.png',
   },
-  manifest: '/site.webmanifest',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Muze Tasks',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  other: {
+    'theme-color': '#6366f1',
+  },
 }
 
 export const viewport: Viewport = {

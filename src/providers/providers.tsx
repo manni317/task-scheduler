@@ -8,6 +8,7 @@ import { SupabaseProvider } from '@/lib/supabase-provider'
 import { Toaster as SonnerToaster } from 'sonner'
 import { Toaster } from '@/components/ui/toaster'
 import { useState, type ReactNode } from 'react'
+import { SWRegister } from '@/components/providers/SWRegister'
 
 interface ProvidersProps {
   children: ReactNode
@@ -42,6 +43,7 @@ export function Providers({ children }: ProvidersProps) {
             {children}
             <Toaster />
             <SonnerToaster position="top-center" />
+            <SWRegister />
           </SupabaseProvider>
         </QueryClientProvider>
       </SessionProvider>

@@ -34,9 +34,10 @@ interface KanbanColumnProps {
   onTaskDragStart: (event: React.DragEvent, task: Task) => void
   onAddTask: (status: TaskStatus) => void
   onTaskStatusChange: (taskId: string, newStatus: TaskStatus) => void
+  userRole?: string
 }
 
-function KanbanColumn({ status, title, tasks, onTaskClick, onTaskDragStart, onAddTask, onTaskStatusChange }: KanbanColumnProps) {
+function KanbanColumn({ status, title, tasks, onTaskClick, onTaskDragStart, onAddTask, onTaskStatusChange, userRole }: KanbanColumnProps) {
   return (
     <div className="flex flex-col w-[280px] shrink-0 md:min-w-[220px] md:flex-1">
       <div className="flex items-center justify-between px-3 py-2">
@@ -58,6 +59,7 @@ function KanbanColumn({ status, title, tasks, onTaskClick, onTaskDragStart, onAd
               onDragStart={(e) => onTaskDragStart(e, task)}
               onStatusChange={onTaskStatusChange}
               draggable
+              userRole={userRole}
             />
           ))}
         </div>
@@ -73,6 +75,7 @@ interface KanbanBoardProps {
   onAddTask: (status: TaskStatus) => void
   users: User[]
   projects: { id: string; name: string; key: string }[]
+  userRole?: string
 }
 
 const statusColumns: { status: TaskStatus; title: string }[] = [
@@ -88,7 +91,8 @@ export function KanbanBoard({
   onTaskDragEnd, 
   onAddTask,
   users,
-  projects
+  projects,
+  userRole
 }: KanbanBoardProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<TaskStatus>('todo')
@@ -159,6 +163,7 @@ export function KanbanBoard({
               const newOrder = tasks.filter(t => t.status === newStatus).length;
               onTaskDragEnd(taskId, newStatus, newOrder);
             }}
+            userRole={userRole}
           />
         ))}
       </div>

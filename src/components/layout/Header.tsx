@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown } from 'lucide-react'
+import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { createBrowserClient } from '@supabase/ssr'
@@ -19,6 +19,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
   { name: 'Tasks', href: '/tasks', icon: 'CheckSquare' },
   { name: 'Projects', href: '/projects', icon: 'FolderKanban' },
+  { name: 'Calendar', href: '/calendar', icon: 'Calendar' },
   { name: 'Analytics', href: '/analytics', icon: 'BarChart' },
   { name: 'Settings', href: '/settings', icon: 'Settings' },
 ]

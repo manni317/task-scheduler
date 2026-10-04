@@ -12,18 +12,18 @@ import { ProjectCard } from '@/components/project/ProjectCard'
 import { Project, User as UserType } from '@/types/task'
 import { cn } from '@/lib/utils'
 import { createClient } from '@supabase/supabase-js'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function ProjectDetailPage() {
   const params = useParams()
   const projectId = params.id as string
   const { openCreateTaskModal, refreshCount } = useUIStore()
+  const { profile, loading: authLoading } = useAuth()
 
   const [project, setProject] = useState<Project | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [userRole, setUserRole] = useState('manager')
-  const [userId, setUserId] = useState('')
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,9 +31,7 @@ export default function ProjectDetailPage() {
   )
 
   useEffect(() => {
-    const role = localStorage.getItem('userRole') || 'manager'
-    setUserRole(role)
-    setUserId(localStorage.getItem('userId') || '')
+    if (authLoading) return
     async function fetchData() {
       setIsLoading(true)
       try {
@@ -104,12 +102,15 @@ export default function ProjectDetailPage() {
       }
     }
     fetchData()
-  }, [projectId, refreshCount])
+  }, [projectId, refreshCount, authLoading])
 
-  if (isLoading) return <div className="h-full flex items-center justify-center">Loading project details...</div>
+  if (authLoading || isLoading) return <div className="h-full flex items-center justify-center">Loading project details...</div>
   if (!project) return <div className="h-full flex items-center justify-center text-red-500">Project not found</div>
 
-  const displayTasks = userRole === 'manager' ? tasks : tasks.filter(t => t.assigneeId === userId)
+  const userRole = profile?.role || 'employee'
+  const userId = profile?.id || ''
+
+  const displayTasks = (userRole === 'manager' || userRole === 'admin') ? tasks : tasks.filter(t => t.assigneeId === userId)
 
   return (
     <div className="h-full flex flex-col">
@@ -125,7 +126,7 @@ export default function ProjectDetailPage() {
                 <h1 className="text-2xl font-bold truncate">{project.name}</h1>
                 <p className="text-muted-foreground truncate">{project.description}</p>
               </div>
-              {userRole !== 'doer' && (
+              {(userRole === 'manager' || userRole === 'admin') && (
                 <Button onClick={() => openCreateTaskModal({ projectId })} className="gap-2 bg-primary whitespace-nowrap">
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">New Task</span>
@@ -172,6 +173,7 @@ export default function ProjectDetailPage() {
                 onAddTask={(status) => openCreateTaskModal({ projectId, status })}
                 users={users}
                 projects={[project]}
+                userRole={userRole}
               />
             </TabsContent>
 

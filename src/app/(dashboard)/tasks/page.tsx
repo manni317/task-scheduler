@@ -227,7 +227,7 @@ export default function TasksPage() {
                   await supabase.from('tasks')
                     .update({ status: newStatus, order_index: newOrder })
                     .eq('id', taskId)
-                   
+                  
                   queryClient.invalidateQueries({ queryKey: ['tasks'] })
                 } catch (error) {
                   console.error('Failed to update task:', error)
@@ -236,8 +236,10 @@ export default function TasksPage() {
               onAddTask={(status) => openCreateTaskModal({ status })}
               users={users}
               projects={projects}
+              userRole={userRole}
             />
-        </TabsContent>
+          </TabsContent>
+
 
         <TabsContent value="list" className="min-h-[600px]">
           <div className="space-y-2 pb-6">

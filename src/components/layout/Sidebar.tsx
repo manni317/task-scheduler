@@ -15,6 +15,7 @@ import {
   Plus,
   ChevronRight,
   ChevronDown,
+  Calendar,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useUIStore } from '@/hooks/use-ui-store'
@@ -24,6 +25,7 @@ const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Tasks', href: '/tasks', icon: CheckSquare },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
+  { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Analytics', href: '/analytics', icon: BarChart },
 ]
 
