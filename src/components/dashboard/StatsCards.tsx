@@ -3,6 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { CheckCircle, Clock, AlertTriangle, ListTodo, TrendingUp, TrendingDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 interface StatCardProps {
   title: string
@@ -12,22 +13,26 @@ interface StatCardProps {
   iconClass: string
   bgClass: string
   description?: string
+  onClick?: () => void
 }
 
-function StatCard({ title, value, change, icon, iconClass, bgClass, description }: StatCardProps) {
+function StatCard({ title, value, change, icon, iconClass, bgClass, description, onClick }: StatCardProps) {
   const isPositive = change !== undefined ? change >= 0 : null
 
   return (
-    <div className={cn(
-      "group relative rounded-[1.5rem] border p-4 transition-all duration-300 overflow-hidden",
-      "bg-card/50 backdrop-blur-xl border-border/50",
-      "hover:shadow-lg hover:-translate-y-1",
-      // Subdued neon glow at the bottom matching the card's color theme
-      title === 'Total Tasks' && "shadow-[0_8px_30px_rgb(59,130,246,0.12)] dark:shadow-[0_8px_30px_rgb(59,130,246,0.05)]",
-      title === 'Completed' && "shadow-[0_8px_30px_rgb(16,185,129,0.12)] dark:shadow-[0_8px_30px_rgb(16,185,129,0.05)]",
-      title === 'In Progress' && "shadow-[0_8px_30px_rgb(245,158,11,0.12)] dark:shadow-[0_8px_30px_rgb(245,158,11,0.05)]",
-      title === 'Overdue' && "shadow-[0_8px_30px_rgb(239,68,68,0.12)] dark:shadow-[0_8px_30px_rgb(239,68,68,0.05)]"
-    )}>
+    <div 
+      onClick={onClick}
+      className={cn(
+        "group relative rounded-[1.5rem] border p-4 transition-all duration-300 overflow-hidden",
+        "bg-card/50 backdrop-blur-xl border-border/50",
+        "hover:shadow-lg hover:-translate-y-1",
+        onClick && "cursor-pointer active:scale-[0.98]",
+        // Subdued neon glow at the bottom matching the card's color theme
+        title === 'Total Tasks' && "shadow-[0_8px_30px_rgb(59,130,246,0.12)] dark:shadow-[0_8px_30px_rgb(59,130,246,0.05)]",
+        title === 'Completed' && "shadow-[0_8px_30px_rgb(16,185,129,0.12)] dark:shadow-[0_8px_30px_rgb(16,185,129,0.05)]",
+        title === 'In Progress' && "shadow-[0_8px_30px_rgb(245,158,11,0.12)] dark:shadow-[0_8px_30px_rgb(245,158,11,0.05)]",
+        title === 'Overdue' && "shadow-[0_8px_30px_rgb(239,68,68,0.12)] dark:shadow-[0_8px_30px_rgb(239,68,68,0.05)]"
+      )}>
       {/* Soft gradient background blob */}
       <div className={cn(
         "absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-[2xl] opacity-50 dark:opacity-30 pointer-events-none",
@@ -73,6 +78,8 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
+  const router = useRouter()
+
   const cards = [
     {
       title: 'Total Tasks',
@@ -81,6 +88,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       iconClass: 'text-blue-600 dark:text-blue-400',
       bgClass: 'bg-blue-100 dark:bg-blue-900/40',
       description: 'All assigned tasks',
+      onClick: () => router.push('/tasks')
     },
     {
       title: 'Completed',
@@ -89,6 +97,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: <CheckCircle className="h-5 w-5" />,
       iconClass: 'text-emerald-600 dark:text-emerald-400',
       bgClass: 'bg-emerald-100 dark:bg-emerald-900/40',
+      onClick: () => router.push('/tasks')
     },
     {
       title: 'In Progress',
@@ -97,6 +106,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       iconClass: 'text-amber-600 dark:text-amber-400',
       bgClass: 'bg-amber-100 dark:bg-amber-900/40',
       description: 'Currently active',
+      onClick: () => router.push('/tasks')
     },
     {
       title: 'Overdue',
@@ -105,6 +115,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: <AlertTriangle className="h-5 w-5" />,
       iconClass: 'text-red-600 dark:text-red-400',
       bgClass: 'bg-red-100 dark:bg-red-900/40',
+      onClick: () => router.push('/tasks')
     },
   ]
 
