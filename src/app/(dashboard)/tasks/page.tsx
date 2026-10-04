@@ -104,16 +104,42 @@ export default function TasksPage() {
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all')
   const [projectFilter, setProjectFilter] = useState<string>('all')
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const status = params.get('status')
+    if (status) {
+      setStatusFilter(status)
+    }
+  }, [])
+
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || task.status === statusFilter
+    const isOverdue = task.dueDate && task.dueDate < new Date() && task.status !== 'done'
+    const matchesStatus = statusFilter === 'all' 
+      ? true 
+      : statusFilter === 'overdue' 
+        ? isOverdue 
+        : task.status === statusFilter
+
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter
     const matchesAssignee = assigneeFilter === 'all' || task.assigneeId === assigneeFilter
     const matchesProject = projectFilter === 'all' || task.projectId === projectFilter
     const matchesRole = userRole === 'admin' || userRole === 'manager' || task.assigneeId === userId
     return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesProject && matchesRole
   })
+
+  // Update URL when filter changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (statusFilter === 'all') {
+      params.delete('status')
+    } else {
+      params.set('status', statusFilter)
+    }
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`
+    window.history.replaceState({}, '', newUrl)
+  }, [statusFilter])
 
   if (authLoading) {
     return (
@@ -166,6 +192,7 @@ export default function TasksPage() {
             <SelectItem value="in_progress">In Progress</SelectItem>
             <SelectItem value="review">Review</SelectItem>
             <SelectItem value="done">Done</SelectItem>
+            <SelectItem value="overdue">Overdue</SelectItem>
           </SelectContent>
         </Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
