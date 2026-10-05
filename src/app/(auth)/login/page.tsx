@@ -48,19 +48,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950 px-4 text-slate-900 dark:text-slate-50 font-sans transition-colors duration-300">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-950 px-4 text-slate-900 dark:text-slate-50 font-sans transition-colors duration-300">
       
-      {/* Static Subtle Background Elements to replace laggy animation */}
-      <div className="absolute top-0 right-0 -mr-[20%] -mt-[10%] w-[50vw] h-[50vw] rounded-full bg-blue-100/50 dark:bg-blue-900/10 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 -ml-[20%] -mb-[10%] w-[60vw] h-[60vw] rounded-full bg-purple-100/50 dark:bg-purple-900/10 blur-3xl pointer-events-none" />
-
       <div className="relative z-10 w-full max-w-[420px]">
         {/* Card */}
-        <div className="bg-white dark:bg-[#09090b] border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-8 sm:p-10 relative overflow-hidden transition-all duration-300">
+        <div className="bg-white dark:bg-[#0f111a] border border-slate-200 dark:border-white/10 rounded-3xl shadow-xl p-8 sm:p-10 relative overflow-hidden transition-all duration-300">
           
-          {/* Subtle gradient overlay top-left inside card */}
-          <div className="absolute top-[-50%] left-[-50%] w-full h-full bg-gradient-to-br from-indigo-500/10 dark:from-indigo-500/20 to-transparent rounded-full blur-2xl pointer-events-none" />
-
           {/* Logo & title */}
           <div className="text-center mb-8 relative z-10">
             <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 ring-1 ring-black/5 dark:ring-white/20">
