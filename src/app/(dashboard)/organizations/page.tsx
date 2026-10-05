@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Plus, Users } from 'lucide-react'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 
 export default function OrganizationsPage() {
+  const router = useRouter()
   const { openCreateOrgModal, refreshCount } = useUIStore()
   const { profile } = useAuth()
   const userRole = profile?.role || 'employee'
@@ -68,7 +70,11 @@ export default function OrganizationsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {orgs.map((org: any) => (
-            <div key={org.id} className="p-6 bg-card border rounded-2xl hover:shadow-md transition-all flex flex-col">
+            <div 
+              key={org.id} 
+              onClick={() => router.push(`/organizations/${org.id}`)}
+              className="p-6 bg-card border rounded-2xl hover:shadow-md transition-all flex flex-col cursor-pointer"
+            >
               <div className="flex items-center gap-4 mb-4">
                 <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl">
                   {org.name.charAt(0).toUpperCase()}
