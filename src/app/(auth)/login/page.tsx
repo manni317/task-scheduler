@@ -48,25 +48,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950 px-4 text-slate-50 font-sans dark">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-950 px-4 text-slate-900 dark:text-slate-50 font-sans transition-colors duration-300">
       <AnimatedBackground />
 
       <div className="relative z-10 w-full max-w-[420px]">
         {/* Card */}
-        <div className="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-8 sm:p-10 relative overflow-hidden">
+        <div className="bg-white/80 dark:bg-black/40 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-8 sm:p-10 relative overflow-hidden transition-all duration-300">
           
           {/* Subtle gradient overlay top-left inside card */}
-          <div className="absolute top-[-50%] left-[-50%] w-full h-full bg-gradient-to-br from-indigo-500/20 to-transparent rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-[-50%] left-[-50%] w-full h-full bg-gradient-to-br from-indigo-500/10 dark:from-indigo-500/20 to-transparent rounded-full blur-2xl pointer-events-none" />
 
           {/* Logo & title */}
           <div className="text-center mb-8 relative z-10">
-            <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 ring-1 ring-white/20">
+            <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 ring-1 ring-black/5 dark:ring-white/20">
               <Zap className="w-7 h-7 text-white fill-white" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">
-              {isSignUp ? 'Create Account' : 'Welcome Back'}
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+              {isSignUp ? 'Create Account' : 'Task Manager'}
             </h1>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">
               {isSignUp ? 'Start managing tasks like a pro.' : 'Sign in to your high-performance workspace.'}
             </p>
           </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
             {isSignUp && (
               <>
                 <div className="space-y-2">
-                  <label htmlFor="fullName" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  <label htmlFor="fullName" className="text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                     Full Name
                   </label>
                   <div className="relative">
@@ -84,13 +84,13 @@ export default function LoginPage() {
                       name="fullName"
                       type="text"
                       required
-                      className="w-full pl-4 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-white/10"
+                      className="w-full pl-4 pr-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-slate-50 dark:hover:bg-white/10"
                       placeholder="John Doe"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="companyName" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  <label htmlFor="companyName" className="text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                     Company Name
                   </label>
                   <div className="relative">
@@ -99,7 +99,7 @@ export default function LoginPage() {
                       name="companyName"
                       type="text"
                       required
-                      className="w-full pl-4 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-white/10"
+                      className="w-full pl-4 pr-4 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-slate-50 dark:hover:bg-white/10"
                       placeholder="Acme Corp"
                     />
                   </div>
@@ -108,7 +108,7 @@ export default function LoginPage() {
             )}
             
             <div className="space-y-2">
-              <label htmlFor="email" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <label htmlFor="email" className="text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                 Work Email
               </label>
               <div className="relative group">
@@ -118,20 +118,20 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-white/10"
+                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-slate-50 dark:hover:bg-white/10"
                   placeholder="you@example.com"
                 />
-                <Mail className="absolute right-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                <Mail className="absolute right-3.5 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors" />
               </div>
             </div>
             
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                <label htmlFor="password" className="text-xs font-semibold text-slate-500 dark:text-slate-300 uppercase tracking-wider">
                   Password
                 </label>
                 {!isSignUp && (
-                  <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
+                  <a href="#" className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
                     Forgot Password?
                   </a>
                 )}
@@ -142,10 +142,10 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   required
-                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-white/10"
+                  className="w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all duration-300 text-sm hover:bg-slate-50 dark:hover:bg-white/10"
                   placeholder="••••••••"
                 />
-                <Lock className="absolute right-3.5 top-3.5 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                <Lock className="absolute right-3.5 top-3.5 h-4 w-4 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors" />
               </div>
             </div>
             
@@ -153,7 +153,7 @@ export default function LoginPage() {
               <button 
                 type="submit" 
                 disabled={isLoading} 
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all duration-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm border border-white/10 overflow-hidden relative group"
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 dark:hover:from-indigo-400 dark:hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/25 transition-all duration-300 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed text-sm border border-transparent dark:border-white/10 overflow-hidden relative group"
               >
                 {/* Shine effect on hover */}
                 <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
@@ -172,17 +172,17 @@ export default function LoginPage() {
           <button 
             type="button" 
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-sm text-slate-400 hover:text-white transition-colors duration-200"
+            className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors duration-200"
           >
             {isSignUp ? "Already have an account? " : "Don't have an account? "}
-            <span className="text-indigo-400 font-semibold hover:underline">{isSignUp ? 'Sign In' : 'Sign Up'}</span>
+            <span className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">{isSignUp ? 'Sign In' : 'Sign Up'}</span>
           </button>
         </div>
         
-        <div className="text-center mt-12 text-xs text-slate-500 flex justify-center gap-4">
-          <a href="#" className="hover:text-slate-300 transition-colors">Product</a>
-          <a href="#" className="hover:text-slate-300 transition-colors">Features</a>
-          <a href="#" className="hover:text-slate-300 transition-colors">Support</a>
+        <div className="text-center mt-12 text-xs text-slate-500 dark:text-slate-500 flex justify-center gap-4">
+          <a href="#" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Product</a>
+          <a href="#" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Features</a>
+          <a href="#" className="hover:text-slate-700 dark:hover:text-slate-300 transition-colors">Support</a>
         </div>
       </div>
     </div>

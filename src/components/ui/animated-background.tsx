@@ -13,7 +13,7 @@ export function AnimatedBackground() {
   if (!mounted) return null
 
   return (
-    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-slate-950">
+    <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-slate-50 dark:bg-slate-950 opacity-40 dark:opacity-100">
       {/* Balloon 1 */}
       <motion.div
         className="absolute w-[70vw] h-[70vw] max-w-[800px] max-h-[800px] bg-cyan-400/60 rounded-full blur-[100px]"
