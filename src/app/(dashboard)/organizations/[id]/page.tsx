@@ -5,10 +5,11 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ProjectList } from '@/components/project/ProjectList'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, UserPlus } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { Project, User } from '@/types/task'
 
@@ -31,6 +32,8 @@ export default function OrganizationDetailPage() {
 
   const userRole = profile?.role || 'employee'
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin'
+  const [isAddingMember, setIsAddingMember] = useState(false)
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
 
   useEffect(() => {
     if (orgId) {
@@ -154,6 +157,26 @@ export default function OrganizationDetailPage() {
     toast.info('Archiving not supported in current schema')
   }
 
+  const handleAddMember = async (userId: string) => {
+    setIsAddingMember(true)
+    try {
+      const { error } = await supabase.from('organization_members').insert({
+        org_id: orgId,
+        user_id: userId,
+        role: 'member'
+      })
+      if (error) throw error
+      toast.success('Member added successfully!')
+      setIsAddMemberModalOpen(false)
+      fetchData()
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Failed to add member')
+    } finally {
+      setIsAddingMember(false)
+    }
+  }
+
   if (isLoading) {
     return <div className="h-full flex items-center justify-center">Loading organization...</div>
   }
@@ -199,9 +222,51 @@ export default function OrganizationDetailPage() {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Organization Members ({orgMembers.length})</h3>
               {isManagerOrAdmin && (
-                <Button variant="outline" onClick={() => router.push('/team')}>
-                  Manage Team
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={() => router.push('/team')}>
+                    Manage Team
+                  </Button>
+                  <Dialog open={isAddMemberModalOpen} onOpenChange={setIsAddMemberModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <UserPlus className="h-4 w-4" /> Add Member
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add Existing Member</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4 max-h-[60vh] overflow-y-auto">
+                        {users.filter(u => !orgMembers.some(om => om.user_id === u.id)).length === 0 ? (
+                          <p className="text-center text-muted-foreground py-4">All system users are already in this organization.</p>
+                        ) : (
+                          users.filter(u => !orgMembers.some(om => om.user_id === u.id)).map(user => (
+                            <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={user.avatar || ''} />
+                                  <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="text-sm font-medium">{user.name}</p>
+                                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                                </div>
+                              </div>
+                              <Button 
+                                size="sm" 
+                                variant="secondary" 
+                                disabled={isAddingMember}
+                                onClick={() => handleAddMember(user.id)}
+                              >
+                                Add
+                              </Button>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               )}
             </div>
             
