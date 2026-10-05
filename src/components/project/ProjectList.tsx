@@ -15,6 +15,7 @@ interface ProjectListProps {
   userRole?: string
   projects: Project[]
   users: User[]
+  organizations?: any[]
   onProjectClick: (project: Project) => void
   onCreateProject: (data: any) => Promise<void>
   onUpdateProject: (data: any) => Promise<void>
@@ -26,6 +27,7 @@ export function ProjectList({
   userRole = 'manager',
   projects, 
   users, 
+  organizations = [],
   onProjectClick, 
   onCreateProject, 
   onUpdateProject,
@@ -121,6 +123,7 @@ export function ProjectList({
               <ProjectForm
                 initialData={editingProject}
                 users={users}
+                organizations={organizations}
                 onSubmit={editingProject ? handleUpdateProject : handleCreateProject}
                 onCancel={() => { setDialogOpen(false); setEditingProject(null); }}
               />

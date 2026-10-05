@@ -25,12 +25,16 @@ export default function TeamPage() {
 
   const queryClient = useQueryClient()
 
-  const { data: users = [], isLoading, error } = useQuery({
+  const { data: { users = [], orgs = [] } = {}, isLoading, error } = useQuery({
     queryKey: ['team'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
-      if (error) throw error
-      return data || []
+      const [{ data: usersData, error: usersError }, { data: orgsData }] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('organizations').select('id, name').order('name')
+      ])
+      
+      if (usersError) throw usersError
+      return { users: usersData || [], orgs: orgsData || [] }
     }
   })
 
@@ -192,6 +196,17 @@ export default function TeamPage() {
                   <option value="admin">Admin (Full access)</option>
                 </select>
               </div>
+              {!editUser && orgs.length > 0 && (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-muted-foreground">Assign to Organization</label>
+                  <select name="orgId" className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary">
+                    <option value="">No Organization (System wide)</option>
+                    {orgs.map((org: any) => (
+                      <option key={org.id} value={org.id}>{org.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               
               <div className="mt-6 flex justify-end gap-3">
                 <button type="button" onClick={() => { setIsModalOpen(false); setEditUser(null); }} className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted">Cancel</button>

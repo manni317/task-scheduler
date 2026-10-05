@@ -20,6 +20,7 @@ export async function createEmployee(formData: FormData) {
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
   const role = formData.get('role') as string // 'manager' | 'doer'
+  const orgId = formData.get('orgId') as string // UUID
 
   // 1. Create the user in Auth
   const { data, error } = await supabaseAdmin.auth.signUp({
@@ -55,7 +56,19 @@ export async function createEmployee(formData: FormData) {
     return { error: upsertError.message }
   }
 
+  if (orgId) {
+    const { error: orgError } = await supabaseAdmin.from('organization_members').insert({
+      org_id: orgId,
+      user_id: userId,
+      role: 'member'
+    })
+    if (orgError) {
+      console.error('Org insert error:', orgError)
+    }
+  }
+
   revalidatePath('/team')
+  revalidatePath('/organizations')
   revalidatePath('/dashboard')
   
   return { success: true, user: data?.user || { id: userId, email } }

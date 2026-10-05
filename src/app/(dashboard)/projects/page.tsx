@@ -13,6 +13,7 @@ export default function ProjectsPage() {
   const { profile, loading: authLoading } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [organizations, setOrganizations] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   const supabase = createClient(
@@ -43,6 +44,9 @@ export default function ProjectsPage() {
       let { data: projectsData, error: projError } = await supabase.from('projects').select('*')
       if (projError) throw projError
 
+      const { data: orgsData, error: orgsError } = await supabase.from('organizations').select('*')
+      if (!orgsError && orgsData) setOrganizations(orgsData)
+
       const userRole = profile?.role || 'employee'
       const userId = profile?.id
 
@@ -57,6 +61,7 @@ export default function ProjectsPage() {
         name: p.name,
         description: p.description || '',
         key: p.key_prefix || 'PRJ',
+        orgId: p.org_id,
         color: '#3B82F6',
         icon: '📁',
         ownerId: '',
@@ -85,6 +90,7 @@ export default function ProjectsPage() {
       const newProject = {
         name: data.name,
         description: data.description,
+        org_id: data.orgId || null,
       }
 
       const { error } = await supabase.from('projects').insert([newProject])
@@ -143,6 +149,7 @@ export default function ProjectsPage() {
           userRole={userRole}
           projects={projects}
           users={users}
+          organizations={organizations}
           onProjectClick={(project) => router.push(`/projects/${project.id}`)}
           onCreateProject={handleCreateProject}
           onUpdateProject={handleUpdateProject}
