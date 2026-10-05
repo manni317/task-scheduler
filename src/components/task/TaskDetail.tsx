@@ -18,6 +18,7 @@ import { TaskForm } from './TaskForm'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { createClient } from '@supabase/supabase-js'
 import { toast } from 'sonner'
+import { useAuth } from '@/hooks/useAuth'
 
 interface TaskDetailProps {
   task: Task
@@ -45,9 +46,10 @@ export function TaskDetail({
   const [submitReviewOpen, setSubmitReviewOpen] = useState(false)
   const [submitNote, setSubmitNote] = useState('')
   const [newComment, setNewComment] = useState('')
-  const [userRole, setUserRole] = useState('manager')
-  const [userId, setUserId] = useState('')
-  const [userName, setUserName] = useState('')
+  const { profile } = useAuth()
+  const userRole = profile?.role || 'employee'
+  const userId = profile?.id || ''
+  const userName = profile?.full_name || profile?.email || 'User'
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [isUploadingFile, setIsUploadingFile] = useState(false)
@@ -69,12 +71,6 @@ export function TaskDetail({
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
-
-  useEffect(() => {
-    setUserRole(localStorage.getItem('userRole') || 'manager')
-    setUserId(localStorage.getItem('userId') || '')
-    setUserName(localStorage.getItem('userName') || 'User')
-  }, [])
 
   useEffect(() => {
     loadUpdates()
@@ -164,12 +160,14 @@ export function TaskDetail({
         ? `${newComment.trim()}${newComment.trim() ? '\n' : ''}[audio:${audioStorageUrl}]`
         : newComment.trim()
 
-      await supabase.from('task_updates').insert({
+      const { error: insertError } = await supabase.from('task_updates').insert({
         task_id: task.id,
         user_id: userId || null,
         content,
         update_type: 'comment'
       })
+      if (insertError) throw insertError
+
       setNewComment('')
       setAudioUrl(null)
       await loadUpdates()
@@ -290,7 +288,7 @@ export function TaskDetail({
 
         <div className="flex items-center gap-2 flex-wrap justify-start lg:justify-end w-full lg:w-auto mt-2 lg:mt-0">
           {/* MANAGER ACTIONS */}
-          {userRole === 'manager' && (
+          {(userRole === 'manager' || userRole === 'admin') && (
             <>
               {task.status === 'review' && (
                 <>
@@ -365,7 +363,7 @@ export function TaskDetail({
           )}
 
           {/* DOER ACTIONS */}
-          {userRole === 'doer' && (
+          {userRole === 'employee' && (
             <>
               {task.status === 'todo' && (
                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white"
