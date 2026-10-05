@@ -81,6 +81,15 @@ export default function TaskDetailPage() {
   }
 
   const handleUpdate = async (data: Partial<Task>) => {
+    // Optimistic UI update
+    queryClient.setQueryData(['task', taskId], (oldData: any) => {
+      if (!oldData || !oldData.task) return oldData
+      return {
+        ...oldData,
+        task: { ...oldData.task, ...data }
+      }
+    })
+
     try {
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,

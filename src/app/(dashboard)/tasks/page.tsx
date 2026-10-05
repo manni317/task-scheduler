@@ -245,6 +245,17 @@ export default function TasksPage() {
               tasks={filteredTasks}
               onTaskClick={(task) => router.push(`/tasks/${task.id}`)}
               onTaskDragEnd={async (taskId, newStatus, newOrder) => {
+                // Optimistic UI update
+                queryClient.setQueryData(['tasks', refreshCount], (oldData: any) => {
+                  if (!oldData || !oldData.tasks) return oldData
+                  return {
+                    ...oldData,
+                    tasks: oldData.tasks.map((t: any) => 
+                      t.id === taskId ? { ...t, status: newStatus, order: newOrder } : t
+                    )
+                  }
+                })
+
                 try {
                   const supabase = createClient(
                     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -258,6 +269,7 @@ export default function TasksPage() {
                   queryClient.invalidateQueries({ queryKey: ['tasks'] })
                 } catch (error) {
                   console.error('Failed to update task:', error)
+                  queryClient.invalidateQueries({ queryKey: ['tasks'] })
                 }
               }}
               onAddTask={(status) => openCreateTaskModal({ status })}

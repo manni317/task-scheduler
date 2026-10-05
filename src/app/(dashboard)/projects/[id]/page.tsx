@@ -16,9 +16,11 @@ import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { useRouter } from 'next/navigation'
 
 export default function ProjectDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const projectId = params.id as string
   const { openCreateTaskModal, refreshCount } = useUIStore()
   const { profile, loading: authLoading } = useAuth()
@@ -196,7 +198,7 @@ export default function ProjectDetailPage() {
             <TabsContent value="board" className="h-[calc(100%-50px)]">
               <KanbanBoard
                 tasks={displayTasks}
-                onTaskClick={(task) => console.log('Task clicked:', task)}
+                onTaskClick={(task) => router.push(`/tasks/${task.id}`)}
                 onTaskDragEnd={async (taskId, newStatus, newOrder) => {
                   try {
                     setTasks(prev => prev.map(t => 
@@ -219,7 +221,11 @@ export default function ProjectDetailPage() {
             <TabsContent value="list" className="h-[calc(100%-50px)] overflow-y-auto">
               <div className="space-y-2">
                 {displayTasks.map(task => (
-                  <div key={task.id} className="p-4 bg-card border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div 
+                    key={task.id} 
+                    className="p-4 bg-card border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/tasks/${task.id}`)}
+                  >
                     <div className="flex items-start gap-3">
                       <input type="checkbox" className="mt-1 h-4 w-4" />
                       <div className="flex-1 min-w-0">
