@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { CreateTaskModal } from '@/components/task/CreateTaskModal'
+import { CreateOrganizationModal } from '@/components/organization/CreateOrganizationModal'
 import { PushManager } from '@/components/pwa/PushManager'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { cn } from '@/lib/utils'
@@ -42,6 +43,7 @@ export default function DashboardLayout({
 
       {/* Global Modals */}
       <CreateTaskModal isOpen={isCreateTaskModalOpen} onClose={closeCreateTaskModal} />
+      <CreateOrganizationModal />
       <PushManager />
     </div>
   )

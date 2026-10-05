@@ -6,6 +6,14 @@ export interface User {
   role: 'admin' | 'manager' | 'employee' | 'viewer'
 }
 
+export interface Organization {
+  id: string
+  name: string
+  description?: string
+  createdAt: Date
+  members?: User[]
+}
+
 export interface ChecklistItem {
   id: string
   title: string
@@ -109,6 +117,8 @@ export interface Project {
   icon?: string
   ownerId: string
   owner: User
+  orgId?: string
+  organization?: Organization
   members: User[]
   tasks: Task[]
   createdAt: Date
