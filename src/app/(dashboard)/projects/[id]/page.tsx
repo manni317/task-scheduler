@@ -6,13 +6,16 @@ import { KanbanBoard } from '@/components/task/KanbanBoard'
 import { Task, User } from '@/types/task'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, X, UserPlus, User as UserIcon } from 'lucide-react'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { ProjectCard } from '@/components/project/ProjectCard'
 import { Project, User as UserType } from '@/types/task'
 import { cn } from '@/lib/utils'
 import { createClient } from '@supabase/supabase-js'
 import { useAuth } from '@/hooks/useAuth'
+import { toast } from 'sonner'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 export default function ProjectDetailPage() {
   const params = useParams()
@@ -49,6 +52,10 @@ export default function ProjectDetailPage() {
         // Fetch project
         const { data: projData } = await supabase.from('projects').select('*').eq('id', projectId).single()
         if (projData) {
+          const members = projData.member_ids 
+            ? mappedUsers.filter((u: User) => projData.member_ids.includes(u.id))
+            : mappedUsers
+
           setProject({
             id: projData.id,
             name: projData.name,
@@ -57,8 +64,8 @@ export default function ProjectDetailPage() {
             color: '#3B82F6',
             icon: '🌐',
             ownerId: '',
-            owner: null,
-            members: mappedUsers,
+            owner: null as any,
+            members: members,
             tasks: [],
             createdAt: new Date(projData.created_at || Date.now()),
             updatedAt: new Date(projData.updated_at || Date.now()),
@@ -112,6 +119,37 @@ export default function ProjectDetailPage() {
 
   const displayTasks = (userRole === 'manager' || userRole === 'admin') ? tasks : tasks.filter(t => t.assigneeId === userId)
 
+  const handleRemoveMember = async (userIdToRemove: string) => {
+    const currentMembers = project?.members || []
+    const newMemberIds = currentMembers.map(m => m.id).filter(id => id !== userIdToRemove)
+    try {
+      await supabase.from('projects').update({ member_ids: newMemberIds }).eq('id', project!.id)
+      setProject(prev => prev ? { ...prev, members: prev.members.filter(m => m.id !== userIdToRemove) } : prev)
+      toast.success('Member removed from project')
+    } catch (err) {
+      toast.error('Failed to remove member')
+    }
+  }
+
+  const handleAddMember = async (userIdToAdd: string) => {
+    if (project?.members.some(m => m.id === userIdToAdd)) return
+    
+    const currentMembers = project?.members || []
+    const newMemberIds = [...currentMembers.map(m => m.id), userIdToAdd]
+    try {
+      await supabase.from('projects').update({ member_ids: newMemberIds }).eq('id', project!.id)
+      const userObj = users.find(u => u.id === userIdToAdd)
+      if (userObj) {
+        setProject(prev => prev ? { ...prev, members: [...prev.members, userObj] } : prev)
+      }
+      toast.success('Member added to project')
+    } catch (err) {
+      toast.error('Failed to add member')
+    }
+  }
+
+  const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin'
+
   return (
     <div className="h-full flex flex-col">
           <div className="mb-6">
@@ -150,6 +188,7 @@ export default function ProjectDetailPage() {
             <TabsList className="mb-4 h-auto flex-wrap w-full justify-start">
               <TabsTrigger value="board">Kanban Board</TabsTrigger>
               <TabsTrigger value="list">List View</TabsTrigger>
+              <TabsTrigger value="members">Members</TabsTrigger>
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
             </TabsList>
@@ -205,6 +244,63 @@ export default function ProjectDetailPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="members" className="h-[calc(100%-50px)] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-lg font-semibold">Project Members</h2>
+                  <p className="text-sm text-muted-foreground">Manage who has access to this project</p>
+                </div>
+                {isManagerOrAdmin && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        Add Member
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      {users.filter(u => !project.members.some(m => m.id === u.id)).length === 0 ? (
+                        <div className="p-2 text-sm text-muted-foreground text-center">All users are in this project</div>
+                      ) : (
+                        users.filter(u => !project.members.some(m => m.id === u.id)).map(u => (
+                          <DropdownMenuItem key={u.id} onClick={() => handleAddMember(u.id)}>
+                            {u.name} ({u.role})
+                          </DropdownMenuItem>
+                        ))
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {project.members.map(member => (
+                  <div key={member.id} className="flex items-center justify-between p-4 bg-card border rounded-xl hover:shadow-sm transition-all">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={member.avatar} />
+                        <AvatarFallback>{member.name.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{member.name}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                      </div>
+                    </div>
+                    {isManagerOrAdmin && member.role !== 'admin' && (
+                      <Button variant="ghost" size="icon" onClick={() => handleRemoveMember(member.id)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                {project.members.length === 0 && (
+                  <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
+                    <UserIcon className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                    <p>No members in this project</p>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
