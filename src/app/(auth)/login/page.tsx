@@ -58,7 +58,7 @@ export default function LoginPage() {
             <Zap className="w-8 h-8 text-white fill-white" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-            {isSignUp ? 'Create Account' : 'Welcome back'}
+            {isSignUp ? 'Create Account' : 'Task Manager'}
           </h1>
           <p className="text-muted-foreground mt-1.5 text-sm">
             {isSignUp ? 'Get started with Task Manager' : 'Sign in to Task Manager'}
