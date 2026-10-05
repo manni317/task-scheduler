@@ -86,6 +86,7 @@ export async function updateEmployee(formData: FormData) {
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
   const role = formData.get('role') as string
+  const orgId = formData.get('orgId') as string
 
   // We are just updating the profile since we bypassed real Auth right now
   const { error: upsertError } = await supabaseAdmin.from('profiles').update({
@@ -103,6 +104,19 @@ export async function updateEmployee(formData: FormData) {
   // If password is provided, we should ideally update auth, but for demo we just update profile.
   // In a real app we'd use supabase admin API to update user password
 
+  if (orgId) {
+    const { error: orgError } = await supabaseAdmin.from('organization_members').upsert({
+      org_id: orgId,
+      user_id: id,
+      role: 'member'
+    }, { onConflict: 'org_id,user_id' })
+    
+    if (orgError) {
+      console.error('Org update error:', orgError)
+    }
+  }
+
   revalidatePath('/team')
+  revalidatePath('/organizations')
   return { success: true }
 }
