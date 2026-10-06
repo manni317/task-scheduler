@@ -232,34 +232,10 @@ export function TaskCard({
               </div>
             </div>
           )}
-          {task.status === 'review' && onStatusChange && (userRole === 'manager' || userRole === 'admin') && (
-            <div className="mt-4 pt-4 border-t flex items-center justify-end gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onStatusChange(task.id, 'in_progress')
-                }}
-              >
-                Reject (Needs Work)
-              </Button>
-              <Button 
-                size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onStatusChange(task.id, 'done')
-                }}
-              >
-                Approve (Done)
-              </Button>
-            </div>
-          )}
+          {/* Buttons removed to enforce mandatory rejection reason via TaskDetail */}
           
           {/* Swipe to Complete for Employees */}
-          {userRole === 'employee' && task.status !== 'done' && task.status !== 'review' && onStatusChange && (
+          {(userRole === 'employee' || userRole === 'doer') && task.status !== 'done' && task.status !== 'review' && onStatusChange && (
             <div className="mt-4 pt-4 border-t" onClick={e => e.stopPropagation()}>
               <SwipeToComplete 
                 text={task.status === 'in_progress' ? 'Swipe to complete' : 'Swipe to start task'} 

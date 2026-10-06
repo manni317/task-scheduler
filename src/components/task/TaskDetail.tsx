@@ -357,7 +357,7 @@ export function TaskDetail({
           )}
 
           {/* DOER ACTIONS */}
-          {userRole === 'employee' && (
+          {(userRole === 'employee' || userRole === 'doer') && (
             <>
               {task.status === 'todo' && (
                 <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white"
