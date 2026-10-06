@@ -17,15 +17,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createBrowserClient } from '@supabase/ssr'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function AnalyticsPage() {
-  const [userRole, setUserRole] = useState('manager')
-  const [userId, setUserId] = useState('')
-
-  useEffect(() => {
-    setUserRole(localStorage.getItem('userRole') || 'manager')
-    setUserId(localStorage.getItem('userId') || '')
-  }, [])
+  const { profile, loading: authLoading } = useAuth()
+  
+  const userRole = profile?.role || 'employee'
+  const userId = profile?.id || ''
 
   const { data: { tasks = [], users = [], projects = [] } = {}, isLoading } = useQuery({
     queryKey: ['analytics_data'],
@@ -47,7 +45,7 @@ export default function AnalyticsPage() {
   })
 
   const displayTasks = useMemo(() => {
-    if (userRole === 'manager') return tasks
+    if (userRole === 'admin' || userRole === 'manager') return tasks
     return tasks.filter((t: any) => t.assignee_id === userId)
   }, [tasks, userRole, userId])
 
@@ -132,7 +130,7 @@ export default function AnalyticsPage() {
     return { overviewData, statusData, priorityData, teamPerformanceData, projectDistributionData, summary }
   }, [displayTasks, users, projects])
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="flex h-[600px] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
