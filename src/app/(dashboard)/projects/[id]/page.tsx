@@ -107,7 +107,8 @@ export default function ProjectDetailPage() {
             order: 0,
             isCompleted: t.status === 'done',
             createdAt: new Date(t.created_at),
-            updatedAt: new Date(t.updated_at)
+            updatedAt: new Date(t.updated_at),
+            rejectionReason: t.rejection_reason || null
           } as Task)))
         }
       } catch (err) {

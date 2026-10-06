@@ -65,7 +65,8 @@ export default function DashboardPage() {
           order: t.order_index || 0,
           isCompleted: t.status === 'done',
           createdAt: new Date(t.created_at || Date.now()),
-          updatedAt: new Date(t.updated_at || Date.now())
+          updatedAt: new Date(t.updated_at || Date.now()),
+          rejectionReason: t.rejection_reason || null
         }))
       }
       return { tasks: mappedTasks, users: mappedUsers }
