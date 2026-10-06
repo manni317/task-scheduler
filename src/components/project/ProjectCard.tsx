@@ -26,10 +26,10 @@ export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, on
   return (
     <Card className="group hover:shadow-lg transition-shadow cursor-pointer" onClick={onClick}>
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className={cn(
-              'h-10 w-10 rounded-lg flex items-center justify-center',
+              'h-10 w-10 rounded-lg flex items-center justify-center shrink-0',
               `bg-[${project.color}]/20 text-[${project.color}]`
             )}>
               {project.icon ? (
@@ -38,14 +38,14 @@ export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, on
                 <FolderKanban className="h-5 w-5" />
               )}
             </div>
-            <div>
-              <CardTitle className="text-lg">{project.name}</CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">{project.key}</span>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-lg truncate">{project.name}</CardTitle>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <span className="text-[10px] text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md shrink-0">{project.key}</span>
                 {project.organization && (
-                  <span className="text-xs text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
-                    <Building2 className="h-3 w-3" />
-                    <span className="truncate max-w-[120px]">{project.organization.name}</span>
+                  <span className="text-[10px] text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 shrink-0 max-w-[130px]">
+                    <Building2 className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{project.organization.name}</span>
                   </span>
                 )}
               </div>
