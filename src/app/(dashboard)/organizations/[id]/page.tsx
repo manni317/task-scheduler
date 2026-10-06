@@ -246,7 +246,7 @@ export default function OrganizationDetailPage() {
           <div className="flex items-center gap-5">
             <div className="h-20 w-20 rounded-2xl border-2 border-primary/20 bg-primary/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
               {org.logo_url ? (
-                <img src={org.logo_url} alt={org.name} className="h-full w-full object-cover" />
+                <img src={org.logo_url} alt={org.name} className="h-full w-full object-contain p-2" />
               ) : (
                 <Building2 className="h-8 w-8 text-primary/40" />
               )}
@@ -277,7 +277,7 @@ export default function OrganizationDetailPage() {
                 <div className="flex flex-col items-center gap-4 p-4 border border-dashed rounded-xl bg-muted/30">
                   <div className="relative h-24 w-24 rounded-2xl border bg-card overflow-hidden shadow-sm flex items-center justify-center">
                     {editOrgData.logoUrl ? (
-                      <img src={editOrgData.logoUrl} alt="Logo preview" className="h-full w-full object-cover" />
+                      <img src={editOrgData.logoUrl} alt="Logo preview" className="h-full w-full object-contain p-2" />
                     ) : (
                       <Building2 className="h-8 w-8 text-muted-foreground" />
                     )}
