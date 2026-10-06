@@ -104,7 +104,7 @@ export function Header() {
           id: 'welcome',
           title: 'Welcome to TaskFlow',
           message: 'Your account is ready. Get started by checking your tasks!',
-          time: new Date().toISOString(),
+          time: profile?.created_at || new Date('2024-01-01').toISOString(),
           color: 'bg-emerald-500',
           link: '/projects'
         })
