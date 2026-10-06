@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { ProjectList } from '@/components/project/ProjectList'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { ArrowLeft, Plus, UserPlus, Settings, Upload, Loader2, Building2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -31,6 +32,7 @@ export default function OrganizationDetailPage() {
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin'
   const [isAddingMember, setIsAddingMember] = useState(false)
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
+  const [selectedUsersToAdd, setSelectedUsersToAdd] = useState<string[]>([])
   
   const [isEditOrgModalOpen, setIsEditOrgModalOpen] = useState(false)
   const [editOrgData, setEditOrgData] = useState({ name: '', description: '', logoUrl: '' })
@@ -159,21 +161,25 @@ export default function OrganizationDetailPage() {
     toast.info('Archiving not supported in current schema')
   }
 
-  const handleAddMember = async (userId: string) => {
+  const handleAddMembers = async () => {
+    if (selectedUsersToAdd.length === 0) return;
     setIsAddingMember(true)
     try {
-      const { error } = await supabase.from('organization_members').insert({
-        org_id: orgId,
-        user_id: userId,
-        role: 'member'
-      })
+      const { error } = await supabase.from('organization_members').insert(
+        selectedUsersToAdd.map(userId => ({
+          org_id: orgId,
+          user_id: userId,
+          role: 'member'
+        }))
+      )
       if (error) throw error
-      toast.success('Member added successfully!')
+      toast.success('Members added successfully!')
       setIsAddMemberModalOpen(false)
+      setSelectedUsersToAdd([])
       fetchData()
     } catch (error: any) {
       console.error(error)
-      toast.error('Failed to add member')
+      toast.error('Failed to add members')
     } finally {
       setIsAddingMember(false)
     }
@@ -369,7 +375,13 @@ export default function OrganizationDetailPage() {
                   <Button variant="outline" onClick={() => router.push('/team')}>
                     Manage Team
                   </Button>
-                  <Dialog open={isAddMemberModalOpen} onOpenChange={setIsAddMemberModalOpen}>
+                  <Dialog 
+                    open={isAddMemberModalOpen} 
+                    onOpenChange={(open) => {
+                      setIsAddMemberModalOpen(open)
+                      if (!open) setSelectedUsersToAdd([])
+                    }}
+                  >
                     <DialogTrigger asChild>
                       <Button className="gap-2">
                         <UserPlus className="h-4 w-4" /> Add Member
@@ -377,34 +389,48 @@ export default function OrganizationDetailPage() {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Add Existing Member</DialogTitle>
+                        <DialogTitle>Add Existing Members</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4 pt-4 max-h-[60vh] overflow-y-auto">
+                      <div className="space-y-4 pt-4 max-h-[60vh] overflow-y-auto pr-2">
                         {users.filter(u => !orgMembers.some(om => om.user_id === u.id)).length === 0 ? (
                           <p className="text-center text-muted-foreground py-4">All system users are already in this organization.</p>
                         ) : (
-                          users.filter(u => !orgMembers.some(om => om.user_id === u.id)).map(user => (
-                            <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
-                              <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={user.avatar || ''} />
-                                  <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="text-sm font-medium">{user.name}</p>
-                                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                                </div>
-                              </div>
+                          <>
+                            <div className="space-y-2">
+                              {users.filter(u => !orgMembers.some(om => om.user_id === u.id)).map(user => (
+                                <label key={user.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
+                                  <Checkbox 
+                                    checked={selectedUsersToAdd.includes(user.id)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSelectedUsersToAdd(prev => [...prev, user.id])
+                                      } else {
+                                        setSelectedUsersToAdd(prev => prev.filter(id => id !== user.id))
+                                      }
+                                    }}
+                                  />
+                                  <div className="flex items-center gap-3 flex-1">
+                                    <Avatar className="h-8 w-8">
+                                      <AvatarImage src={user.avatar || ''} />
+                                      <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <p className="text-sm font-medium">{user.name}</p>
+                                      <p className="text-xs text-muted-foreground">{user.email}</p>
+                                    </div>
+                                  </div>
+                                </label>
+                              ))}
+                            </div>
+                            <div className="pt-4 flex justify-end sticky bottom-0 bg-background pb-2">
                               <Button 
-                                size="sm" 
-                                variant="secondary" 
-                                disabled={isAddingMember}
-                                onClick={() => handleAddMember(user.id)}
+                                onClick={handleAddMembers} 
+                                disabled={isAddingMember || selectedUsersToAdd.length === 0}
                               >
-                                Add
+                                {isAddingMember ? 'Adding...' : `Add Selected (${selectedUsersToAdd.length})`}
                               </Button>
                             </div>
-                          ))
+                          </>
                         )}
                       </div>
                     </DialogContent>
