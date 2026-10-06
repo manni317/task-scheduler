@@ -112,7 +112,8 @@ export function TaskCard({
       className={cn(
         'group relative p-4 rounded-lg border bg-card shadow-sm transition-all hover:shadow-md',
         draggable && 'cursor-grab active:cursor-grabbing',
-        task.isCompleted && 'opacity-60'
+        task.isCompleted && 'opacity-60',
+        task.rejectionReason && task.status === 'in_progress' && 'border-red-400 bg-red-50/30 dark:bg-red-950/20'
       )}
       onClick={onClick}
       onDragStart={onDragStart}
@@ -136,6 +137,13 @@ export function TaskCard({
             <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
               {task.description}
             </p>
+          )}
+
+          {task.rejectionReason && task.status === 'in_progress' && (
+            <div className="mt-2 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+              REJECTED - NEEDS WORK
+            </div>
           )}
 
           <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

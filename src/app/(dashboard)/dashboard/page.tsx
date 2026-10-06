@@ -136,6 +136,12 @@ export default function DashboardPage() {
     t.createdAt >= today
   ).length
 
+  const rejectedTasks = displayTasks.filter(t => 
+    t.rejectionReason && 
+    t.status === 'in_progress' && 
+    t.assigneeId === userId
+  )
+
   return (
     <div className="space-y-6">
       <DashboardHero 
@@ -143,6 +149,20 @@ export default function DashboardPage() {
         newTasksCount={newTasksToday} 
         avatarUrl={profile?.avatar_url}
       />
+
+      {rejectedTasks.length > 0 && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm flex items-start gap-4">
+          <div className="p-2 bg-red-100 rounded-full mt-0.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          </div>
+          <div>
+            <h3 className="text-red-800 font-bold text-lg">Action Required: {rejectedTasks.length} {rejectedTasks.length === 1 ? 'Task' : 'Tasks'} Rejected</h3>
+            <p className="text-red-700 text-sm mt-1">
+              Your manager has rejected some of your submitted tasks. Please check the <strong>Tasks</strong> tab, look for the red "REJECTED" badges, and read the manager's feedback to make corrections.
+            </p>
+          </div>
+        </div>
+      )}
 
       <StatsCards stats={stats} userRole={userRole} />
 
