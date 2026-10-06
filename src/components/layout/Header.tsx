@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -29,6 +29,7 @@ const navigation = [
 
 export function Header() {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
   const { profile } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -62,7 +63,8 @@ export function Header() {
             title: 'Pending Review',
             message: `${profilesMap.get(t.assignee_id) || 'Someone'} submitted "${t.title}" for review`,
             time: t.updated_at,
-            color: 'bg-purple-500'
+            color: 'bg-purple-500',
+            link: '/tasks?status=review'
           }))
         }
       }
@@ -77,7 +79,8 @@ export function Header() {
           title: 'New Task',
           message: `${profilesMap.get(t.reporter_id) || 'Someone'} assigned you to "${t.title}"`,
           time: t.created_at,
-          color: 'bg-blue-500'
+          color: 'bg-blue-500',
+          link: '/tasks'
         }))
       }
 
@@ -88,7 +91,8 @@ export function Header() {
           title: 'Task Rejected',
           message: `"${t.title}" was rejected: ${t.rejection_reason}`,
           time: t.updated_at,
-          color: 'bg-red-500'
+          color: 'bg-red-500',
+          link: '/tasks'
         }))
       }
 
@@ -101,7 +105,8 @@ export function Header() {
           title: 'Welcome to TaskFlow',
           message: 'Your account is ready. Get started by checking your tasks!',
           time: new Date().toISOString(),
-          color: 'bg-emerald-500'
+          color: 'bg-emerald-500',
+          link: '/projects'
         })
       }
       
@@ -211,9 +216,9 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative cursor-pointer">
-                <Bell className={cn("h-5 w-5", hasUnread && "animate-pulse text-primary")} />
+                <Bell className={cn("h-5 w-5 transform origin-top", hasUnread && "animate-ring text-primary")} />
                 {hasUnread && (
-                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 animate-bounce" />
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 animate-pulse" />
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -222,7 +227,15 @@ export function Header() {
               <DropdownMenuSeparator />
               <div className="max-h-[300px] overflow-y-auto">
                 {notifications.map((notif: any) => (
-                  <DropdownMenuItem key={notif.id} className={cn("cursor-pointer p-3 flex flex-col items-start gap-1", new Date(notif.time) <= new Date(lastReadTime) && "opacity-60")}>
+                  <DropdownMenuItem 
+                    key={notif.id} 
+                    className={cn("cursor-pointer p-3 flex flex-col items-start gap-1", new Date(notif.time) <= new Date(lastReadTime) && "opacity-60")}
+                    onClick={() => {
+                      if (notif.link) {
+                        router.push(notif.link)
+                      }
+                    }}
+                  >
                     <div className="flex items-center gap-2 w-full">
                       <span className={cn("h-2 w-2 rounded-full shrink-0", notif.color)} />
                       <span className="font-medium text-sm">{notif.title}</span>

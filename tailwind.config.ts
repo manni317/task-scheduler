@@ -101,6 +101,12 @@ const config: Config = {
         'shine': {
           '100%': { left: '125%' },
         },
+        'ring': {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(15deg)' },
+          '50%': { transform: 'rotate(0deg)' },
+          '75%': { transform: 'rotate(-15deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -113,6 +119,7 @@ const config: Config = {
         'slide-in-right': 'slide-in-right 0.3s ease-out',
         'pulse-soft': 'pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'shine': 'shine 1s',
+        'ring': 'ring 0.5s ease-in-out infinite',
       },
 
       boxShadow: {
