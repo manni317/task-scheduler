@@ -111,7 +111,6 @@ export function StatsCards({ stats, userRole }: StatsCardsProps) {
       description: 'Currently active',
       onClick: () => router.push('/tasks?status=in_progress')
     },
-    },
   ]
 
   if ((userRole === 'admin' || userRole === 'manager') && stats.reviewTasks !== undefined) {
