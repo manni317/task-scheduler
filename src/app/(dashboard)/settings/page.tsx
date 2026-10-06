@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { User, Bell, Moon, Sun, Shield, Key, Palette, Globe, Download, Trash2, LogOut } from 'lucide-react'
+import { User, Bell, Moon, Sun, Shield, Key, Palette, Globe, Download, Trash2, LogOut, Calendar } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from 'next-themes'
 import { useAuth, useProfile } from '@/hooks/useAuth'
@@ -113,9 +113,10 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl">
-        <TabsList className="grid w-full grid-cols-2 h-auto p-1 gap-1">
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1 gap-1">
           <TabsTrigger value="profile" className="py-2">Profile</TabsTrigger>
           <TabsTrigger value="appearance" className="py-2">Appearance</TabsTrigger>
+          <TabsTrigger value="integrations" className="py-2">Integrations</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
@@ -213,6 +214,53 @@ export default function SettingsPage() {
                     )}
                   </button>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="integrations" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Integrations</CardTitle>
+              <CardDescription>Connect TaskFlow with your favorite tools</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300 rounded-full">
+                    <Calendar className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Google Calendar</h3>
+                    <p className="text-sm text-muted-foreground">Automatically sync your tasks to Google Calendar.</p>
+                  </div>
+                </div>
+                <Button onClick={async () => {
+                  try {
+                    const { error } = await supabase.auth.linkIdentity({
+                      provider: 'google',
+                      options: {
+                        scopes: 'https://www.googleapis.com/auth/calendar.events',
+                        redirectTo: `${window.location.origin}/settings`
+                      }
+                    })
+                    if (error) {
+                      // Fallback to regular sign in if link identity fails
+                      await supabase.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: {
+                          scopes: 'https://www.googleapis.com/auth/calendar.events',
+                          redirectTo: `${window.location.origin}/settings`
+                        }
+                      })
+                    }
+                  } catch (e: any) {
+                    toast.error('Failed to connect Google Calendar: ' + e.message)
+                  }
+                }}>
+                  Connect
+                </Button>
               </div>
             </CardContent>
           </Card>
