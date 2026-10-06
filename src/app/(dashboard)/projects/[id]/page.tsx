@@ -6,7 +6,7 @@ import { KanbanBoard } from '@/components/task/KanbanBoard'
 import { Task, User } from '@/types/task'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Plus, X, UserPlus, User as UserIcon } from 'lucide-react'
+import { Plus, X, UserPlus, User as UserIcon, Building2 } from 'lucide-react'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { ProjectCard } from '@/components/project/ProjectCard'
 import { Project, User as UserType } from '@/types/task'
@@ -49,11 +49,18 @@ export default function ProjectDetailPage() {
         setUsers(mappedUsers)
 
         // Fetch project
-        const { data: projData } = await supabase.from('projects').select('*').eq('id', projectId).single()
+        const { data: projData } = await supabase.from('projects').select('*, organizations(id, name, logo_url, organization_members(user_id))').eq('id', projectId).single()
         if (projData) {
-          const members = projData.member_ids 
+          let orgMembersIds: string[] = []
+          if (projData.organizations?.organization_members) {
+            orgMembersIds = projData.organizations.organization_members.map((m: any) => m.user_id)
+          }
+
+          const members = projData.member_ids && projData.member_ids.length > 0
             ? mappedUsers.filter((u: User) => projData.member_ids.includes(u.id))
-            : mappedUsers
+            : orgMembersIds.length > 0
+              ? mappedUsers.filter((u: User) => orgMembersIds.includes(u.id))
+              : mappedUsers
 
           setProject({
             id: projData.id,
@@ -64,6 +71,8 @@ export default function ProjectDetailPage() {
             icon: '🌐',
             ownerId: '',
             owner: null as any,
+            orgId: projData.org_id,
+            organization: projData.organizations,
             members: members,
             tasks: [],
             createdAt: new Date(projData.created_at || Date.now()),
@@ -168,6 +177,14 @@ export default function ProjectDetailPage() {
                   <Plus className="h-4 w-4" />
                   <span className="hidden sm:inline">New Task</span>
                 </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {project.organization && (
+                <span className="px-3 py-1 bg-muted border text-foreground text-sm font-medium rounded-full flex items-center gap-2 cursor-pointer hover:bg-muted/80" onClick={() => router.push(`/organizations/${project.orgId}`)}>
+                  <Building2 className="h-3 w-3" />
+                  {project.organization.name}
+                </span>
               )}
             </div>
             <div className="flex flex-wrap gap-2">
