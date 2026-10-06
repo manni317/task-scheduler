@@ -105,21 +105,21 @@ export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, on
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="p-2 bg-muted/50 rounded-lg">
-              <Users className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-              <p className="text-xs text-muted-foreground">Members</p>
-              <p className="font-medium">{project.members?.length || 0}</p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="p-1.5 bg-muted/50 rounded-lg flex flex-col items-center justify-center">
+              <Users className="h-4 w-4 text-muted-foreground mb-1" />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Members</p>
+              <p className="font-medium text-sm">{project.members?.length || 0}</p>
             </div>
-            <div className="p-2 bg-muted/50 rounded-lg">
-              <FolderKanban className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-              <p className="text-xs text-muted-foreground">Tasks</p>
-              <p className="font-medium">{totalTasks}</p>
+            <div className="p-1.5 bg-muted/50 rounded-lg flex flex-col items-center justify-center">
+              <FolderKanban className="h-4 w-4 text-muted-foreground mb-1" />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tasks</p>
+              <p className="font-medium text-sm">{totalTasks}</p>
             </div>
-            <div className="p-2 bg-muted/50 rounded-lg">
-              <TrendingUp className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
-              <p className="text-xs text-muted-foreground">Completion</p>
-              <p className="font-medium text-green-500">{progress}%</p>
+            <div className="p-1.5 bg-muted/50 rounded-lg flex flex-col items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-muted-foreground mb-1" />
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Complete</p>
+              <p className="font-medium text-sm text-green-500">{progress}%</p>
             </div>
           </div>
         </div>

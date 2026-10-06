@@ -36,6 +36,7 @@ export function ProjectList({
 }: ProjectListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'archived'>('all')
+  const [filterOrg, setFilterOrg] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
@@ -46,7 +47,8 @@ export function ProjectList({
     const matchesFilter = filterStatus === 'all' || 
       (filterStatus === 'active' && !project.isArchived) ||
       (filterStatus === 'archived' && project.isArchived)
-    return matchesSearch && matchesFilter
+    const matchesOrg = filterOrg === 'all' || project.orgId === filterOrg
+    return matchesSearch && matchesFilter && matchesOrg
   })
 
   const handleCreateProject = async (data: any) => {
@@ -87,12 +89,24 @@ export function ProjectList({
           />
         </div>
         <div className="flex items-center gap-2">
+          {organizations.length > 0 && (
+            <select
+              value={filterOrg}
+              onChange={e => setFilterOrg(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm bg-background max-w-[150px] truncate"
+            >
+              <option value="all">All Orgs</option>
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>{org.name}</option>
+              ))}
+            </select>
+          )}
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value as any)}
             className="border rounded-md px-3 py-2 text-sm bg-background"
           >
-            <option value="all">All Projects</option>
+            <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="archived">Archived</option>
           </select>

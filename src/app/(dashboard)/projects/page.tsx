@@ -59,6 +59,7 @@ export default function ProjectsPage() {
         description: p.description || '',
         key: p.key_prefix || 'PRJ',
         orgId: p.org_id,
+        organization: orgsData?.find((o: any) => o.id === p.org_id),
         color: '#3B82F6',
         icon: '📁',
         ownerId: '',
