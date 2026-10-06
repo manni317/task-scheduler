@@ -188,8 +188,8 @@ export function Header() {
           </Button>
 
           <Link href="/dashboard" className="flex md:hidden items-center gap-2.5 font-extrabold text-lg">
-            <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/30">
-              <span className="text-primary-foreground font-black text-sm">T</span>
+            <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
+              <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
             </div>
             <span className="hidden sm:block tracking-tight">TaskFlow</span>
           </Link>

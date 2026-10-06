@@ -63,8 +63,8 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
         <div className="flex h-16 items-center justify-between px-4 border-b">
           {isOpen && (
             <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">M</span>
+              <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
+                <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
               </div>
               <span>TaskFlow</span>
             </Link>
