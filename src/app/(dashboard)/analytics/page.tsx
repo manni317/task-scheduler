@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 export default function AnalyticsPage() {
   const { profile, loading: authLoading } = useAuth()
+  const [selectedUserId, setSelectedUserId] = useState<string>('all')
   
   const userRole = profile?.role || 'employee'
   const userId = profile?.id || ''
@@ -45,9 +46,12 @@ export default function AnalyticsPage() {
   })
 
   const displayTasks = useMemo(() => {
-    if (userRole === 'admin' || userRole === 'manager') return tasks
+    if (userRole === 'admin' || userRole === 'manager') {
+      if (selectedUserId !== 'all') return tasks.filter((t: any) => t.assignee_id === selectedUserId)
+      return tasks
+    }
     return tasks.filter((t: any) => t.assignee_id === userId)
-  }, [tasks, userRole, userId])
+  }, [tasks, userRole, userId, selectedUserId])
 
   // Calculate Stats
   const {
@@ -140,11 +144,26 @@ export default function AnalyticsPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
           <p className="text-muted-foreground">Insights into your team's productivity and project health</p>
         </div>
+        {(userRole === 'admin' || userRole === 'manager') && (
+          <div className="w-full sm:w-64 shrink-0">
+            <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by Employee" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Overall (All Team)</SelectItem>
+                {users.map((u: any) => (
+                  <SelectItem key={u.id} value={u.id}>{u.full_name || u.email}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
