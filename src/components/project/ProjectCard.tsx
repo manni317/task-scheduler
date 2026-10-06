@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Users, FolderKanban, Clock, TrendingUp, MoreHorizontal, Edit, Trash2, Archive } from 'lucide-react'
+import { Users, FolderKanban, Clock, TrendingUp, MoreHorizontal, Edit, Trash2, Archive, Building2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { Project, User } from '@/types/task'
 import { cn } from '@/lib/utils'
@@ -40,7 +40,15 @@ export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, on
             </div>
             <div>
               <CardTitle className="text-lg">{project.name}</CardTitle>
-              <span className="text-sm text-muted-foreground font-mono">{project.key}</span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">{project.key}</span>
+                {project.organization && (
+                  <span className="text-xs text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20">
+                    <Building2 className="h-3 w-3" />
+                    <span className="truncate max-w-[120px]">{project.organization.name}</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           {userRole !== 'doer' && (
