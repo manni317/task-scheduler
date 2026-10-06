@@ -73,8 +73,12 @@ export default function OrganizationsPage() {
               className="p-6 bg-card border rounded-2xl hover:shadow-md transition-all flex flex-col cursor-pointer"
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl">
-                  {org.name.charAt(0).toUpperCase()}
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                  {org.logo_url ? (
+                    <img src={org.logo_url} alt={org.name} className="h-full w-full object-contain p-1" />
+                  ) : (
+                    <span className="text-primary font-bold text-xl">{org.name.charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">{org.name}</h3>
