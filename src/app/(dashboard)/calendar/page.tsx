@@ -177,6 +177,15 @@ export default function CalendarPage() {
     done: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   }
 
+  const getTaskColor = (task: Task) => {
+    if (task.status === 'done') return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+    if (task.dueDate && isPast(task.dueDate) && !isToday(task.dueDate) && task.status !== 'done') {
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    }
+    if (task.status === 'in_progress') return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    return statusColors[task.status as keyof typeof statusColors] || statusColors.todo
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -269,7 +278,7 @@ export default function CalendarPage() {
                               onClick={e => handleTaskClick(task, e)}
                               className={cn(
                                 'px-2 py-1 rounded text-xs truncate cursor-pointer hover:shadow-sm',
-                                priorityColors[task.priority]
+                                getTaskColor(task)
                               )}
                             >
                               {(userRole === 'admin' || userRole === 'manager') && task.assignee?.name 
@@ -327,7 +336,7 @@ export default function CalendarPage() {
                           onClick={e => handleTaskClick(task, e)}
                           className={cn(
                             'px-3 py-2 rounded-lg cursor-pointer hover:shadow-sm border-l-4',
-                            priorityColors[task.priority].replace('bg-', 'bg-').replace('text-', 'border-')
+                            getTaskColor(task).replace('text-', 'border-')
                           )}
                         >
                           <p className="font-medium truncate">{task.title}</p>
@@ -383,7 +392,7 @@ export default function CalendarPage() {
                             onClick={e => handleTaskClick(task, e)}
                             className={cn(
                               'mb-2 px-3 py-2 rounded-lg cursor-pointer hover:shadow-sm border-l-4',
-                              priorityColors[task.priority].replace('bg-', 'bg-').replace('text-', 'border-')
+                              getTaskColor(task).replace('text-', 'border-')
                             )}
                           >
                             <p className="font-medium">{task.title}</p>
