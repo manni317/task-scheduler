@@ -1,7 +1,7 @@
 'use client'
 
 import { Card } from '@/components/ui/card'
-import { CheckCircle, Clock, AlertTriangle, ListTodo, TrendingUp, TrendingDown } from 'lucide-react'
+import { CheckCircle, Clock, AlertTriangle, ListTodo, TrendingUp, TrendingDown, ClipboardCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 
@@ -31,6 +31,7 @@ function StatCard({ title, value, change, icon, iconClass, bgClass, description,
         title === 'Total Tasks' && "shadow-[0_8px_30px_rgb(59,130,246,0.12)] dark:shadow-[0_8px_30px_rgb(59,130,246,0.05)]",
         title === 'Completed' && "shadow-[0_8px_30px_rgb(16,185,129,0.12)] dark:shadow-[0_8px_30px_rgb(16,185,129,0.05)]",
         title === 'In Progress' && "shadow-[0_8px_30px_rgb(245,158,11,0.12)] dark:shadow-[0_8px_30px_rgb(245,158,11,0.05)]",
+        title === 'Pending Review' && "shadow-[0_8px_30px_rgb(147,51,234,0.12)] dark:shadow-[0_8px_30px_rgb(147,51,234,0.05)]",
         title === 'Overdue' && "shadow-[0_8px_30px_rgb(239,68,68,0.12)] dark:shadow-[0_8px_30px_rgb(239,68,68,0.05)]"
       )}>
       {/* Soft gradient background blob */}
@@ -71,13 +72,15 @@ interface StatsCardsProps {
     totalTasks: number
     completedTasks: number
     inProgressTasks: number
+    reviewTasks?: number
     overdueTasks: number
     completionRate: number
     avgCompletionTime: number
   }
+  userRole?: string
 }
 
-export function StatsCards({ stats }: StatsCardsProps) {
+export function StatsCards({ stats, userRole }: StatsCardsProps) {
   const router = useRouter()
 
   const cards = [
@@ -108,19 +111,37 @@ export function StatsCards({ stats }: StatsCardsProps) {
       description: 'Currently active',
       onClick: () => router.push('/tasks?status=in_progress')
     },
-    {
-      title: 'Overdue',
-      value: stats.overdueTasks,
-      change: stats.overdueTasks > 0 ? -stats.overdueTasks : 0,
-      icon: <AlertTriangle className="h-5 w-5" />,
-      iconClass: 'text-red-600 dark:text-red-400',
-      bgClass: 'bg-red-100 dark:bg-red-900/40',
-      onClick: () => router.push('/tasks?status=overdue')
     },
   ]
 
+  if ((userRole === 'admin' || userRole === 'manager') && stats.reviewTasks !== undefined) {
+    cards.push({
+      title: 'Pending Review',
+      value: stats.reviewTasks,
+      icon: <ClipboardCheck className="h-5 w-5" />,
+      iconClass: 'text-purple-600 dark:text-purple-400',
+      bgClass: 'bg-purple-100 dark:bg-purple-900/40',
+      description: 'Waiting for approval',
+      onClick: () => router.push('/tasks?status=review')
+    })
+  }
+
+  cards.push({
+    title: 'Overdue',
+    value: stats.overdueTasks,
+    change: stats.overdueTasks > 0 ? -stats.overdueTasks : 0,
+    icon: <AlertTriangle className="h-5 w-5" />,
+    iconClass: 'text-red-600 dark:text-red-400',
+    bgClass: 'bg-red-100 dark:bg-red-900/40',
+    onClick: () => router.push('/tasks?status=overdue')
+  })
+
+  const gridColsClass = cards.length === 5 
+    ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-5" 
+    : "grid-cols-2 md:grid-cols-4 lg:grid-cols-4";
+
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 w-full">
+    <div className={cn("grid gap-4 w-full", gridColsClass)}>
       {cards.map((card) => (
         <StatCard key={card.title} {...card} />
       ))}

@@ -88,12 +88,14 @@ export default function DashboardPage() {
 
   const completedCount = displayTasks.filter(t => t.status === 'done').length
   const inProgressCount = displayTasks.filter(t => t.status === 'in_progress').length
+  const reviewCount = displayTasks.filter(t => t.status === 'review').length
   const overdueCount = displayTasks.filter(t => t.dueDate && t.dueDate < new Date() && t.status !== 'done').length
 
   const stats = {
     totalTasks: displayTasks.length,
     completedTasks: completedCount,
     inProgressTasks: inProgressCount,
+    reviewTasks: reviewCount,
     overdueTasks: overdueCount,
     completionRate: displayTasks.length ? Math.round((completedCount / displayTasks.length) * 100) : 0,
     avgCompletionTime: 0,
@@ -142,7 +144,7 @@ export default function DashboardPage() {
         avatarUrl={profile?.avatar_url}
       />
 
-      <StatsCards stats={stats} />
+      <StatsCards stats={stats} userRole={userRole} />
 
       {(userRole === 'admin' || userRole === 'manager') ? (
         <>
