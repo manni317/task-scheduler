@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addWeeks, addMonths, subMonths, isSameMonth, isSameDay, isToday, isPast, isFuture, parseISO } from 'date-fns'
 import { Calendar, ChevronLeft, ChevronRight, Plus, MoreHorizontal, Check, Clock, Flag, User, AlertTriangle } from 'lucide-react'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,10 +29,7 @@ export default function CalendarPage() {
   const userRole = profile?.role || 'employee'
   const userId = profile?.id || ''
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const { data: { tasks = [], users = [] } = {}, isLoading } = useQuery({
     queryKey: ['calendar_tasks', refreshCount, currentDate],

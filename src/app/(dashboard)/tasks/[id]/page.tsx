@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation'
 import { TaskDetail } from '@/components/task/TaskDetail'
 import { Task, User } from '@/types/task'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function TaskDetailPage() {
   const params = useParams()
@@ -14,10 +14,7 @@ export default function TaskDetailPage() {
   const { data: { task = null, users = [], projects = [] } = {}, isLoading } = useQuery({
     queryKey: ['task', taskId],
     queryFn: async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       const [{ data: profilesData }, { data: projectsData }, { data: taskData }] = await Promise.all([
         supabase.from('profiles').select('*'),
@@ -91,10 +88,7 @@ export default function TaskDetailPage() {
     })
 
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       // Build update object - always update status if provided
       const updateObj: any = {
@@ -136,10 +130,7 @@ export default function TaskDetailPage() {
 
   const handleToggleChecklist = async (taskId: string, itemId: string) => {
     try {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       // We need to fetch the current value first, or just find it from the local data
       const currentItem = task.checklistItems.find(c => c.id === itemId)

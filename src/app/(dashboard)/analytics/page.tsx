@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 
@@ -30,10 +30,7 @@ export default function AnalyticsPage() {
   const { data: { tasks = [], users = [], projects = [] } = {}, isLoading } = useQuery({
     queryKey: ['analytics_data'],
     queryFn: async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       const [{ data: profilesData }, { data: tasksData }, { data: projectsData }] = await Promise.all([
         supabase.from('profiles').select('*'),

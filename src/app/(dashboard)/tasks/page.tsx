@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { KanbanBoard } from '@/components/task/KanbanBoard'
 import { Task, User } from '@/types/task'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -27,10 +27,7 @@ export default function TasksPage() {
   const { data: { tasks = [], users = [], projects = [] } = {}, isLoading: loading } = useQuery({
     queryKey: ['tasks', refreshCount],
     queryFn: async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       const [{ data: profilesData }, { data: projectsData }, { data: tasksData }] = await Promise.all([
         supabase.from('profiles').select('*'),
@@ -257,10 +254,7 @@ export default function TasksPage() {
                 })
 
                 try {
-                  const supabase = createClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-                  )
+                  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
                   
                   await supabase.from('tasks')
                     .update({ status: newStatus, order_index: newOrder })

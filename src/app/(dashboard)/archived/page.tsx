@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { useQuery } from '@tanstack/react-query'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
@@ -19,10 +19,7 @@ export default function ArchivedPage() {
   const { data: { completedTasks = [], archivedProjects = [] } = {}, isLoading, refetch } = useQuery({
     queryKey: ['archived_data'],
     queryFn: async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       const [{ data: tasksData }, { data: projectsData }] = await Promise.all([
         supabase.from('tasks').select('*, profiles!tasks_assignee_id_fkey(*)').eq('status', 'done').order('updated_at', { ascending: false }),
@@ -38,10 +35,7 @@ export default function ArchivedPage() {
 
   const handleRestore = async (type: 'task' | 'project', id: string) => {
     setIsRestoring(id)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+    const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
     
     if (type === 'task') {
       await supabase.from('tasks').update({ status: 'todo' }).eq('id', id)

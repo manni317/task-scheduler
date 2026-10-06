@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createEmployee, updateEmployee } from '@/app/actions/team'
 import { toast } from 'sonner'
 import { Loader2, Plus, UserPlus, Shield, User, Edit, Trash2 } from 'lucide-react'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function TeamPage() {
@@ -14,10 +14,7 @@ export default function TeamPage() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [editUser, setEditUser] = useState<any | null>(null)
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   const { profile } = useAuth()
   const userRole = profile?.role || 'employee'

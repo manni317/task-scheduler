@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { ProjectList } from '@/components/project/ProjectList'
 import { Project, User } from '@/types/task'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -16,10 +16,7 @@ export default function ProjectsPage() {
   const [organizations, setOrganizations] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   useEffect(() => {
     if (authLoading) return

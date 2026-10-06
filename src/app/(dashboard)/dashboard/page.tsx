@@ -7,7 +7,7 @@ import { OverdueTable } from '@/components/dashboard/OverdueTable'
 import { EmployeePerformanceTable } from '@/components/dashboard/EmployeePerformanceTable'
 import { DashboardHero } from '@/components/dashboard/DashboardHero'
 import { Task, User } from '@/types/task'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -24,10 +24,7 @@ export default function DashboardPage() {
   const { data: { tasks = [], users = [] } = {}, isLoading } = useQuery({
     queryKey: ['dashboard_tasks', refreshCount],
     queryFn: async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       const [{ data: profilesData }, { data: tasksData }] = await Promise.all([
         supabase.from('profiles').select('*'),

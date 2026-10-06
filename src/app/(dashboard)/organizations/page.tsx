@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
 import { Plus, Users } from 'lucide-react'
 import { useUIStore } from '@/hooks/use-ui-store'
@@ -18,10 +18,7 @@ export default function OrganizationsPage() {
   const { data: orgs = [], isLoading } = useQuery({
     queryKey: ['organizations', refreshCount],
     queryFn: async () => {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
       const { data } = await supabase
         .from('organizations')

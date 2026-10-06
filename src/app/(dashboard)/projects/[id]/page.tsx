@@ -11,7 +11,7 @@ import { useUIStore } from '@/hooks/use-ui-store'
 import { ProjectCard } from '@/components/project/ProjectCard'
 import { Project, User as UserType } from '@/types/task'
 import { cn } from '@/lib/utils'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -30,10 +30,7 @@ export default function ProjectDetailPage() {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
   useEffect(() => {
     if (authLoading) return

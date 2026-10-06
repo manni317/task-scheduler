@@ -7,7 +7,7 @@ import { createTask } from '@/app/actions/task'
 import { toast } from 'sonner'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -136,10 +136,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       if (taskDefaults?.projectId) setProjectId(taskDefaults.projectId)
       
       // Fetch available projects and users
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       supabase.from('projects').select('id, name').then(({ data }) => {
         if (data) setAvailableProjects(data)
       })
@@ -172,10 +169,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       // Upload audio to Supabase Storage if recorded
       if (audioUrl) {
         try {
-          const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-          )
+          const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
           const response = await fetch(audioUrl)
           const blob = await response.blob()
           const fileName = `task_audio_${Date.now()}.webm`
