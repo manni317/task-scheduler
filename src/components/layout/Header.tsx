@@ -13,8 +13,9 @@ import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
-import { startOfDay } from 'date-fns'
+import { startOfDay, formatDistanceToNow } from 'date-fns'
 import { useAuth } from '@/hooks/useAuth'
+import { useQuery } from '@tanstack/react-query'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
 
 const navigation = [
@@ -32,6 +33,91 @@ export function Header() {
   const { profile } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+
+  const [lastReadTime, setLastReadTime] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lastReadNotifications') || '1970-01-01T00:00:00Z'
+    }
+    return '1970-01-01T00:00:00Z'
+  })
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', profile?.id],
+    queryFn: async () => {
+      if (!profile) return []
+      const userRole = profile.role || 'employee'
+      const userId = profile.id
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+
+      const { data: profilesData } = await supabase.from('profiles').select('id, full_name')
+      const profilesMap = new Map((profilesData || []).map((p: any) => [p.id, p.full_name || 'Unknown']))
+
+      let notifs: any[] = []
+
+      if (userRole === 'admin' || userRole === 'manager') {
+        const { data: reviewTasks } = await supabase.from('tasks').select('*').eq('status', 'review').order('updated_at', { ascending: false }).limit(5)
+        if (reviewTasks) {
+          reviewTasks.forEach((t: any) => notifs.push({
+            id: t.id + '-review',
+            title: 'Pending Review',
+            message: `${profilesMap.get(t.assignee_id) || 'Someone'} submitted "${t.title}" for review`,
+            time: t.updated_at,
+            color: 'bg-purple-500'
+          }))
+        }
+      }
+
+      const twoDaysAgo = new Date()
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
+      const { data: newTasks } = await supabase.from('tasks').select('*').eq('assignee_id', userId).gte('created_at', twoDaysAgo.toISOString()).order('created_at', { ascending: false }).limit(5)
+      
+      if (newTasks) {
+        newTasks.forEach((t: any) => notifs.push({
+          id: t.id + '-new',
+          title: 'New Task',
+          message: `${profilesMap.get(t.reporter_id) || 'Someone'} assigned you to "${t.title}"`,
+          time: t.created_at,
+          color: 'bg-blue-500'
+        }))
+      }
+
+      const { data: rejectedTasks } = await supabase.from('tasks').select('*').eq('assignee_id', userId).not('rejection_reason', 'is', null).order('updated_at', { ascending: false }).limit(5)
+      if (rejectedTasks) {
+        rejectedTasks.forEach((t: any) => notifs.push({
+          id: t.id + '-reject',
+          title: 'Task Rejected',
+          message: `"${t.title}" was rejected: ${t.rejection_reason}`,
+          time: t.updated_at,
+          color: 'bg-red-500'
+        }))
+      }
+
+      notifs.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      
+      // If no notifs, push a welcome one
+      if (notifs.length === 0) {
+        notifs.push({
+          id: 'welcome',
+          title: 'Welcome to TaskFlow',
+          message: 'Your account is ready. Get started by checking your tasks!',
+          time: new Date().toISOString(),
+          color: 'bg-emerald-500'
+        })
+      }
+      
+      return notifs.slice(0, 10)
+    },
+    enabled: !!profile,
+    refetchInterval: 30000
+  })
+
+  const hasUnread = notifications.some(n => new Date(n.time) > new Date(lastReadTime))
+
+  const markAllAsRead = () => {
+    const now = new Date().toISOString()
+    setLastReadTime(now)
+    localStorage.setItem('lastReadNotifications', now)
+  }
 
   useEffect(() => {
       // Notification check
@@ -125,40 +211,34 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative cursor-pointer">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+                <Bell className={cn("h-5 w-5", hasUnread && "animate-pulse text-primary")} />
+                {hasUnread && (
+                  <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 animate-bounce" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="max-h-[300px] overflow-y-auto">
-                <DropdownMenuItem className="cursor-pointer p-3 flex flex-col items-start gap-1">
-                  <div className="flex items-center gap-2 w-full">
-                    <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                    <span className="font-medium text-sm">New Task Assigned</span>
-                    <span className="text-xs text-muted-foreground ml-auto">2m ago</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground pl-4 line-clamp-1">Gaurav assigned you to "Update Landing Page"</p>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer p-3 flex flex-col items-start gap-1">
-                  <div className="flex items-center gap-2 w-full">
-                    <span className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
-                    <span className="font-medium text-sm">Task Completed</span>
-                    <span className="text-xs text-muted-foreground ml-auto">1h ago</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground pl-4 line-clamp-1">"Setup Database" has been moved to Done</p>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer p-3 flex flex-col items-start gap-1 opacity-60">
-                  <div className="flex items-center gap-2 w-full">
-                    <span className="font-medium text-sm">Welcome to TaskFlow</span>
-                    <span className="text-xs text-muted-foreground ml-auto">1d ago</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">Your account has been successfully created. Start by creating a project!</p>
-                </DropdownMenuItem>
+                {notifications.map((notif: any) => (
+                  <DropdownMenuItem key={notif.id} className={cn("cursor-pointer p-3 flex flex-col items-start gap-1", new Date(notif.time) <= new Date(lastReadTime) && "opacity-60")}>
+                    <div className="flex items-center gap-2 w-full">
+                      <span className={cn("h-2 w-2 rounded-full shrink-0", notif.color)} />
+                      <span className="font-medium text-sm">{notif.title}</span>
+                      <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
+                        {formatDistanceToNow(new Date(notif.time), { addSuffix: true })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground pl-4 line-clamp-2">{notif.message}</p>
+                  </DropdownMenuItem>
+                ))}
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer justify-center text-primary font-medium">
+              <DropdownMenuItem 
+                className="cursor-pointer justify-center text-primary font-medium"
+                onClick={markAllAsRead}
+              >
                 Mark all as read
               </DropdownMenuItem>
             </DropdownMenuContent>
