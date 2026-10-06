@@ -335,9 +335,6 @@ export function TaskDetail({
                 </>
               )}
               <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm"><Edit className="h-4 w-4 mr-1" /> Edit</Button>
-                </DialogTrigger>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>Edit Task</DialogTitle></DialogHeader>
                   <TaskForm initialData={task} users={users} projects={projects}
@@ -462,6 +459,17 @@ export function TaskDetail({
 
         {/* DETAILS TAB */}
         <TabsContent value="details" className="p-4 overflow-y-auto">
+          {task.status === 'review' && updates.find(u => u.update_type === 'submit_review')?.content && (
+            <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-lg">
+              <h4 className="text-sm font-semibold text-purple-800 dark:text-purple-300 mb-1 flex items-center gap-2">
+                <span>Final Submission Note</span>
+              </h4>
+              <p className="text-sm text-purple-700 dark:text-purple-400 whitespace-pre-wrap">
+                {updates.find(u => u.update_type === 'submit_review')?.content}
+              </p>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2 max-w-2xl">
             <div>
               <Label>Status</Label>

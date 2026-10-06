@@ -22,7 +22,7 @@ import { Task, TaskPriority, TaskStatus, User as UserType } from '@/types/task'
 interface TaskFormProps {
   initialData?: Partial<Task>
   users: UserType[]
-  projects: { id: string; name: string; key: string }[]
+  projects?: { id: string; name: string; key: string }[]
   onSubmit: (data: TaskFormData) => Promise<void>
   onCancel: () => void
   isLoading?: boolean
@@ -53,7 +53,7 @@ export type TaskFormData = z.infer<typeof taskFormSchema>
 export function TaskForm({ 
   initialData, 
   users, 
-  projects, 
+  projects = [], 
   onSubmit, 
   onCancel, 
 }: TaskFormProps) {
