@@ -14,10 +14,12 @@ import { cn } from '@/lib/utils'
 import { Task, User as UserType } from '@/types/task'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
+import { useRouter } from 'next/navigation'
 
 type CalendarView = 'month' | 'week' | 'day'
 
 export default function CalendarPage() {
+  const router = useRouter()
   const { profile, loading: authLoading } = useAuth()
   const { openCreateTaskModal, refreshCount } = useUIStore()
   const queryClient = useQueryClient()
@@ -178,12 +180,12 @@ export default function CalendarPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-          <p className="text-muted-foreground">View and manage tasks by date</p>
+          <p className="text-muted-foreground text-lg">{format(currentDate, 'MMMM yyyy')}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex bg-muted rounded-lg p-1" role="radiogroup">
             {(['month', 'week', 'day'] as CalendarView[]).map(v => (
               <button
@@ -473,7 +475,7 @@ export default function CalendarPage() {
               <Button variant="outline" className="flex-1" onClick={() => setSelectedTask(null)}>
                 Close
               </Button>
-              <Button className="flex-1" onClick={() => { /* navigate to task detail */ }}>
+              <Button className="flex-1" onClick={() => router.push(`/tasks/${selectedTask.id}`)}>
                 View Details
               </Button>
             </div>
