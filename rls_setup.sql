@@ -52,3 +52,8 @@ CREATE POLICY "Users can update tasks in their projects" ON tasks
   FOR UPDATE USING (project_id IN (SELECT id FROM projects WHERE org_id IN (SELECT user_orgs())));
 CREATE POLICY "Users can delete tasks in their projects" ON tasks
   FOR DELETE USING (project_id IN (SELECT id FROM projects WHERE org_id IN (SELECT user_orgs())));
+
+CREATE POLICY "Users can see tasks assigned to them" ON tasks
+  FOR SELECT USING (assignee_id = auth.uid() OR reporter_id = auth.uid());
+CREATE POLICY "Users can update tasks assigned to them" ON tasks
+  FOR UPDATE USING (assignee_id = auth.uid() OR reporter_id = auth.uid());
