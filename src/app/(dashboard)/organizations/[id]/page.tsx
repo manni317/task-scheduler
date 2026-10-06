@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ProjectList } from '@/components/project/ProjectList'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { toast } from 'sonner'
-import { ArrowLeft, Plus, UserPlus } from 'lucide-react'
+import { ArrowLeft, Plus, UserPlus, Settings, Upload, Loader2, Building2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { Project, User } from '@/types/task'
 
@@ -34,6 +34,10 @@ export default function OrganizationDetailPage() {
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin'
   const [isAddingMember, setIsAddingMember] = useState(false)
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
+  
+  const [isEditOrgModalOpen, setIsEditOrgModalOpen] = useState(false)
+  const [editOrgData, setEditOrgData] = useState({ name: '', description: '', logoUrl: '' })
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
 
   useEffect(() => {
     if (orgId) {
@@ -53,6 +57,7 @@ export default function OrganizationDetailPage() {
       
       if (orgError) throw orgError
       setOrg(orgData)
+      setEditOrgData({ name: orgData.name, description: orgData.description || '', logoUrl: orgData.logo_url || '' })
 
       // Fetch all system users to pass to ProjectList
       const { data: allUsers } = await supabase.from('profiles').select('*')
@@ -177,6 +182,54 @@ export default function OrganizationDetailPage() {
     }
   }
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!e.target.files || e.target.files.length === 0) return
+      
+      setIsUploadingLogo(true)
+      const file = e.target.files[0]
+      const fileExt = file.name.split('.').pop()
+      const fileName = `org-${orgId}-${Math.random()}.${fileExt}`
+      const filePath = `org-logos/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      setEditOrgData(prev => ({ ...prev, logoUrl: data.publicUrl }))
+      toast.success('Logo uploaded! Click save to apply changes.')
+    } catch (error: any) {
+      toast.error('Error uploading image')
+      console.error(error)
+    } finally {
+      setIsUploadingLogo(false)
+    }
+  }
+
+  const handleUpdateOrg = async () => {
+    try {
+      const { error } = await supabase
+        .from('organizations')
+        .update({
+          name: editOrgData.name,
+          description: editOrgData.description,
+          logo_url: editOrgData.logoUrl
+        })
+        .eq('id', orgId)
+      
+      if (error) throw error
+      toast.success('Organization updated successfully!')
+      setIsEditOrgModalOpen(false)
+      fetchData()
+    } catch (error: any) {
+      toast.error('Failed to update organization')
+      console.error(error)
+    }
+  }
+
   if (isLoading) {
     return <div className="h-full flex items-center justify-center">Loading organization...</div>
   }
@@ -186,15 +239,108 @@ export default function OrganizationDetailPage() {
   }
 
   return (
-    <div className="h-full flex flex-col space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push('/organizations')}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{org.name}</h1>
-          <p className="text-muted-foreground">{org.description || 'No description provided.'}</p>
+    <div className="h-full flex flex-col space-y-6 max-w-7xl mx-auto pb-10">
+      <div className="flex items-start justify-between bg-card p-6 rounded-2xl border shadow-sm">
+        <div className="flex items-center gap-6">
+          <Button variant="ghost" size="icon" onClick={() => router.push('/organizations')} className="h-10 w-10 shrink-0 rounded-full bg-muted/50 hover:bg-muted">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          
+          <div className="flex items-center gap-5">
+            <div className="h-20 w-20 rounded-2xl border-2 border-primary/20 bg-primary/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+              {org.logo_url ? (
+                <img src={org.logo_url} alt={org.name} className="h-full w-full object-cover" />
+              ) : (
+                <Building2 className="h-8 w-8 text-primary/40" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{org.name}</h1>
+              <p className="text-muted-foreground mt-1 max-w-xl line-clamp-2">
+                {org.description || 'No description provided. Click edit to add one.'}
+              </p>
+            </div>
+          </div>
         </div>
+
+        {isManagerOrAdmin && (
+          <Dialog open={isEditOrgModalOpen} onOpenChange={setIsEditOrgModalOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2 shadow-sm">
+                <Settings className="h-4 w-4" /> Edit Profile
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[450px]">
+              <DialogHeader>
+                <DialogTitle>Edit Organization Profile</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6 pt-4">
+                
+                {/* Logo Upload Section */}
+                <div className="flex flex-col items-center gap-4 p-4 border border-dashed rounded-xl bg-muted/30">
+                  <div className="relative h-24 w-24 rounded-2xl border bg-card overflow-hidden shadow-sm flex items-center justify-center">
+                    {editOrgData.logoUrl ? (
+                      <img src={editOrgData.logoUrl} alt="Logo preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-8 w-8 text-muted-foreground" />
+                    )}
+                    {isUploadingLogo && (
+                      <div className="absolute inset-0 bg-background/80 flex items-center justify-center backdrop-blur-sm">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="file" 
+                      id="logo-upload" 
+                      className="hidden" 
+                      accept="image/*"
+                      onChange={handleLogoUpload} 
+                      disabled={isUploadingLogo}
+                    />
+                    <label htmlFor="logo-upload">
+                      <Button variant="secondary" size="sm" className="gap-2 cursor-pointer" asChild disabled={isUploadingLogo}>
+                        <span>
+                          <Upload className="h-4 w-4" /> 
+                          {isUploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                        </span>
+                      </Button>
+                    </label>
+                    {editOrgData.logoUrl && (
+                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setEditOrgData(p => ({...p, logoUrl: ''}))}>
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Organization Name</label>
+                  <input
+                    type="text"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={editOrgData.name}
+                    onChange={(e) => setEditOrgData({ ...editOrgData, name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Description</label>
+                  <textarea
+                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Tell us about this organization..."
+                    value={editOrgData.description}
+                    onChange={(e) => setEditOrgData({ ...editOrgData, description: e.target.value })}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setIsEditOrgModalOpen(false)}>Cancel</Button>
+                  <Button onClick={handleUpdateOrg} disabled={!editOrgData.name.trim()}>Save Changes</Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <Tabs defaultValue="projects" className="flex-1 flex flex-col">
