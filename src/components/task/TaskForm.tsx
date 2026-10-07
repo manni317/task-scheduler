@@ -165,7 +165,7 @@ export function TaskForm({
         <div>
           <Label htmlFor="projectId">Project *</Label>
           <Select
-            onValueChange={form.setValue('projectId')}
+            onValueChange={(val) => form.setValue('projectId', val)}
             defaultValue={form.getValues('projectId')}
             disabled={userRole === 'doer'}
           >
@@ -185,7 +185,7 @@ export function TaskForm({
         <div>
           <Label htmlFor="reporterId">Reporter *</Label>
           <Select
-            onValueChange={form.setValue('reporterId')}
+            onValueChange={(val) => form.setValue('reporterId', val)}
             defaultValue={form.getValues('reporterId')}
             disabled={userRole === 'doer'}
           >
@@ -211,7 +211,7 @@ export function TaskForm({
         <div>
           <Label htmlFor="assigneeId">Assignee</Label>
           <Select
-            onValueChange={form.setValue('assigneeId')}
+            onValueChange={(val) => form.setValue('assigneeId', val)}
             defaultValue={form.getValues('assigneeId')}
             disabled={userRole === 'doer'}
           >
@@ -238,7 +238,7 @@ export function TaskForm({
         <div>
           <Label htmlFor="status">Status</Label>
           <Select
-            onValueChange={form.setValue('status')}
+            onValueChange={(val: any) => form.setValue('status', val)}
             defaultValue={form.getValues('status')}
           >
             <SelectTrigger className="mt-1">
@@ -256,7 +256,7 @@ export function TaskForm({
         <div>
           <Label htmlFor="priority">Priority</Label>
           <Select
-            onValueChange={form.setValue('priority')}
+            onValueChange={(val: any) => form.setValue('priority', val)}
             defaultValue={form.getValues('priority')}
             disabled={userRole === 'doer'}
           >
@@ -295,7 +295,7 @@ export function TaskForm({
               <Calendar
                 mode="single"
                 selected={form.getValues('dueDate')}
-                onSelect={form.setValue('dueDate')}
+                onSelect={(val) => form.setValue('dueDate', val)}
                 initialFocus
               />
             </PopoverContent>
@@ -322,7 +322,7 @@ export function TaskForm({
               <Calendar
                 mode="single"
                 selected={form.getValues('startDate')}
-                onSelect={form.setValue('startDate')}
+                onSelect={(val) => form.setValue('startDate', val)}
                 initialFocus
               />
             </PopoverContent>

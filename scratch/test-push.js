@@ -1,7 +1,7 @@
 const webpush = require('web-push');
 
-const vapidPublicKey = 'BMbundfQ5670HzG-j0i7eR0pQsik3cdbgx5AIijQFvAGRhWEZLh-nRzGKgKSZNqbSx8J38iE0lKfLSTQmbE091I';
-const vapidPrivateKey = 'TI_nomTnUuBoy4zeazskJlPzKDdZPAZ-R167gaLJiVI';
+const vapidPublicKey = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA';
+const vapidPrivateKey = 'pxooLKj6LPMaQlnGM9FsqlrAwVG51kYpmqESlKFqhXk';
 
 webpush.setVapidDetails(
   'mailto:support@task-scheduler.com',
@@ -10,16 +10,16 @@ webpush.setVapidDetails(
 );
 
 const pushSubscription = {
-  endpoint: "https://fcm.googleapis.com/fcm/send/eHWfNZbsLOc:APA91bHRk6JXXInjVHTT7yx8mbxWvh82dHYkKqTuJYrlp1BNRLXdj2PHRnfpXbq_YFtBon8SbabKClP-2UhQZaX65iiBHEWjyTJVsubffw-unK5vq1EPU-exz9yVJAAOmuH9K801mkzS",
+  endpoint: "https://fcm.googleapis.com/fcm/send/fHgd1_pt3fQ:APA91bFdApmZ9pGrEmvCpa-7N9sYgHyWvjfdj6NmUAtl0ppBK1o05-APfr8b--kKykUxyGWFYIvYaea6h3JhUe_gnC0tXCXamevOIX1ueATAGLZTomSj88B_gcw6i_9dDX_jWgN3bFz-",
   keys: {
-    p256dh: "BGOjV3j8HEPr3J3NDPhnjuRD3D6-4JTmxojkvunI1OyhYitij7I3AAzOt5Ru3sxVi6BM_Pippw6PC7kE0gCdLsU",
-    auth: "IqVXEnJ0wbkWfOpgZRINgQ"
+    p256dh: "BGxjFd-8enMFlbSiAuVRHGvTVstG6Y5APectODnXrtC8j9xbnhP3ajFMEIpiQhVMMqHKwkxeKGq_QoaApsr5Ccw",
+    auth: "0Un2hbOG06S-40_rJoZSeQ"
   }
 };
 
 const payload = JSON.stringify({
-  title: 'Test Notification from Agent!',
-  body: '🎉 Woohoo! Your push notifications are working perfectly now.',
+  title: '🔥 Agent Magic!',
+  body: 'Boom! Push Notifications are now working 100% perfectly!',
   url: '/'
 });
 
