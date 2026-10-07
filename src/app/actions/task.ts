@@ -67,7 +67,7 @@ export async function createTask(formData: FormData) {
 
   if (error) {
     console.error('Error creating task:', error)
-    throw new Error('Failed to create task: ' + error.message)
+    return { success: false, error: 'Failed to create task: ' + error.message }
   }
 
   if (data && data[0] && checklistItems.length > 0) {

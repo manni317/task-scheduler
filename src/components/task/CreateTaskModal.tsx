@@ -188,8 +188,14 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       if (tags.length > 0) formData.append('tags', JSON.stringify(tags))
       if (checklistItems.length > 0) formData.append('checklistItems', JSON.stringify(checklistItems))
       
-      await createTask(formData)
+      const result = await createTask(formData)
       
+      if (result && !result.success) {
+        toast.error(result.error || 'Failed to create task')
+        setIsLoading(false)
+        return
+      }
+
       toast.success('Task created successfully!')
       setTaskTitle('')
       setDescription('')
@@ -197,8 +203,8 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       setChecklistItems([])
       triggerRefresh()
       onClose()
-    } catch (error) {
-      toast.error('Failed to create task')
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create task')
       console.error(error)
     } finally {
       setIsLoading(false)
