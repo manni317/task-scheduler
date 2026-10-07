@@ -262,17 +262,10 @@ export default function SettingsPage() {
                           }
                         })
                         if (error) {
-                          // Fallback to regular sign in if link identity fails
-                          await supabase.auth.signInWithOAuth({
-                            provider: 'google',
-                            options: {
-                              scopes: 'https://www.googleapis.com/auth/calendar.events',
-                              redirectTo: `${window.location.origin}/settings?integration=google_success`
-                            }
-                          })
+                          toast.error('Linking Failed: ' + error.message)
                         }
                       } catch (e: any) {
-                        toast.error('Failed to connect Google Calendar: ' + e.message)
+                        toast.error('System Error: ' + e.message)
                       }
                     }}>
                       Connect
