@@ -1,11 +1,8 @@
 import webpush from 'web-push'
 import { createClient } from '@supabase/supabase-js'
 
-const FALLBACK_PUBLIC_KEY = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
-const FALLBACK_PRIVATE_KEY = 'pxooLKj6LPMaQlnGM9FsqlrAwVG51kYpmqESlKFqhXk'
-
-const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || FALLBACK_PUBLIC_KEY
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || FALLBACK_PRIVATE_KEY
+const vapidPublicKey = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
+const vapidPrivateKey = 'pxooLKj6LPMaQlnGM9FsqlrAwVG51kYpmqESlKFqhXk'
 
 if (vapidPublicKey && vapidPrivateKey) {
   try {
