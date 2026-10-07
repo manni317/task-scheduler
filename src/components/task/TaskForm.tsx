@@ -219,7 +219,7 @@ export function TaskForm({
               <SelectValue placeholder="Unassigned" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Unassigned</SelectItem>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
               {users.map(user => (
                 <SelectItem key={user.id} value={user.id}>
                   <div className="flex items-center gap-2">
