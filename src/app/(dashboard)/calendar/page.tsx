@@ -35,6 +35,7 @@ export default function CalendarPage() {
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('all')
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all')
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('all')
 
   const { data: { tasks = [], users = [], projects = [], organizations = [] } = {}, isLoading } = useQuery({
     queryKey: ['calendar_tasks', refreshCount, currentDate],
@@ -129,6 +130,9 @@ export default function CalendarPage() {
   }
   if (selectedProjectId !== 'all') {
     displayTasks = displayTasks.filter(t => t.projectId === selectedProjectId)
+  }
+  if (selectedEmployeeId !== 'all') {
+    displayTasks = displayTasks.filter(t => t.assigneeId === selectedEmployeeId)
   }
 
   if (authLoading || isLoading) {
@@ -238,6 +242,20 @@ export default function CalendarPage() {
               <option key={project.id} value={project.id}>{project.name}</option>
             ))}
           </select>
+          {(userRole === 'admin' || userRole === 'manager') && (
+            <select 
+              value={selectedEmployeeId} 
+              onChange={(e) => setSelectedEmployeeId(e.target.value)}
+              className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:bg-accent/50 cursor-pointer sm:min-w-[150px]"
+            >
+              <option value="all">All Employees</option>
+              {users
+                .filter(u => u.role !== 'admin' && u.role !== 'manager')
+                .map(emp => (
+                <option key={emp.id} value={emp.id}>{emp.name}</option>
+              ))}
+            </select>
+          )}
 
           <div className="flex bg-muted rounded-lg p-1 ml-auto sm:ml-0" role="radiogroup">
             {(['month', 'week', 'day'] as CalendarView[]).map(v => (
