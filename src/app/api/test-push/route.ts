@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     }
 
     if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ success: false, error: 'No subscriptions found for user', userId })
+      return NextResponse.json({ success: false, error: 'No subscriptions found for user', userId, supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL })
     }
 
     const payload = JSON.stringify({
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
       subscriptionsFound: subscriptions.length,
       results,
       keysUsed: {
-        hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
         hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
         hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         usedVapidPublic: vapidPublicKey,
