@@ -160,17 +160,20 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-        <DashboardHero 
-          userName={profile?.full_name || 'User'} 
-          newTasksCount={newTasksToday} 
-          avatarUrl={profile?.avatar_url}
-        />
-        <div className="flex flex-col sm:flex-row gap-3">
+      <DashboardHero 
+        userName={profile?.full_name || 'User'} 
+        newTasksCount={newTasksToday} 
+        avatarUrl={profile?.avatar_url}
+      />
+
+      {/* Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-card p-4 rounded-xl border shadow-sm">
+        <span className="text-sm font-medium text-muted-foreground hidden sm:inline-block">Filter Tasks:</span>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <select 
             value={selectedOrgId} 
             onChange={(e) => { setSelectedOrgId(e.target.value); setSelectedProjectId('all') }}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:bg-accent/50 cursor-pointer sm:min-w-[200px]"
           >
             <option value="all">All Organizations</option>
             {organizations.map(org => (
@@ -180,7 +183,7 @@ export default function DashboardPage() {
           <select 
             value={selectedProjectId} 
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="h-10 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50 hover:bg-accent/50 cursor-pointer sm:min-w-[200px]"
             disabled={selectedOrgId !== 'all' && !projects.some(p => p.org_id === selectedOrgId)}
           >
             <option value="all">All Projects</option>
