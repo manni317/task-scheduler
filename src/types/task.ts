@@ -78,6 +78,9 @@ export interface Task {
   status: 'todo' | 'in_progress' | 'review' | 'done'
   priority: 'low' | 'medium' | 'high' | 'urgent'
   projectId: string
+  project?: Project
+  orgId?: string
+  organization?: Organization
   assigneeId?: string
   assignee?: User
   reporterId: string

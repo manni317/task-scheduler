@@ -33,7 +33,10 @@ export default function CalendarPage() {
 
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-  const { data: { tasks = [], users = [] } = {}, isLoading } = useQuery({
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('all')
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('all')
+
+  const { data: { tasks = [], users = [], projects = [], organizations = [] } = {}, isLoading } = useQuery({
     queryKey: ['calendar_tasks', refreshCount, currentDate],
     queryFn: async () => {
       const start = startOfMonth(currentDate)
@@ -53,7 +56,12 @@ export default function CalendarPage() {
       const { data, error } = await query
       if (error) throw error
 
-      const { data: profilesData } = await supabase.from('profiles').select('*')
+      const [{ data: profilesData }, { data: projectsData }, { data: orgsData }] = await Promise.all([
+        supabase.from('profiles').select('*'),
+        supabase.from('projects').select('*'),
+        supabase.from('organizations').select('*')
+      ])
+
       const mappedUsers = (profilesData || []).map((u: any) => ({
         id: u.id,
         name: u.full_name || 'Unknown',
@@ -73,6 +81,9 @@ export default function CalendarPage() {
           status: t.status || 'todo',
           priority: (() => { const p = Number(t.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
           projectId: t.project_id || null,
+          project: projectsData?.find(p => p.id === t.project_id) || null,
+          orgId: projectsData?.find(p => p.id === t.project_id)?.org_id || null,
+          organization: orgsData?.find(o => o.id === projectsData?.find(p => p.id === t.project_id)?.org_id) || null,
           assigneeId: t.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === t.assignee_id),
           reporterId: t.reporter_id || null,
@@ -106,10 +117,19 @@ export default function CalendarPage() {
         }
       })
 
-      return { tasks: mappedTasks, users: mappedUsers }
+      return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [], organizations: orgsData || [] }
     },
     enabled: !!profile && !authLoading
   })
+
+  // Filter tasks based on selected org/project
+  let displayTasks = tasks
+  if (selectedOrgId !== 'all') {
+    displayTasks = displayTasks.filter(t => t.orgId === selectedOrgId)
+  }
+  if (selectedProjectId !== 'all') {
+    displayTasks = displayTasks.filter(t => t.projectId === selectedProjectId)
+  }
 
   if (authLoading || isLoading) {
     return (
@@ -119,7 +139,7 @@ export default function CalendarPage() {
     )
   }
 
-  const tasksByDate = tasks.reduce((acc, task) => {
+  const tasksByDate = displayTasks.reduce((acc, task) => {
     if (!task.dueDate) return acc
     const dateKey = format(task.dueDate, 'yyyy-MM-dd')
     if (!acc[dateKey]) acc[dateKey] = []
@@ -189,13 +209,37 @@ export default function CalendarPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
           <p className="text-muted-foreground text-lg">{format(currentDate, 'MMMM yyyy')}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex bg-muted rounded-lg p-1" role="radiogroup">
+        <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3">
+          <select 
+            value={selectedOrgId} 
+            onChange={(e) => { setSelectedOrgId(e.target.value); setSelectedProjectId('all') }}
+            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="all">All Organizations</option>
+            {organizations.map(org => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
+          <select 
+            value={selectedProjectId} 
+            onChange={(e) => setSelectedProjectId(e.target.value)}
+            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+            disabled={selectedOrgId !== 'all' && !projects.some(p => p.org_id === selectedOrgId)}
+          >
+            <option value="all">All Projects</option>
+            {projects
+              .filter(p => selectedOrgId === 'all' || p.org_id === selectedOrgId)
+              .map(project => (
+              <option key={project.id} value={project.id}>{project.name}</option>
+            ))}
+          </select>
+
+          <div className="flex bg-muted rounded-lg p-1 ml-auto sm:ml-0" role="radiogroup">
             {(['month', 'week', 'day'] as CalendarView[]).map(v => (
               <button
                 key={v}
@@ -340,6 +384,14 @@ export default function CalendarPage() {
                           )}
                         >
                           <p className="font-medium truncate">{task.title}</p>
+                          <div className="flex items-center gap-1 mt-1 flex-wrap">
+                            {task.organization && (
+                              <Badge variant="outline" className="text-[9px] h-3 px-1 py-0">{task.organization.name}</Badge>
+                            )}
+                            {task.project && (
+                              <Badge variant="secondary" className="text-[9px] h-3 px-1 py-0">{task.project.name}</Badge>
+                            )}
+                          </div>
                           <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                             {task.assignee && (
                               <span className="flex items-center gap-1">
@@ -396,6 +448,14 @@ export default function CalendarPage() {
                             )}
                           >
                             <p className="font-medium">{task.title}</p>
+                            <div className="flex items-center gap-1 mt-1 flex-wrap">
+                              {task.organization && (
+                                <Badge variant="outline" className="text-[9px] h-3 px-1 py-0">{task.organization.name}</Badge>
+                              )}
+                              {task.project && (
+                                <Badge variant="secondary" className="text-[9px] h-3 px-1 py-0">{task.project.name}</Badge>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                               <Badge variant="outline" className={statusColors[task.status]}>
                                 {task.status.replace('_', ' ')}
@@ -440,6 +500,16 @@ export default function CalendarPage() {
             </div>
             <Separator className="my-3" />
             <div className="space-y-3">
+              {(selectedTask.organization || selectedTask.project) && (
+                <div className="flex items-center gap-2">
+                  {selectedTask.organization && (
+                    <Badge variant="outline" className="text-xs">{selectedTask.organization.name}</Badge>
+                  )}
+                  {selectedTask.project && (
+                    <Badge variant="secondary" className="text-xs">{selectedTask.project.name}</Badge>
+                  )}
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className={priorityColors[selectedTask.priority]}>
                   <Flag className="h-3 w-3 mr-1" />

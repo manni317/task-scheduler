@@ -21,14 +21,19 @@ export default function DashboardPage() {
   const userRole = profile?.role || 'employee'
   const userId = profile?.id || ''
 
-  const { data: { tasks = [], users = [] } = {}, isLoading } = useQuery({
+  const [selectedOrgId, setSelectedOrgId] = useState<string>('all')
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('all')
+
+  const { data: { tasks = [], users = [], projects = [], organizations = [] } = {}, isLoading } = useQuery({
     queryKey: ['dashboard_tasks', refreshCount],
     queryFn: async () => {
       const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
-      const [{ data: profilesData }, { data: tasksData }] = await Promise.all([
+      const [{ data: profilesData }, { data: tasksData }, { data: projectsData }, { data: orgsData }] = await Promise.all([
         supabase.from('profiles').select('*'),
-        supabase.from('tasks').select('*')
+        supabase.from('tasks').select('*'),
+        supabase.from('projects').select('*'),
+        supabase.from('organizations').select('*')
       ])
 
       const mappedUsers: User[] = (profilesData || []).map((u: any) => ({
@@ -48,6 +53,9 @@ export default function DashboardPage() {
           status: t.status || 'todo',
           priority: (() => { const p = Number(t.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
           projectId: t.project_id || '1',
+          project: projectsData?.find(p => p.id === t.project_id) || null,
+          orgId: projectsData?.find(p => p.id === t.project_id)?.org_id || null,
+          organization: orgsData?.find(o => o.id === projectsData?.find(p => p.id === t.project_id)?.org_id) || null,
           assigneeId: t.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === t.assignee_id),
           reporterId: t.reporter_id || null,
@@ -69,7 +77,7 @@ export default function DashboardPage() {
           rejectionReason: t.rejection_reason || null
         }))
       }
-      return { tasks: mappedTasks, users: mappedUsers }
+      return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [], organizations: orgsData || [] }
     },
     enabled: !!profile
   })
@@ -83,9 +91,16 @@ export default function DashboardPage() {
   }
 
   // Filter tasks based on role
-  const displayTasks = userRole === 'admin' || userRole === 'manager' 
+  let displayTasks = userRole === 'admin' || userRole === 'manager' 
     ? tasks 
     : tasks.filter(t => t.assigneeId === userId)
+
+  if (selectedOrgId !== 'all') {
+    displayTasks = displayTasks.filter(t => t.orgId === selectedOrgId)
+  }
+  if (selectedProjectId !== 'all') {
+    displayTasks = displayTasks.filter(t => t.projectId === selectedProjectId)
+  }
 
   const completedCount = displayTasks.filter(t => t.status === 'done').length
   const inProgressCount = displayTasks.filter(t => t.status === 'in_progress').length
@@ -145,11 +160,38 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardHero 
-        userName={profile?.full_name || 'User'} 
-        newTasksCount={newTasksToday} 
-        avatarUrl={profile?.avatar_url}
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+        <DashboardHero 
+          userName={profile?.full_name || 'User'} 
+          newTasksCount={newTasksToday} 
+          avatarUrl={profile?.avatar_url}
+        />
+        <div className="flex flex-col sm:flex-row gap-3">
+          <select 
+            value={selectedOrgId} 
+            onChange={(e) => { setSelectedOrgId(e.target.value); setSelectedProjectId('all') }}
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value="all">All Organizations</option>
+            {organizations.map(org => (
+              <option key={org.id} value={org.id}>{org.name}</option>
+            ))}
+          </select>
+          <select 
+            value={selectedProjectId} 
+            onChange={(e) => setSelectedProjectId(e.target.value)}
+            className="h-10 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
+            disabled={selectedOrgId !== 'all' && !projects.some(p => p.org_id === selectedOrgId)}
+          >
+            <option value="all">All Projects</option>
+            {projects
+              .filter(p => selectedOrgId === 'all' || p.org_id === selectedOrgId)
+              .map(project => (
+              <option key={project.id} value={project.id}>{project.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {rejectedTasks.length > 0 && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm flex items-start gap-4">

@@ -56,7 +56,19 @@ export function UpcomingDeadlines({ tasks, users }: UpcomingDeadlinesProps) {
 
                   return (
                     <TableRow key={task.id}>
-                      <TableCell className="font-medium">{task.title}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex flex-col gap-1">
+                          <span>{task.title}</span>
+                          <div className="flex items-center gap-1">
+                            {task.organization && (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1 py-0">{task.organization.name}</Badge>
+                            )}
+                            {task.project && (
+                              <Badge variant="secondary" className="text-[10px] h-4 px-1 py-0">{task.project.name}</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
                       <TableCell className={cn(
                         isOverdueTask && 'text-red-500 font-medium',
                         isDueToday && 'text-orange-500 font-medium',
