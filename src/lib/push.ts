@@ -1,12 +1,18 @@
 import webpush from 'web-push'
 import { createClient } from '@supabase/supabase-js'
 
-if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+const FALLBACK_PUBLIC_KEY = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
+const FALLBACK_PRIVATE_KEY = 'pxooLKj6LPMaQlnGM9FsqlrAwVG51kYpmqESlKFqhXk'
+
+const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || FALLBACK_PUBLIC_KEY
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || FALLBACK_PRIVATE_KEY
+
+if (vapidPublicKey && vapidPrivateKey) {
   try {
     webpush.setVapidDetails(
       'mailto:support@task-scheduler.com',
-      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-      process.env.VAPID_PRIVATE_KEY
+      vapidPublicKey,
+      vapidPrivateKey
     )
   } catch (error) {
     console.warn('Failed to set VAPID details:', error)
@@ -16,7 +22,7 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 }
 
 export async function sendPushNotification(userId: string, title: string, body: string, url: string = '/') {
-  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+  if (!vapidPublicKey || !vapidPrivateKey) {
     console.warn('VAPID keys not configured, skipping push notification.')
     return
   }
