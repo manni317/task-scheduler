@@ -99,8 +99,8 @@ export async function createTask(formData: FormData) {
     
     // Send push notification to assignee if it's not the reporter
     if (assigneeId && assigneeId !== 'unassigned' && assigneeId !== reporterId) {
-      // Send background push asynchronously
-      sendPushNotification(
+      // MUST await in serverless functions, otherwise it gets killed when the response is sent!
+      await sendPushNotification(
         assigneeId,
         'New Task Assigned',
         `You have been assigned to: ${title}`,

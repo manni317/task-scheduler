@@ -18,8 +18,8 @@ const pushSubscription = {
 };
 
 const payload = JSON.stringify({
-  title: '🔥 Agent Magic!',
-  body: 'Boom! Push Notifications are now working 100% perfectly!',
+  title: '✨ On User Demand!',
+  body: 'Agent Antigravity testing notification once again! Check 1, 2, 3!',
   url: '/'
 });
 

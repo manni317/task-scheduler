@@ -59,12 +59,12 @@ export function UpcomingDeadlines({ tasks, users }: UpcomingDeadlinesProps) {
                       <TableCell className="font-medium">
                         <div className="flex flex-col gap-1">
                           <span>{task.title}</span>
-                          <div className="flex items-center gap-1">
+                          <div className="flex flex-wrap items-center gap-1 mt-1">
                             {task.organization && (
-                              <Badge variant="outline" className="text-[10px] h-4 px-1 py-0">{task.organization.name}</Badge>
+                              <Badge variant="outline" className="text-[10px] h-4 px-1 py-0 whitespace-nowrap">{task.organization.name}</Badge>
                             )}
                             {task.project && (
-                              <Badge variant="secondary" className="text-[10px] h-4 px-1 py-0">{task.project.name}</Badge>
+                              <Badge variant="secondary" className="text-[10px] h-4 px-1 py-0 whitespace-nowrap">{task.project.name}</Badge>
                             )}
                           </div>
                         </div>
