@@ -151,6 +151,11 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       toast.error('Task title is required!')
       return
     }
+    
+    if (!projectId) {
+      toast.error('Please select a project before creating a task!')
+      return
+    }
 
     try {
       setIsLoading(true)
