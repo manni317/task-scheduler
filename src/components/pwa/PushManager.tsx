@@ -15,6 +15,53 @@ const urlBase64ToUint8Array = (base64String: string) => {
   return outputArray
 }
 
+export async function testPushSubscription(userId: string) {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      return { success: false, message: 'Push notifications are not supported in this browser' }
+    }
+
+    const registration = await navigator.serviceWorker.ready
+    
+    // Check if already subscribed
+    let subscription = await registration.pushManager.getSubscription()
+    
+    if (!subscription) {
+      if (Notification.permission === 'denied') {
+        return { success: false, message: 'Notifications are blocked in browser settings' }
+      }
+      
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        return { success: false, message: 'Permission denied for notifications' }
+      }
+
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      if (!vapidPublicKey) {
+        return { success: false, message: 'VAPID public key not found in environment' }
+      }
+
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      })
+    }
+
+    const res = await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription, userId }),
+    })
+    
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Server error')
+
+    return { success: true, message: 'Push notification setup successful!' }
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Failed to setup push' }
+  }
+}
+
 export function PushManager() {
   const { profile } = useAuth()
 

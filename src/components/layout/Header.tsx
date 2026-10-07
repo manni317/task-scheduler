@@ -17,6 +17,7 @@ import { startOfDay, formatDistanceToNow } from 'date-fns'
 import { useAuth } from '@/hooks/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
+import { testPushSubscription } from '@/components/pwa/PushManager'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
@@ -290,6 +291,23 @@ export function Header() {
                   <Settings className="h-4 w-4" />
                   Settings
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer flex items-center gap-2"
+                onClick={async () => {
+                  if (!profile?.id) return
+                  toast.loading('Testing notification setup...')
+                  const res = await testPushSubscription(profile.id)
+                  toast.dismiss()
+                  if (res.success) {
+                    toast.success(res.message)
+                  } else {
+                    toast.error(res.message)
+                  }
+                }}
+              >
+                <Bell className="h-4 w-4 text-cyan-400" />
+                Setup Notifications
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
