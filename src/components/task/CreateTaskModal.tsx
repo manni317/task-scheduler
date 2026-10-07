@@ -157,7 +157,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       const formData = new FormData()
       formData.append('title', taskTitle)
       formData.append('description', description)
-      if (projectId) formData.append('projectId', projectId)
+      if (projectId && projectId !== 'unassigned') formData.append('projectId', projectId)
       if (assigneeId) formData.append('assigneeId', assigneeId)
       if (priority) formData.append('priority', priority)
       if (dueDate) formData.append('dueDate', dueDate.toISOString())
@@ -325,6 +325,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                   <SelectValue placeholder="Select Project" />
                 </SelectTrigger>
                 <SelectContent className="z-[110] bg-[#0f111a]/95 border-white/10 text-white backdrop-blur-xl">
+                  <SelectItem value="unassigned">Direct Task (No Project)</SelectItem>
                   {availableProjects.map(p => (
                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}

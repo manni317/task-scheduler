@@ -61,7 +61,7 @@ export async function createTask(formData: FormData) {
       .insert({
         title,
         description,
-        project_id: projectId || null,
+        project_id: projectId && projectId !== 'unassigned' ? projectId : null,
         assignee_id: assigneeId && assigneeId !== 'unassigned' ? assigneeId : null,
         reporter_id: reporterId,
         status: status,
