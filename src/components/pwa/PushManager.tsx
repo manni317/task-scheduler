@@ -26,6 +26,12 @@ export async function testPushSubscription(userId: string) {
     // Check if already subscribed
     let subscription = await registration.pushManager.getSubscription()
     
+    // FORCE UNSUBSCRIBE to ensure new VAPID keys are used
+    if (subscription) {
+      await subscription.unsubscribe()
+      subscription = null
+    }
+    
     if (!subscription) {
       if (Notification.permission === 'denied') {
         return { success: false, message: 'Notifications are blocked in browser settings' }
