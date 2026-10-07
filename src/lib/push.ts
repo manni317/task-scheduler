@@ -1,11 +1,19 @@
 import webpush from 'web-push'
 import { createClient } from '@supabase/supabase-js'
 
-webpush.setVapidDetails(
-  'mailto:support@task-scheduler.com',
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
-  process.env.VAPID_PRIVATE_KEY || ''
-)
+if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  try {
+    webpush.setVapidDetails(
+      'mailto:support@task-scheduler.com',
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    )
+  } catch (error) {
+    console.warn('Failed to set VAPID details:', error)
+  }
+} else {
+  console.warn('VAPID keys not found, push notifications are disabled.')
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +21,11 @@ const supabase = createClient(
 )
 
 export async function sendPushNotification(userId: string, title: string, body: string, url: string = '/') {
+  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    console.warn('VAPID keys not configured, skipping push notification.')
+    return
+  }
+
   try {
     const { data: subscriptions } = await supabase
       .from('push_subscriptions')
