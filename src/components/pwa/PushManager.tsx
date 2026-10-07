@@ -42,7 +42,10 @@ export async function testPushSubscription(userId: string) {
         return { success: false, message: 'Permission denied for notifications' }
       }
 
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      const FALLBACK_PUBLIC_KEY = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('=') && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('"') 
+        ? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY 
+        : FALLBACK_PUBLIC_KEY
       if (!vapidPublicKey) {
         return { success: false, message: 'VAPID public key not found in environment' }
       }
@@ -102,7 +105,10 @@ export function PushManager() {
           return
         }
 
-        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        const FALLBACK_PUBLIC_KEY = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
+        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('=') && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('"') 
+          ? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY 
+          : FALLBACK_PUBLIC_KEY
         if (!vapidPublicKey) return
 
         const subscription = await registration.pushManager.subscribe({
