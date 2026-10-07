@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils'
 import { useTheme } from 'next-themes'
 import { useAuth, useProfile } from '@/hooks/useAuth'
 import { toast } from 'sonner'
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { useSupabase } from '@/lib/supabase-provider'
 
 const timezones = [
@@ -35,13 +35,24 @@ const languages = [
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme()
-  const { profile } = useAuth()
+  const { profile, session } = useAuth()
   const { updateProfile } = useProfile()
   const supabase = useSupabase()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState('profile')
   const [isSaving, setIsSaving] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+
+  useEffect(() => {
+    // Check if we just redirected back from Google OAuth
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('integration') === 'google_success') {
+      setActiveTab('integrations')
+      toast.success('Google Calendar connected successfully!')
+      // Clean up the URL
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -236,31 +247,37 @@ export default function SettingsPage() {
                     <p className="text-sm text-muted-foreground">Automatically sync your tasks to Google Calendar.</p>
                   </div>
                 </div>
-                <Button onClick={async () => {
-                  try {
-                    const { error } = await supabase.auth.linkIdentity({
-                      provider: 'google',
-                      options: {
-                        scopes: 'https://www.googleapis.com/auth/calendar.events',
-                        redirectTo: `${window.location.origin}/settings`
-                      }
-                    })
-                    if (error) {
-                      // Fallback to regular sign in if link identity fails
-                      await supabase.auth.signInWithOAuth({
-                        provider: 'google',
-                        options: {
-                          scopes: 'https://www.googleapis.com/auth/calendar.events',
-                          redirectTo: `${window.location.origin}/settings`
+                  {session?.user?.identities?.some((id: any) => id.provider === 'google') ? (
+                    <Button variant="outline" className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950" disabled>
+                      Connected
+                    </Button>
+                  ) : (
+                    <Button onClick={async () => {
+                      try {
+                        const { error } = await supabase.auth.linkIdentity({
+                          provider: 'google',
+                          options: {
+                            scopes: 'https://www.googleapis.com/auth/calendar.events',
+                            redirectTo: `${window.location.origin}/settings?integration=google_success`
+                          }
+                        })
+                        if (error) {
+                          // Fallback to regular sign in if link identity fails
+                          await supabase.auth.signInWithOAuth({
+                            provider: 'google',
+                            options: {
+                              scopes: 'https://www.googleapis.com/auth/calendar.events',
+                              redirectTo: `${window.location.origin}/settings?integration=google_success`
+                            }
+                          })
                         }
-                      })
-                    }
-                  } catch (e: any) {
-                    toast.error('Failed to connect Google Calendar: ' + e.message)
-                  }
-                }}>
-                  Connect
-                </Button>
+                      } catch (e: any) {
+                        toast.error('Failed to connect Google Calendar: ' + e.message)
+                      }
+                    }}>
+                      Connect
+                    </Button>
+                  )}
               </div>
             </CardContent>
           </Card>
