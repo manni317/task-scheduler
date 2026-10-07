@@ -46,10 +46,17 @@ export default function SettingsPage() {
   useEffect(() => {
     // Check if we just redirected back from Google OAuth
     const params = new URLSearchParams(window.location.search)
-    if (params.get('integration') === 'google_success') {
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', '?'))
+    
+    const error = params.get('error') || hashParams.get('error')
+    const errorDescription = params.get('error_description') || hashParams.get('error_description')
+    
+    if (error) {
+      toast.error(`Connection failed: ${errorDescription || error}`)
+      window.history.replaceState({}, '', window.location.pathname)
+    } else if (params.get('integration') === 'google_success' || hashParams.get('integration') === 'google_success') {
       setActiveTab('integrations')
       toast.success('Google Calendar connected successfully!')
-      // Clean up the URL
       window.history.replaceState({}, '', window.location.pathname)
     }
   }, [])
