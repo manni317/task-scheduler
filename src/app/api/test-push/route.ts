@@ -20,7 +20,14 @@ export async function GET(request: Request) {
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          fetch: (url, options) => {
+            return fetch(url, { ...options, cache: 'no-store' })
+          }
+        }
+      }
     )
 
     const { data: subscriptions, error } = await supabase
@@ -33,7 +40,19 @@ export async function GET(request: Request) {
     }
 
     if (!subscriptions || subscriptions.length === 0) {
-      return NextResponse.json({ success: false, error: 'No subscriptions found for user', userId, supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL })
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No subscriptions found for user', 
+        userId, 
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+        keysUsed: {
+          supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          hasServiceRole: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+          hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          usedVapidPublic: vapidPublicKey,
+          vapidPrivateLength: vapidPrivateKey.length
+        }
+      })
     }
 
     const payload = JSON.stringify({
