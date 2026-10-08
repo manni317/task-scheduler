@@ -15,6 +15,7 @@ import { Task, User as UserType, ChecklistItem, Comment, Attachment, TimeEntry, 
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { TaskForm } from './TaskForm'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
@@ -338,10 +339,12 @@ export function TaskDetail({
               <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>Edit Task</DialogTitle></DialogHeader>
-                  <TaskForm initialData={task} users={users} projects={projects}
-                    onSubmit={async (data) => { await onUpdate({ ...data, id: task.id } as any); setEditDialogOpen(false) }}
-                    onCancel={() => setEditDialogOpen(false)}
-                  />
+                  <ErrorBoundary>
+                    <TaskForm initialData={task} users={users} projects={projects}
+                      onSubmit={async (data) => { await onUpdate({ ...data, id: task.id } as any); setEditDialogOpen(false) }}
+                      onCancel={() => setEditDialogOpen(false)}
+                    />
+                  </ErrorBoundary>
                 </DialogContent>
               </Dialog>
               <DropdownMenu>

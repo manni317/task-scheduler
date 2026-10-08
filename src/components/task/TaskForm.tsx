@@ -58,10 +58,13 @@ export function TaskForm({
   onCancel, 
 }: TaskFormProps) {
   const [userRole, setUserRole] = useState('manager')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setUserRole(localStorage.getItem('userRole') || 'manager')
+    setMounted(true)
   }, [])
+
   const [tags, setTags] = useState<string[]>(initialData?.tags || [])
   const [newTag, setNewTag] = useState('')
   const [checklistItems, setChecklistItems] = useState<TaskFormData['checklistItems']>(
@@ -134,6 +137,10 @@ export function TaskForm({
     medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
     high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
     urgent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  }
+
+  if (!mounted) {
+    return null
   }
 
   return (
