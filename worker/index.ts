@@ -27,18 +27,28 @@ sw.addEventListener('push', (event) => {
 sw.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const urlToOpen = event.notification.data.url || '/';
+  // Determine the URL to open (can be passed via data.url)
+  const targetUrl = event.notification.data?.url || '/';
+
+  // We want to open this URL, handling both absolute and relative paths
+  const urlToOpen = new URL(targetUrl, self.location.origin).href;
 
   event.waitUntil(
     sw.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Check if there is already a window/tab open with the target URL
-      for (let i = 0; i < windowClients.length; i++) {
-        const client = windowClients[i];
-        if (client.url.includes(urlToOpen) && 'focus' in client) {
-          return client.focus();
+      // Find any window that belongs to our app
+      const appClient = windowClients.find(client => client.url.startsWith(self.location.origin));
+      
+      if (appClient) {
+        // Focus the existing window
+        appClient.focus();
+        // Navigate to the target URL if it's not already there
+        if (appClient.url !== urlToOpen) {
+          return appClient.navigate(urlToOpen);
         }
+        return;
       }
-      // If not, open a new window/tab
+      
+      // If no app window is open, open a new one
       if (sw.clients.openWindow) {
         return sw.clients.openWindow(urlToOpen);
       }

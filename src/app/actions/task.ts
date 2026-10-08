@@ -166,9 +166,16 @@ export async function notifyTaskUpdate(
       pushOptions.image = 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=800&q=80' // A beautiful celebration image
       pushOptions.actions = [{ action: 'view', title: 'Celebrate' }]
     } else if (action === 'status_changed') {
-      pushTitle = '🔄 Status Changed'
-      pushBody = `Task "${title}" moved to ${extraInfo}.`
-      pushOptions.actions = [{ action: 'view', title: 'View Update' }]
+      if (extraInfo === 'done') {
+        pushTitle = '✅ Task Completed!'
+        pushBody = `Awesome! Task "${title}" is now done.`
+        pushOptions.image = 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80' // Beautiful completion/teamwork image
+        pushOptions.actions = [{ action: 'view', title: 'View Task' }]
+      } else {
+        pushTitle = '🔄 Status Changed'
+        pushBody = `Task "${title}" moved to ${extraInfo}.`
+        pushOptions.actions = [{ action: 'view', title: 'View Update' }]
+      }
     }
 
     await sendPushNotification(
