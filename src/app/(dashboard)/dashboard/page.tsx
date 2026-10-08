@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
-
+import Link from 'next/link'
 
 export default function DashboardPage() {
   const { profile, loading: authLoading } = useAuth()
@@ -215,15 +215,42 @@ export default function DashboardPage() {
       </div>
 
       {rejectedTasks.length > 0 && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm flex items-start gap-4">
-          <div className="p-2 bg-red-100 rounded-full mt-0.5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-          </div>
-          <div>
-            <h3 className="text-red-800 font-bold text-lg">Action Required: {rejectedTasks.length} {rejectedTasks.length === 1 ? 'Task' : 'Tasks'} Rejected</h3>
-            <p className="text-red-700 text-sm mt-1">
-              Your manager has rejected some of your submitted tasks. Please check the <strong>Tasks</strong> tab, look for the red "REJECTED" badges, and read the manager's feedback to make corrections.
-            </p>
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm flex flex-col gap-4">
+          <div className="flex gap-4 w-full items-start">
+            <div className="p-2 bg-red-100 rounded-full mt-0.5 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-red-800 font-bold text-lg">Action Required: {rejectedTasks.length} {rejectedTasks.length === 1 ? 'Task' : 'Tasks'} Rejected</h3>
+              <p className="text-red-700 text-sm mt-1 mb-4">
+                Your manager has rejected the following {rejectedTasks.length === 1 ? 'task' : 'tasks'}. Click on a task to view the detailed feedback and make corrections.
+              </p>
+              
+              <div className="flex flex-col gap-2.5">
+                {rejectedTasks.map(task => (
+                  <Link 
+                    href={`/tasks/${task.id}`} 
+                    key={task.id} 
+                    className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3.5 rounded-lg border border-red-200 hover:border-red-400 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-2 sm:mb-0">
+                      <span className="font-semibold text-slate-800 group-hover:text-red-700 transition-colors">{task.title}</span>
+                      {task.rejectionReason && (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100">Reason</span>
+                          <span className="text-sm text-red-600 line-clamp-1 max-w-[250px]" title={task.rejectionReason}>
+                            {task.rejectionReason}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-red-600 text-sm font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform self-start sm:self-auto mt-1 sm:mt-0">
+                      Fix Now <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}
