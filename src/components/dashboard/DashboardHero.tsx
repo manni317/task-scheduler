@@ -87,7 +87,7 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
 
       {newTasksCount > 0 && (
         <div 
-          onClick={() => router.push('/tasks')}
+          onClick={() => router.push('/tasks?filter=today')}
           className={cn(
             "relative z-10 mt-6 sm:mt-8 inline-flex items-center gap-3 rounded-full py-2.5 px-5 cursor-pointer",
             "bg-white/20 backdrop-blur-md border border-white/30",

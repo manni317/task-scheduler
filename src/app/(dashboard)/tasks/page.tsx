@@ -100,12 +100,17 @@ export default function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all')
   const [projectFilter, setProjectFilter] = useState<string>('all')
+  const [timeFilter, setTimeFilter] = useState<string>('all')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const status = params.get('status')
     if (status) {
       setStatusFilter(status)
+    }
+    const filter = params.get('filter')
+    if (filter === 'today') {
+      setTimeFilter('today')
     }
   }, [])
 
@@ -123,7 +128,15 @@ export default function TasksPage() {
     const matchesAssignee = assigneeFilter === 'all' || task.assigneeId === assigneeFilter
     const matchesProject = projectFilter === 'all' || task.projectId === projectFilter
     const matchesRole = userRole === 'admin' || userRole === 'manager' || task.assigneeId === userId
-    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesProject && matchesRole
+    
+    let matchesTime = true
+    if (timeFilter === 'today') {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      matchesTime = task.createdAt >= today
+    }
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesProject && matchesRole && matchesTime
   })
 
   // Update URL when filter changes
