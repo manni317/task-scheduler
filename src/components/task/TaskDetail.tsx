@@ -113,6 +113,7 @@ export function TaskDetail({
 
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const handleStatusUpdate = async (newStatus: string, note?: string, extraUpdateData?: Partial<Task>) => {
     setIsUpdatingStatus(true)
@@ -350,9 +351,35 @@ export function TaskDetail({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setEditDialogOpen(true)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-500" onClick={() => onDelete(task.id)}><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-500" onClick={() => setDeleteDialogOpen(true)}><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-red-600 flex items-center gap-2">
+                      <Trash2 className="h-5 w-5" />
+                      Delete Task
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="py-4">
+                    <p className="text-muted-foreground">Are you sure you want to delete this task? This action cannot be undone and all associated data will be lost.</p>
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button 
+                      className="bg-red-600 hover:bg-red-700 text-white" 
+                      onClick={() => {
+                        setDeleteDialogOpen(false)
+                        onDelete(task.id)
+                      }}
+                    >
+                      Delete Task
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </>
           )}
 

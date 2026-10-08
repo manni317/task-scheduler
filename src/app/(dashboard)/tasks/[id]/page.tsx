@@ -171,15 +171,13 @@ export default function TaskDetailPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
-      try {
-        const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
-        await supabase.from('tasks').delete().eq('id', id)
-        queryClient.invalidateQueries({ queryKey: ['tasks'] })
-        router.push('/tasks')
-      } catch (error) {
-        console.error('Delete failed', error)
-      }
+    try {
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+      await supabase.from('tasks').delete().eq('id', id)
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      router.push('/tasks')
+    } catch (error) {
+      console.error('Delete failed', error)
     }
   }
 
