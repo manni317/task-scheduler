@@ -339,7 +339,7 @@ export function TaskDetail({
                 <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader><DialogTitle>Edit Task</DialogTitle></DialogHeader>
                   <TaskForm initialData={task} users={users} projects={projects}
-                    onSubmit={async (data) => { await onUpdate(data); setEditDialogOpen(false) }}
+                    onSubmit={async (data) => { await onUpdate({ ...data, id: task.id } as any); setEditDialogOpen(false) }}
                     onCancel={() => setEditDialogOpen(false)}
                   />
                 </DialogContent>

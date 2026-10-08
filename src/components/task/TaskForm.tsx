@@ -166,7 +166,7 @@ export function TaskForm({
           <Label htmlFor="projectId">Project *</Label>
           <Select
             onValueChange={(val) => form.setValue('projectId', val)}
-            defaultValue={form.getValues('projectId')}
+            defaultValue={form.getValues('projectId') || undefined}
             disabled={userRole === 'doer'}
           >
             <SelectTrigger className="mt-1">
@@ -186,7 +186,7 @@ export function TaskForm({
           <Label htmlFor="reporterId">Reporter *</Label>
           <Select
             onValueChange={(val) => form.setValue('reporterId', val)}
-            defaultValue={form.getValues('reporterId')}
+            defaultValue={form.getValues('reporterId') || undefined}
             disabled={userRole === 'doer'}
           >
             <SelectTrigger className="mt-1">
@@ -198,7 +198,7 @@ export function TaskForm({
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name[0]}</AvatarFallback>
+                      <AvatarFallback>{user.name ? user.name[0] : 'U'}</AvatarFallback>
                     </Avatar>
                     {user.name}
                   </div>
@@ -212,7 +212,7 @@ export function TaskForm({
           <Label htmlFor="assigneeId">Assignee</Label>
           <Select
             onValueChange={(val) => form.setValue('assigneeId', val)}
-            defaultValue={form.getValues('assigneeId')}
+            defaultValue={form.getValues('assigneeId') || undefined}
             disabled={userRole === 'doer'}
           >
             <SelectTrigger className="mt-1">
@@ -225,7 +225,7 @@ export function TaskForm({
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name[0]}</AvatarFallback>
+                      <AvatarFallback>{user.name ? user.name[0] : 'U'}</AvatarFallback>
                     </Avatar>
                     {user.name}
                   </div>
