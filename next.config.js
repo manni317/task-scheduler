@@ -34,7 +34,7 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', '*.pages.dev', '*.muze-satwik.com'],
+      allowedOrigins: ['localhost:3000', '*.pages.dev', '*.muze-satwik.com', '*.vercel.app'],
     },
     optimizePackageImports: ['lucide-react'],
   },

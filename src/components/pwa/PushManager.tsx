@@ -15,6 +15,26 @@ const urlBase64ToUint8Array = (base64String: string) => {
   return outputArray
 }
 
+const VAPID_PUBLIC_KEY = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
+
+const getVapidPublicKey = (): string => {
+  const envKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  // Only use env key if it looks like a valid URL-safe base64 string (no padding or quotes)
+  if (envKey && !envKey.includes('=') && !envKey.includes('"') && envKey.length > 50) {
+    return envKey
+  }
+  return VAPID_PUBLIC_KEY
+}
+
+const saveSubscriptionToServer = async (subscription: PushSubscription, userId: string) => {
+  const res = await fetch('/api/push/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscription, userId }),
+  })
+  return res.ok
+}
+
 export async function testPushSubscription(userId: string) {
   try {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -23,47 +43,30 @@ export async function testPushSubscription(userId: string) {
 
     const registration = await navigator.serviceWorker.ready
     
-    // Check if already subscribed
-    let subscription = await registration.pushManager.getSubscription()
-    
     // FORCE UNSUBSCRIBE to ensure new VAPID keys are used
-    if (subscription) {
-      await subscription.unsubscribe()
-      subscription = null
+    const existing = await registration.pushManager.getSubscription()
+    if (existing) {
+      await existing.unsubscribe()
     }
     
-    if (!subscription) {
-      if (Notification.permission === 'denied') {
-        return { success: false, message: 'Notifications are blocked in browser settings' }
-      }
-      
-      const permission = await Notification.requestPermission()
-      if (permission !== 'granted') {
-        return { success: false, message: 'Permission denied for notifications' }
-      }
-
-      const FALLBACK_PUBLIC_KEY = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('=') && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('"') 
-        ? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY 
-        : FALLBACK_PUBLIC_KEY
-      if (!vapidPublicKey) {
-        return { success: false, message: 'VAPID public key not found in environment' }
-      }
-
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-      })
+    if (Notification.permission === 'denied') {
+      return { success: false, message: 'Notifications are blocked in browser settings' }
+    }
+    
+    const permission = await Notification.requestPermission()
+    if (permission !== 'granted') {
+      return { success: false, message: 'Permission denied for notifications' }
     }
 
-    const res = await fetch('/api/push/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ subscription, userId }),
+    const vapidPublicKey = getVapidPublicKey()
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     })
-    
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Server error')
+
+    const saved = await saveSubscriptionToServer(subscription, userId)
+    if (!saved) throw new Error('Server could not save subscription')
 
     return { success: true, message: 'Push notification setup successful!' }
   } catch (error: any) {
@@ -80,21 +83,33 @@ export function PushManager() {
     const subscribeToPush = async () => {
       try {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-          return // Push not supported
+          return
         }
 
         const registration = await navigator.serviceWorker.ready
-        
-        // Check if already subscribed
-        const existingSubscription = await registration.pushManager.getSubscription()
-        if (existingSubscription) {
-          // Send it to server just in case it's not saved yet
-          await fetch('/api/push/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subscription: existingSubscription, userId: profile.id }),
-          })
-          return
+        const vapidPublicKey = getVapidPublicKey()
+        const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey)
+
+        let subscription = await registration.pushManager.getSubscription()
+
+        if (subscription) {
+          // Validate that the existing subscription was made with our current VAPID key
+          const existingKeyBytes = new Uint8Array(subscription.options?.applicationServerKey as ArrayBuffer)
+          const newKeyBytes = applicationServerKey
+          
+          const keysMatch = existingKeyBytes.length === newKeyBytes.length &&
+            existingKeyBytes.every((b, i) => b === newKeyBytes[i])
+
+          if (!keysMatch) {
+            // Subscription was made with a different VAPID key — force re-subscribe
+            console.log('[PushManager] VAPID key mismatch, re-subscribing...')
+            await subscription.unsubscribe()
+            subscription = null
+          } else {
+            // Keys match, just ensure it's in the DB (handles cases where DB was cleared)
+            await saveSubscriptionToServer(subscription, profile.id)
+            return
+          }
         }
 
         // Ask for permission if not granted or denied
@@ -105,25 +120,16 @@ export function PushManager() {
           return
         }
 
-        const FALLBACK_PUBLIC_KEY = 'BNnfzDUWPasOiywWfzdmVbiK_ty759QaN38x1g2kjblALVAWfpYAzjC-zwu_oiMCF8O204haJ7OdjG15NM1nKWA'
-        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('=') && !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.includes('"') 
-          ? process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY 
-          : FALLBACK_PUBLIC_KEY
-        if (!vapidPublicKey) return
-
-        const subscription = await registration.pushManager.subscribe({
+        subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+          applicationServerKey,
         })
 
-        await fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription, userId: profile.id }),
-        })
+        await saveSubscriptionToServer(subscription, profile.id)
+        console.log('[PushManager] Successfully subscribed to push notifications')
 
       } catch (error) {
-        console.error('Error subscribing to push notifications:', error)
+        console.error('[PushManager] Error subscribing to push notifications:', error)
       }
     }
 
