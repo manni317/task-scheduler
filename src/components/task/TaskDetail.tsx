@@ -315,7 +315,7 @@ export function TaskDetail({
                           <Button className="bg-red-600 hover:bg-red-700 text-white"
                             disabled={isUpdatingStatus || !rejectReason.trim()}
                             onClick={async () => {
-                              await handleStatusUpdate('in_progress', `Manager rejected: ${rejectReason}`, { rejectionReason: rejectReason })
+                              await handleStatusUpdate('todo', `Manager rejected: ${rejectReason}`, { rejectionReason: rejectReason })
                               setRejectReason('')
                               setRejectDialogOpen(false)
                             }}
@@ -360,11 +360,11 @@ export function TaskDetail({
           {(userRole === 'employee' || userRole === 'doer') && (
             <>
               {task.status === 'todo' && (
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white"
+                <Button size="sm" className={task.rejectionReason ? "bg-orange-600 hover:bg-orange-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}
                   disabled={isUpdatingStatus}
-                  onClick={() => handleStatusUpdate('in_progress', 'Started working on this task.')}
+                  onClick={() => handleStatusUpdate('in_progress', task.rejectionReason ? 'Started working on the requested fixes.' : 'Started working on this task.')}
                 >
-                  ▶ Start Working
+                  ▶ {task.rejectionReason ? 'Start Working on Fix' : 'Start Working'}
                 </Button>
               )}
               {task.status === 'in_progress' && (

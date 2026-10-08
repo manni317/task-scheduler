@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
   const rejectedTasks = displayTasks.filter(t => 
     t.rejectionReason && 
-    t.status === 'in_progress' && 
+    t.status === 'todo' && 
     t.assigneeId === userId
   )
 
