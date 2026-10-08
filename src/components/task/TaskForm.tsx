@@ -77,7 +77,7 @@ export function TaskForm({
       status: initialData?.status || 'todo',
       priority: initialData?.priority || 'medium',
       projectId: initialData?.projectId || '',
-      assigneeId: initialData?.assigneeId || '',
+      assigneeId: initialData?.assigneeId || 'unassigned',
       reporterId: initialData?.reporterId || '',
       dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : undefined,
       startDate: initialData?.startDate ? new Date(initialData.startDate) : undefined,
@@ -174,7 +174,7 @@ export function TaskForm({
             </SelectTrigger>
             <SelectContent>
               {projects.map(project => (
-                <SelectItem key={project.id} value={project.id}>
+                <SelectItem key={project.id} value={String(project.id)}>
                   {project.key} - {project.name}
                 </SelectItem>
               ))}
@@ -194,7 +194,7 @@ export function TaskForm({
             </SelectTrigger>
             <SelectContent>
               {users.map(user => (
-                <SelectItem key={user.id} value={user.id}>
+                <SelectItem key={user.id} value={String(user.id)}>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={user.avatar} alt={user.name} />
@@ -221,7 +221,7 @@ export function TaskForm({
             <SelectContent>
               <SelectItem value="unassigned">Unassigned</SelectItem>
               {users.map(user => (
-                <SelectItem key={user.id} value={user.id}>
+                <SelectItem key={user.id} value={String(user.id)}>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={user.avatar} alt={user.name} />

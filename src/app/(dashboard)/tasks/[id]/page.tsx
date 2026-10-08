@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { TaskDetail } from '@/components/task/TaskDetail'
 import { Task, User } from '@/types/task'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -9,6 +9,7 @@ import { notifyTaskUpdate } from '@/app/actions/task'
 
 export default function TaskDetailPage() {
   const params = useParams()
+  const router = useRouter()
   const taskId = params.id as string
   const queryClient = useQueryClient()
 
@@ -169,6 +170,19 @@ export default function TaskDetailPage() {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+      try {
+        const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+        await supabase.from('tasks').delete().eq('id', id)
+        queryClient.invalidateQueries({ queryKey: ['tasks'] })
+        router.push('/tasks')
+      } catch (error) {
+        console.error('Delete failed', error)
+      }
+    }
+  }
+
   return (
     <div className="h-full flex flex-col">
       <TaskDetail
@@ -176,7 +190,7 @@ export default function TaskDetailPage() {
         users={users}
         projects={projects}
         onUpdate={handleUpdate}
-        onDelete={async (id) => console.log('Delete task:', id)}
+        onDelete={handleDelete}
         onAddComment={async (taskId, content) => console.log('Add comment:', content)}
         onAddTimeEntry={async (taskId, entry) => console.log('Add time entry:', entry)}
         onToggleChecklist={handleToggleChecklist}
