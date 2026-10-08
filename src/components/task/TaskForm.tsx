@@ -55,7 +55,8 @@ export function TaskForm({
   users, 
   projects = [], 
   onSubmit, 
-  onCancel, 
+  onCancel,
+  isLoading,
 }: TaskFormProps) {
   const [userRole, setUserRole] = useState('manager')
   const [mounted, setMounted] = useState(false)

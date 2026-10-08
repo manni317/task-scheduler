@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { TaskForm } from './TaskForm'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
@@ -44,6 +45,13 @@ export function TaskDetail({
 }: TaskDetailProps) {
   const [activeTab, setActiveTab] = useState<'details' | 'checklist' | 'comments' | 'activity' | 'attachments' | 'time' | 'dependencies'>('details')
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [isEditingDesc, setIsEditingDesc] = useState(false)
+  const [editedDesc, setEditedDesc] = useState(task.description || '')
+  
+  useEffect(() => {
+    setEditedDesc(task.description || '')
+  }, [task.description])
+
   const [submitReviewOpen, setSubmitReviewOpen] = useState(false)
   const [submitNote, setSubmitNote] = useState('')
   const [newComment, setNewComment] = useState('')
@@ -464,11 +472,34 @@ export function TaskDetail({
       )}
 
       {/* Description */}
-      {task.description && (
-        <div className="px-4 py-3 border-b">
-          <p className="text-muted-foreground whitespace-pre-wrap">{task.description}</p>
+      <div className="px-4 py-3 border-b group">
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-muted-foreground font-semibold">Description</Label>
+          {(userRole === 'manager' || userRole === 'admin') && !isEditingDesc && (
+            <Button variant="ghost" size="sm" className="h-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setIsEditingDesc(true)}>
+              <Edit className="h-3 w-3 mr-1" /> Edit
+            </Button>
+          )}
         </div>
-      )}
+        {isEditingDesc ? (
+          <div className="space-y-2 mt-2">
+            <Textarea
+              value={editedDesc}
+              onChange={(e) => setEditedDesc(e.target.value)}
+              className="min-h-[100px]"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => { setIsEditingDesc(false); setEditedDesc(task.description || '') }}>Cancel</Button>
+              <Button size="sm" onClick={async () => {
+                await onUpdate({ ...task, description: editedDesc })
+                setIsEditingDesc(false)
+              }}>Save</Button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted-foreground whitespace-pre-wrap">{task.description || 'No description provided.'}</p>
+        )}
+      </div>
 
       {/* Admin Voice Note */}
       {(task as any).audioUrl && (
@@ -516,16 +547,58 @@ export function TaskDetail({
             </div>
             <div>
               <Label>Priority</Label>
-              <Badge variant="outline" className={cn('mt-1', priorityColors[task.priority] || '')}>{task.priority}</Badge>
+              {userRole === 'manager' || userRole === 'admin' ? (
+                <Select
+                  value={task.priority}
+                  onValueChange={(val: any) => onUpdate({ ...task, priority: val })}
+                >
+                  <SelectTrigger className="mt-1 w-full sm:w-[180px] h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(['low', 'medium', 'high', 'urgent'] as ('low' | 'medium' | 'high' | 'urgent')[]).map(p => (
+                      <SelectItem key={p} value={p}>
+                        <span className={cn('flex items-center gap-2', priorityColors[p] || '')}>
+                          {p.charAt(0).toUpperCase() + p.slice(1)}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Badge variant="outline" className={cn('mt-1', priorityColors[task.priority] || '')}>{task.priority}</Badge>
+              )}
             </div>
             <div>
               <Label>Assignee</Label>
-              {task.assignee ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <Avatar className="h-8 w-8"><AvatarFallback>{task.assignee.name[0]}</AvatarFallback></Avatar>
-                  <span>{task.assignee.name}</span>
-                </div>
-              ) : <span className="text-muted-foreground mt-1 block">Unassigned</span>}
+              {userRole === 'manager' || userRole === 'admin' ? (
+                <Select
+                  value={task.assigneeId || 'unassigned'}
+                  onValueChange={(val) => onUpdate({ ...task, assigneeId: val === 'unassigned' ? null : val })}
+                >
+                  <SelectTrigger className="mt-1 w-full sm:w-[220px] h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {users.map(u => (
+                      <SelectItem key={u.id} value={u.id}>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5"><AvatarFallback>{u.name[0]}</AvatarFallback></Avatar>
+                          {u.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                task.assignee ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <Avatar className="h-8 w-8"><AvatarFallback>{task.assignee.name[0]}</AvatarFallback></Avatar>
+                    <span>{task.assignee.name}</span>
+                  </div>
+                ) : <span className="text-muted-foreground mt-1 block">Unassigned</span>
+              )}
             </div>
             <div>
               <Label>Reporter</Label>
