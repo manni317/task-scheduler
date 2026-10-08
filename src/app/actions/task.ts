@@ -114,3 +114,58 @@ export async function createTask(formData: FormData) {
     return { success: false, error: err.message || 'Internal server error during task creation' }
   }
 }
+
+export async function notifyTaskUpdate(
+  taskId: string, 
+  title: string, 
+  action: 'rejected' | 'approved' | 'status_changed', 
+  targetUserId: string,
+  extraInfo?: string
+) {
+  try {
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) { return cookieStore.get(name)?.value },
+          set(name: string, value: string, options: any) {},
+          remove(name: string, options: any) {},
+        },
+      }
+    )
+
+    const { data: { user } } = await supabase.auth.getUser()
+    const actorId = user?.id
+
+    if (!actorId) return { success: false, error: 'Unauthorized' }
+    if (actorId === targetUserId) return { success: true, message: 'No self notification' }
+
+    let pushTitle = 'Task Update'
+    let pushBody = `Task "${title}" was updated.`
+
+    if (action === 'rejected') {
+      pushTitle = 'Task Rejected ❌'
+      pushBody = `Your task "${title}" was rejected. ${extraInfo ? `Reason: ${extraInfo}` : ''}`
+    } else if (action === 'approved') {
+      pushTitle = 'Task Approved ✅'
+      pushBody = `Your task "${title}" was approved!`
+    } else if (action === 'status_changed') {
+      pushTitle = 'Task Status Changed'
+      pushBody = `Task "${title}" status changed to ${extraInfo}.`
+    }
+
+    await sendPushNotification(
+      targetUserId,
+      pushTitle,
+      pushBody,
+      `/tasks/${taskId}`
+    ).catch(err => console.error('Push error:', err))
+
+    return { success: true }
+  } catch (err: any) {
+    console.error('Error in notifyTaskUpdate:', err)
+    return { success: false }
+  }
+}

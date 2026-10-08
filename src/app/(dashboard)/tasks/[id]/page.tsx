@@ -5,6 +5,7 @@ import { TaskDetail } from '@/components/task/TaskDetail'
 import { Task, User } from '@/types/task'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createBrowserClient } from '@supabase/ssr'
+import { notifyTaskUpdate } from '@/app/actions/task'
 
 export default function TaskDetailPage() {
   const params = useParams()
@@ -123,6 +124,30 @@ export default function TaskDetailPage() {
       
       queryClient.invalidateQueries({ queryKey: ['task', taskId] })
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
+
+      // Handle push notifications for task updates
+      const originalTask = task
+      
+      if (data.rejectionReason && !originalTask.rejectionReason) {
+        // Task was rejected
+        if (originalTask.assigneeId) {
+          notifyTaskUpdate(taskId, originalTask.title, 'rejected', originalTask.assigneeId, data.rejectionReason)
+        }
+      } else if (data.status === 'approved' && originalTask.status !== 'approved') {
+        // Task was approved
+        if (originalTask.assigneeId) {
+          notifyTaskUpdate(taskId, originalTask.title, 'approved', originalTask.assigneeId)
+        }
+      } else if (data.status && data.status !== originalTask.status) {
+        // General status change
+        // If assignee changes status, notify reporter. If reporter/admin changes status, notify assignee.
+        const currentUser = (await supabase.auth.getUser()).data.user?.id
+        const targetUser = currentUser === originalTask.assigneeId ? originalTask.reporterId : originalTask.assigneeId
+        if (targetUser) {
+          notifyTaskUpdate(taskId, originalTask.title, 'status_changed', targetUser, data.status)
+        }
+      }
+
     } catch (error) {
       console.error('Update failed', error)
     }
