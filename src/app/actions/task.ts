@@ -102,9 +102,15 @@ export async function createTask(formData: FormData) {
       // MUST await in serverless functions, otherwise it gets killed when the response is sent!
       await sendPushNotification(
         assigneeId,
-        'New Task Assigned',
-        `You have been assigned to: ${title}`,
-        '/tasks'
+        '✨ New Task Assigned',
+        `You have been assigned to: "${title}"`,
+        `/tasks/${data[0].id}`,
+        {
+          icon: '/logo.png',
+          badge: '/icons/icon-72x72.svg',
+          image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=80', // A nice productivity/planning image
+          actions: [{ action: 'view', title: 'Open Task' }]
+        }
       ).catch(err => console.error('Push error:', err))
     }
     
@@ -144,23 +150,33 @@ export async function notifyTaskUpdate(
 
     let pushTitle = 'Task Update'
     let pushBody = `Task "${title}" was updated.`
+    let pushOptions: any = {
+      icon: '/logo.png', // A nicer high-res icon if available
+      badge: '/icons/icon-72x72.svg', // Small monochrome icon
+    }
 
     if (action === 'rejected') {
-      pushTitle = 'Task Rejected ❌'
-      pushBody = `Your task "${title}" was rejected. ${extraInfo ? `Reason: ${extraInfo}` : ''}`
+      pushTitle = '🚨 Task Rejected'
+      pushBody = `Your task "${title}" was rejected.\nReason: ${extraInfo || 'No reason provided.'}`
+      pushOptions.image = 'https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=800&q=80' // A visually striking dramatic image for rejection
+      pushOptions.actions = [{ action: 'view', title: 'Review Task' }]
     } else if (action === 'approved') {
-      pushTitle = 'Task Approved ✅'
-      pushBody = `Your task "${title}" was approved!`
+      pushTitle = '🎉 Task Approved!'
+      pushBody = `Amazing work! Your task "${title}" was approved.`
+      pushOptions.image = 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=800&q=80' // A beautiful celebration image
+      pushOptions.actions = [{ action: 'view', title: 'Celebrate' }]
     } else if (action === 'status_changed') {
-      pushTitle = 'Task Status Changed'
-      pushBody = `Task "${title}" status changed to ${extraInfo}.`
+      pushTitle = '🔄 Status Changed'
+      pushBody = `Task "${title}" moved to ${extraInfo}.`
+      pushOptions.actions = [{ action: 'view', title: 'View Update' }]
     }
 
     await sendPushNotification(
       targetUserId,
       pushTitle,
       pushBody,
-      `/tasks/${taskId}`
+      `/tasks/${taskId}`,
+      pushOptions
     ).catch(err => console.error('Push error:', err))
 
     return { success: true }

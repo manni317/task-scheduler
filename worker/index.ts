@@ -8,12 +8,15 @@ sw.addEventListener('push', (event) => {
 
   const options: NotificationOptions = {
     body: data.body,
-    icon: '/icon-192x192.png',
-    badge: '/icon-192x192.png',
-    vibrate: [100, 50, 100],
+    icon: data.icon || '/icon-192x192.png',
+    badge: data.badge || '/icon-192x192.png',
+    image: data.image,
+    actions: data.actions,
+    vibrate: [200, 100, 200, 100, 200], // More aesthetic vibration pattern
     data: {
       url: data.url || '/',
     },
+    requireInteraction: true, // Keep notification visible until user interacts for important updates like reject/approve
   };
 
   event.waitUntil(

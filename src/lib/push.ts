@@ -18,7 +18,13 @@ if (vapidPublicKey && vapidPrivateKey) {
   console.warn('VAPID keys not found, push notifications are disabled.')
 }
 
-export async function sendPushNotification(userId: string, title: string, body: string, url: string = '/') {
+export async function sendPushNotification(
+  userId: string, 
+  title: string, 
+  body: string, 
+  url: string = '/',
+  options?: { icon?: string; image?: string; badge?: string; actions?: { action: string; title: string; icon?: string }[] }
+) {
   if (!vapidPublicKey || !vapidPrivateKey) {
     console.warn('VAPID keys not configured, skipping push notification.')
     return
@@ -44,7 +50,7 @@ export async function sendPushNotification(userId: string, title: string, body: 
 
     if (!subscriptions || subscriptions.length === 0) return
 
-    const payload = JSON.stringify({ title, body, url })
+    const payload = JSON.stringify({ title, body, url, ...options })
 
     const sendPromises = subscriptions.map(async (sub) => {
       const pushSubscription = {
