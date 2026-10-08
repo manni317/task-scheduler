@@ -148,14 +148,15 @@ export function TaskForm({
     <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <Label htmlFor="title">Title *</Label>
+          <Label htmlFor="title" className={form.formState.errors.title ? "text-red-500" : ""}>Title *</Label>
           <Input
             id="title"
             placeholder="Enter task title"
             {...form.register('title')}
-            className="mt-1"
+            className={cn("mt-1", form.formState.errors.title && "border-red-500")}
             disabled={userRole === 'doer'}
           />
+          {form.formState.errors.title && <p className="text-red-500 text-xs mt-1">{form.formState.errors.title.message}</p>}
         </div>
 
         <div className="sm:col-span-2">
@@ -171,13 +172,13 @@ export function TaskForm({
         </div>
 
         <div>
-          <Label htmlFor="projectId">Project *</Label>
+          <Label htmlFor="projectId" className={form.formState.errors.projectId ? "text-red-500" : ""}>Project *</Label>
           <Select
             onValueChange={(val) => form.setValue('projectId', val)}
             defaultValue={form.getValues('projectId') || undefined}
             disabled={userRole === 'doer'}
           >
-            <SelectTrigger className="mt-1">
+            <SelectTrigger className={cn("mt-1", form.formState.errors.projectId && "border-red-500")}>
               <SelectValue placeholder="Select project" />
             </SelectTrigger>
             <SelectContent>
@@ -188,16 +189,17 @@ export function TaskForm({
               ))}
             </SelectContent>
           </Select>
+          {form.formState.errors.projectId && <p className="text-red-500 text-xs mt-1">{form.formState.errors.projectId.message}</p>}
         </div>
 
         <div>
-          <Label htmlFor="reporterId">Reporter *</Label>
+          <Label htmlFor="reporterId" className={form.formState.errors.reporterId ? "text-red-500" : ""}>Reporter *</Label>
           <Select
             onValueChange={(val) => form.setValue('reporterId', val)}
             defaultValue={form.getValues('reporterId') || undefined}
             disabled={userRole === 'doer'}
           >
-            <SelectTrigger className="mt-1">
+            <SelectTrigger className={cn("mt-1", form.formState.errors.reporterId && "border-red-500")}>
               <SelectValue placeholder="Select reporter" />
             </SelectTrigger>
             <SelectContent>
@@ -214,6 +216,7 @@ export function TaskForm({
               ))}
             </SelectContent>
           </Select>
+          {form.formState.errors.reporterId && <p className="text-red-500 text-xs mt-1">{form.formState.errors.reporterId.message}</p>}
         </div>
 
         <div>

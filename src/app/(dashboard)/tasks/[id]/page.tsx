@@ -39,14 +39,14 @@ export default function TaskDetailPage() {
           title: taskData.title,
           description: taskData.description || '',
           status: taskData.status || 'todo',
-          priority: (() => { const p = Number(taskData.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
+          priority: taskData.priority || 'medium',
           projectId: taskData.project_id || null,
           assigneeId: taskData.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === taskData.assignee_id),
           reporterId: taskData.reporter_id || null,
           reporter: mappedUsers.find(u => u.id === taskData.reporter_id),
           dueDate: taskData.due_date ? new Date(taskData.due_date) : undefined,
-          estimatedHours: taskData.time_spent || 0,
+          estimatedHours: taskData.estimated_hours || 0,
           tags: taskData.tags || [],
           checklistItems: taskData.sub_tasks ? taskData.sub_tasks.map((st: any) => ({
             id: st.id,
@@ -104,6 +104,8 @@ export default function TaskDetailPage() {
       if (data.projectId !== undefined) updateObj.project_id = data.projectId
       if (data.assigneeId !== undefined) updateObj.assignee_id = data.assigneeId === 'unassigned' ? null : data.assigneeId
       if (data.dueDate !== undefined) updateObj.due_date = data.dueDate?.toISOString() || null
+      if (data.startDate !== undefined) updateObj.start_date = data.startDate?.toISOString() || null
+      if (data.estimatedHours !== undefined) updateObj.estimated_hours = data.estimatedHours
       if (data.rejectionReason !== undefined) updateObj.rejection_reason = data.rejectionReason
 
       await supabase.from('tasks').update(updateObj).eq('id', taskId)
