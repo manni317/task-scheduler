@@ -9,9 +9,19 @@ export interface User {
 export interface Organization {
   id: string
   name: string
+  businessType?: string
   description?: string
   createdAt: Date
   members?: User[]
+}
+
+export interface Department {
+  id: string
+  organizationId: string
+  name: string
+  description?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface ChecklistItem {
