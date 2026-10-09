@@ -14,6 +14,8 @@ interface ProvidersProps {
   children: ReactNode
 }
 
+import { OrganizationProvider } from '@/contexts/OrganizationContext'
+
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(
     () =>
@@ -39,10 +41,12 @@ export function Providers({ children }: ProvidersProps) {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>
         <SupabaseProvider client={supabaseClient}>
-          {children}
-          <Toaster />
-          <SonnerToaster position="top-center" />
-          <SWRegister />
+          <OrganizationProvider>
+            {children}
+            <Toaster />
+            <SonnerToaster position="top-center" />
+            <SWRegister />
+          </OrganizationProvider>
         </SupabaseProvider>
       </QueryClientProvider>
     </ThemeProvider>

@@ -20,6 +20,15 @@ import {
 import { useState } from 'react'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { useAuth } from '@/hooks/useAuth'
+import { useOrganization } from '@/contexts/OrganizationContext'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -40,6 +49,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
   const pathname = usePathname()
   const { openCreateTaskModal } = useUIStore()
   const { profile } = useAuth()
+  const { organizations, activeOrganization, setActiveOrganization } = useOrganization()
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     main: false,
     secondary: false,
@@ -60,16 +70,62 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
       aria-label="Sidebar"
     >
       <div className="flex flex-col h-full">
-        <div className="flex h-16 items-center justify-between px-4 border-b">
-          {isOpen && (
-            <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
-              <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
-                <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
-              </div>
-              <span>TaskFlow</span>
-            </Link>
+        <div className="flex flex-col border-b">
+          <div className="flex h-16 items-center justify-between px-4">
+            {isOpen && (
+              <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
+                <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
+                  <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
+                </div>
+                <span>TaskFlow</span>
+              </Link>
+            )}
+          </div>
+          
+          {isOpen && activeOrganization && (
+            <div className="px-4 pb-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between px-3 h-10 border-input bg-background">
+                    <div className="flex items-center gap-2 truncate">
+                      <div className="h-5 w-5 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                        {activeOrganization.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="truncate text-sm font-medium">{activeOrganization.name}</span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="start">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground uppercase">Workspaces</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {organizations.map(org => (
+                    <DropdownMenuItem 
+                      key={org.id} 
+                      onClick={() => setActiveOrganization(org)}
+                      className={cn("flex items-center gap-2 cursor-pointer", activeOrganization.id === org.id && "bg-accent/50")}
+                    >
+                      <div className="h-5 w-5 rounded-md bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                        {org.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="truncate">{org.name}</span>
+                    </DropdownMenuItem>
+                  ))}
+                  {userRole === 'admin' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/organizations" className="cursor-pointer text-primary w-full flex items-center">
+                          <Plus className="mr-2 h-4 w-4" />
+                          <span>Create Workspace</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           )}
-
         </div>
 
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-6" aria-label="Main navigation">
