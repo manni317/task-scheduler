@@ -124,7 +124,7 @@ export async function createTask(formData: FormData) {
 export async function notifyTaskUpdate(
   taskId: string, 
   title: string, 
-  action: 'rejected' | 'approved' | 'status_changed', 
+  action: 'rejected' | 'approved' | 'status_changed' | 'assigned', 
   targetUserId: string,
   extraInfo?: string
 ) {
@@ -165,6 +165,11 @@ export async function notifyTaskUpdate(
       pushBody = `Amazing work! Your task "${title}" was approved.`
       pushOptions.image = 'https://images.unsplash.com/photo-1533227268428-f9ed0900fb3b?w=800&q=80' // A beautiful celebration image
       pushOptions.actions = [{ action: 'view', title: 'Celebrate' }]
+    } else if (action === 'assigned') {
+      pushTitle = '✨ New Task Assigned'
+      pushBody = `You have been assigned to: "${title}"`
+      pushOptions.image = 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=80' // A nice productivity/planning image
+      pushOptions.actions = [{ action: 'view', title: 'Open Task' }]
     } else if (action === 'status_changed') {
       if (extraInfo === 'done') {
         pushTitle = '✅ Task Completed!'

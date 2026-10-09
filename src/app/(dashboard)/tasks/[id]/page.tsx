@@ -141,6 +141,9 @@ export default function TaskDetailPage() {
         if (originalTask.assigneeId) {
           notifyTaskUpdate(taskId, originalTask.title, 'approved', originalTask.assigneeId)
         }
+      } else if (data.assigneeId !== undefined && data.assigneeId !== originalTask.assigneeId && data.assigneeId !== null) {
+        // Task was re-assigned to someone else
+        notifyTaskUpdate(taskId, originalTask.title, 'assigned', data.assigneeId)
       } else if (data.status && data.status !== originalTask.status) {
         // General status change
         // If assignee changes status, notify reporter. If reporter/admin changes status, notify assignee.
