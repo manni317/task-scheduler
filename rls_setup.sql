@@ -1,59 +1,67 @@
--- Drop infinite recursion policies
-DROP POLICY IF EXISTS "Users can see members of their organizations" ON organization_members;
-DROP POLICY IF EXISTS "Users can see organizations they belong to" ON organizations;
-DROP POLICY IF EXISTS "Users can update organizations they manage" ON organizations;
-DROP POLICY IF EXISTS "Users can see projects in their organizations" ON projects;
-DROP POLICY IF EXISTS "Managers can insert projects" ON projects;
-DROP POLICY IF EXISTS "Managers can update projects" ON projects;
-DROP POLICY IF EXISTS "Managers can delete projects" ON projects;
-DROP POLICY IF EXISTS "Users can see tasks in their projects" ON tasks;
-DROP POLICY IF EXISTS "Users can insert tasks in their projects" ON tasks;
-DROP POLICY IF EXISTS "Users can update tasks in their projects" ON tasks;
-DROP POLICY IF EXISTS "Users can delete tasks in their projects" ON tasks;
+-- ==============================================================================
+-- Complete Multi-Organization RLS & Column Sync Setup
+-- Safe & idempotent script for Supabase Database
+-- ==============================================================================
 
--- Use SECURITY DEFINER functions to bypass recursion safely
+-- 1. Ensure columns exist on all relevant tables
+ALTER TABLE public.organizations ADD COLUMN IF NOT EXISTS business_type TEXT DEFAULT 'general';
+ALTER TABLE public.organizations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+ALTER TABLE public.organization_members ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE;
+UPDATE public.organization_members SET organization_id = org_id WHERE organization_id IS NULL;
+
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS org_id UUID REFERENCES public.organizations(id) ON DELETE SET NULL;
+UPDATE public.tasks SET org_id = organization_id WHERE org_id IS NULL;
+
+-- 2. Triggers to keep org_id and organization_id in 100% automatic sync
+CREATE OR REPLACE FUNCTION public.sync_org_id_columns()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.org_id IS NULL AND NEW.organization_id IS NOT NULL THEN
+    NEW.org_id := NEW.organization_id;
+  ELSIF NEW.organization_id IS NULL AND NEW.org_id IS NOT NULL THEN
+    NEW.organization_id := NEW.org_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SET search_path = public;
+
+DROP TRIGGER IF EXISTS trg_sync_org_members_org_id ON public.organization_members;
+CREATE TRIGGER trg_sync_org_members_org_id
+BEFORE INSERT OR UPDATE ON public.organization_members
+FOR EACH ROW EXECUTE FUNCTION public.sync_org_id_columns();
+
+DROP TRIGGER IF EXISTS trg_sync_projects_org_id ON public.projects;
+CREATE TRIGGER trg_sync_projects_org_id
+BEFORE INSERT OR UPDATE ON public.projects
+FOR EACH ROW EXECUTE FUNCTION public.sync_org_id_columns();
+
+DROP TRIGGER IF EXISTS trg_sync_tasks_org_id ON public.tasks;
+CREATE TRIGGER trg_sync_tasks_org_id
+BEFORE INSERT OR UPDATE ON public.tasks
+FOR EACH ROW EXECUTE FUNCTION public.sync_org_id_columns();
+
+-- 3. Helper Functions (SECURITY DEFINER to avoid recursion)
 CREATE OR REPLACE FUNCTION public.user_orgs()
 RETURNS SETOF uuid AS $$
-  SELECT org_id FROM public.organization_members WHERE user_id = auth.uid();
-$$ LANGUAGE sql SECURITY DEFINER;
+  SELECT COALESCE(org_id, organization_id)
+  FROM public.organization_members
+  WHERE user_id = auth.uid();
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
 
 CREATE OR REPLACE FUNCTION public.user_managed_orgs()
 RETURNS SETOF uuid AS $$
-  SELECT org_id FROM public.organization_members WHERE user_id = auth.uid() AND role = 'manager';
-$$ LANGUAGE sql SECURITY DEFINER;
+  SELECT COALESCE(org_id, organization_id)
+  FROM public.organization_members
+  WHERE user_id = auth.uid()
+    AND (role IN ('manager', 'admin', 'owner') OR role IS NULL);
+$$ LANGUAGE sql SECURITY DEFINER SET search_path = public;
 
--- RECREATE POLICIES using the helper functions
--- organizations
-CREATE POLICY "Users can see organizations they belong to" ON organizations
-  FOR SELECT USING (id IN (SELECT user_orgs()));
-CREATE POLICY "Users can update organizations they manage" ON organizations
-  FOR UPDATE USING (id IN (SELECT user_managed_orgs()));
-
--- organization_members
-CREATE POLICY "Users can see members of their organizations" ON organization_members
-  FOR SELECT USING (org_id IN (SELECT user_orgs()));
-
--- projects
-CREATE POLICY "Users can see projects in their organizations" ON projects
-  FOR SELECT USING (org_id IN (SELECT user_orgs()));
-CREATE POLICY "Managers can insert projects" ON projects
-  FOR INSERT WITH CHECK (org_id IN (SELECT user_managed_orgs()));
-CREATE POLICY "Managers can update projects" ON projects
-  FOR UPDATE USING (org_id IN (SELECT user_managed_orgs()));
-CREATE POLICY "Managers can delete projects" ON projects
-  FOR DELETE USING (org_id IN (SELECT user_managed_orgs()));
-
--- tasks
-CREATE POLICY "Users can see tasks in their projects" ON tasks
-  FOR SELECT USING (project_id IN (SELECT id FROM projects WHERE org_id IN (SELECT user_orgs())));
-CREATE POLICY "Users can insert tasks in their projects" ON tasks
-  FOR INSERT WITH CHECK (project_id IN (SELECT id FROM projects WHERE org_id IN (SELECT user_orgs())));
-CREATE POLICY "Users can update tasks in their projects" ON tasks
-  FOR UPDATE USING (project_id IN (SELECT id FROM projects WHERE org_id IN (SELECT user_orgs())));
-CREATE POLICY "Users can delete tasks in their projects" ON tasks
-  FOR DELETE USING (project_id IN (SELECT id FROM projects WHERE org_id IN (SELECT user_orgs())));
-
-CREATE POLICY "Users can see tasks assigned to them" ON tasks
-  FOR SELECT USING (assignee_id = auth.uid() OR reporter_id = auth.uid());
-CREATE POLICY "Users can update tasks assigned to them" ON tasks
-  FOR UPDATE USING (assignee_id = auth.uid() OR reporter_id = auth.uid());
+-- 4. Enable Row Level Security (RLS)
+ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.organization_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.sub_tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.task_updates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.task_attachments ENABLE ROW LEVEL SECURITY;

@@ -38,13 +38,15 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase
         .from('organization_members')
         .select(`
+          org_id,
           organization_id,
           organizations (
             id,
             name,
             business_type,
             description,
-            created_at
+            created_at,
+            logo_url
           )
         `)
         .eq('user_id', profile.id)
@@ -52,13 +54,15 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       if (error) throw error
 
       if (data && data.length > 0) {
-        const orgs = data.map((item: any) => ({
-          id: item.organizations.id,
-          name: item.organizations.name,
-          businessType: item.organizations.business_type,
-          description: item.organizations.description,
-          createdAt: new Date(item.organizations.created_at)
-        }))
+        const orgs = data
+          .filter((item: any) => item.organizations)
+          .map((item: any) => ({
+            id: item.organizations.id,
+            name: item.organizations.name,
+            businessType: item.organizations.business_type || 'general',
+            description: item.organizations.description,
+            createdAt: new Date(item.organizations.created_at)
+          }))
         
         setOrganizations(orgs)
         
