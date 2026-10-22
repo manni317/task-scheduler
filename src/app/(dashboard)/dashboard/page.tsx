@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines'
 import { OverdueTable } from '@/components/dashboard/OverdueTable'
 import { EmployeePerformanceTable } from '@/components/dashboard/EmployeePerformanceTable'
+import { WorkloadHeatmap } from '@/components/dashboard/WorkloadHeatmap'
 import { DashboardHero } from '@/components/dashboard/DashboardHero'
 import { Task, User } from '@/types/task'
 import { createBrowserClient } from '@supabase/ssr'
@@ -14,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
 import Link from 'next/link'
 import { normalizePriority } from '@/lib/utils'
+import { checkAndSpawnDailyRecurringTasks, notifyOverdueTasks } from '@/app/actions/task'
 
 export default function DashboardPage() {
   const { profile, loading: authLoading } = useAuth()
@@ -25,6 +27,12 @@ export default function DashboardPage() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('all')
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all')
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('all')
+
+  // Auto-spawn recurring daily tasks and check for overdue tasks in background
+  useEffect(() => {
+    checkAndSpawnDailyRecurringTasks().catch(err => console.error('Daily auto-spawn error:', err))
+    notifyOverdueTasks().catch(err => console.error('Overdue notification check error:', err))
+  }, [])
 
   const { data: { tasks = [], users = [], projects = [], organizations = [] } = {}, isLoading } = useQuery({
     queryKey: ['dashboard_tasks', refreshCount],
@@ -269,6 +277,11 @@ export default function DashboardPage() {
       )}
 
       <StatsCards stats={stats} userRole={userRole} />
+
+      {/* Employee Workload Heatmap */}
+      <div className="w-full min-w-0">
+        <WorkloadHeatmap tasks={tasks} users={users} />
+      </div>
 
       {(userRole === 'admin' || userRole === 'manager') ? (
         <>

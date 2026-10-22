@@ -70,6 +70,27 @@ export function Header() {
             link: '/tasks?status=review'
           }))
         }
+
+        // Overdue tasks delayed alerts for managers and admins
+        const nowIso = new Date().toISOString()
+        const { data: overdueTasks } = await supabase
+          .from('tasks')
+          .select('*')
+          .lt('due_date', nowIso)
+          .not('status', 'in', '("done","approved")')
+          .order('due_date', { ascending: true })
+          .limit(5)
+
+        if (overdueTasks) {
+          overdueTasks.forEach((t: any) => notifs.push({
+            id: t.id + '-overdue',
+            title: '⚠️ Task Delayed / Overdue',
+            message: `"${t.title}" is overdue (Assigned to: ${profilesMap.get(t.assignee_id) || 'Unassigned'})`,
+            time: t.due_date || t.updated_at,
+            color: 'bg-rose-500',
+            link: `/tasks/${t.id}`
+          }))
+        }
       }
 
       const twoDaysAgo = new Date()
@@ -89,6 +110,27 @@ export function Header() {
           message: `${profilesMap.get(t.reporter_id) || 'Someone'} assigned you to "${t.title}"`,
           time: t.updated_at || t.created_at,
           color: 'bg-blue-500',
+          link: `/tasks/${t.id}`
+        }))
+      }
+
+      // Approved tasks notification for employee
+      const { data: approvedTasks } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('assignee_id', userId)
+        .in('status', ['done', 'approved'])
+        .gte('updated_at', twoDaysAgo.toISOString())
+        .order('updated_at', { ascending: false })
+        .limit(5)
+
+      if (approvedTasks) {
+        approvedTasks.forEach((t: any) => notifs.push({
+          id: t.id + '-approved',
+          title: '🎉 Task Approved!',
+          message: `Your task "${t.title}" was approved by management.`,
+          time: t.updated_at,
+          color: 'bg-emerald-500',
           link: `/tasks/${t.id}`
         }))
       }

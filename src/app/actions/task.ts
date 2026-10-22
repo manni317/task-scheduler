@@ -55,6 +55,8 @@ export async function createTask(formData: FormData) {
     if (priorityStr === 'urgent') priorityNum = 4
 
     const audioUrl = formData.get('audioUrl') as string
+    const isRecurring = formData.get('isRecurring') === 'true'
+    const recurringSchedule = (formData.get('recurringSchedule') as string) || (isRecurring ? 'daily' : null)
 
     const { data, error } = await supabase
       .from('tasks')
@@ -70,6 +72,8 @@ export async function createTask(formData: FormData) {
         tags: tags,
         task_key: `TSK-${Math.floor(Math.random() * 10000)}`,
         audio_url: audioUrl || null,
+        is_recurring: isRecurring,
+        recurring_schedule: recurringSchedule,
       })
       .select()
 
@@ -196,3 +200,193 @@ export async function notifyTaskUpdate(
     return { success: false }
   }
 }
+
+/**
+ * Checks for recurring master tasks and auto-spawns today's instance
+ * if one has not already been created for today.
+ */
+export async function checkAndSpawnDailyRecurringTasks() {
+  try {
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) { return cookieStore.get(name)?.value },
+          set(name: string, value: string, options: any) {},
+          remove(name: string, options: any) {},
+        },
+      }
+    )
+
+    // Find recurring daily master tasks (parent_task_id is null)
+    const { data: masterTasks, error: masterError } = await supabase
+      .from('tasks')
+      .select('*')
+      .eq('is_recurring', true)
+      .is('parent_task_id', null)
+
+    if (masterError) {
+      console.error('Error querying recurring tasks:', masterError)
+      return { success: false, error: masterError.message }
+    }
+
+    if (!masterTasks || masterTasks.length === 0) {
+      return { success: true, spawnedCount: 0 }
+    }
+
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0)
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+
+    let spawnedCount = 0
+
+    for (const master of masterTasks) {
+      // Check if today's instance already exists
+      const { data: existingInstances } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('parent_task_id', master.id)
+        .gte('created_at', startOfToday.toISOString())
+        .limit(1)
+
+      if (!existingInstances || existingInstances.length === 0) {
+        // Spawn today's task copy with 'todo' status and end of today due date
+        const { data: spawned, error: spawnError } = await supabase
+          .from('tasks')
+          .insert({
+            title: master.title,
+            description: master.description,
+            project_id: master.project_id,
+            assignee_id: master.assignee_id,
+            reporter_id: master.reporter_id,
+            status: 'todo',
+            priority: master.priority,
+            due_date: endOfToday.toISOString(),
+            tags: master.tags || [],
+            task_key: `TSK-${Math.floor(1000 + Math.random() * 9000)}`,
+            parent_task_id: master.id,
+            is_recurring: false,
+            recurring_schedule: null,
+          })
+          .select()
+          .single()
+
+        if (!spawnError && spawned) {
+          spawnedCount++
+          
+          // Send push notification to the assigned employee
+          if (master.assignee_id) {
+            await sendPushNotification(
+              master.assignee_id,
+              '🔁 Today\'s Recurring Task Ready',
+              `Your daily task "${master.title}" has been spawned for today.`,
+              `/tasks/${spawned.id}`,
+              {
+                icon: '/logo.png',
+                badge: '/icons/icon-72x72.svg',
+                image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=80',
+                actions: [{ action: 'view', title: 'Open Task' }]
+              }
+            ).catch(err => console.error('Push error for recurring spawn:', err))
+          }
+        }
+      }
+    }
+
+    if (spawnedCount > 0) {
+      revalidatePath('/dashboard')
+      revalidatePath('/tasks')
+    }
+
+    return { success: true, spawnedCount }
+  } catch (err: any) {
+    console.error('Error in checkAndSpawnDailyRecurringTasks:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Checks for overdue tasks and sends push notification alerts to 
+ * the manager (reporter) and admins.
+ */
+export async function notifyOverdueTasks() {
+  try {
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) { return cookieStore.get(name)?.value },
+          set(name: string, value: string, options: any) {},
+          remove(name: string, options: any) {},
+        },
+      }
+    )
+
+    const nowIso = new Date().toISOString()
+
+    // Query overdue tasks that are not yet done or approved
+    const { data: overdueTasks } = await supabase
+      .from('tasks')
+      .select('id, title, due_date, assignee_id, reporter_id, status')
+      .lt('due_date', nowIso)
+      .not('status', 'in', '("done","approved")')
+      .limit(10)
+
+    if (!overdueTasks || overdueTasks.length === 0) {
+      return { success: true, notifiedCount: 0 }
+    }
+
+    // Get managers and admins
+    const { data: adminProfiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, role')
+      .in('role', ['admin', 'manager'])
+
+    const { data: allProfiles } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+
+    const nameMap = new Map((allProfiles || []).map((p: any) => [p.id, p.full_name || 'Employee']))
+
+    let notifiedCount = 0
+
+    for (const task of overdueTasks) {
+      const assigneeName = task.assignee_id ? nameMap.get(task.assignee_id) || 'Employee' : 'Unassigned'
+      const targetUserIds = new Set<string>()
+
+      // Add task reporter (creator/manager)
+      if (task.reporter_id) targetUserIds.add(task.reporter_id)
+      
+      // Add all admins and managers
+      if (adminProfiles) {
+        adminProfiles.forEach(a => targetUserIds.add(a.id))
+      }
+
+      for (const targetId of targetUserIds) {
+        await sendPushNotification(
+          targetId,
+          '⚠️ Task Delayed Alert',
+          `"${task.title}" is overdue (Assigned to: ${assigneeName}). Immediate attention needed.`,
+          `/tasks/${task.id}`,
+          {
+            icon: '/logo.png',
+            badge: '/icons/icon-72x72.svg',
+            image: 'https://images.unsplash.com/photo-1594322436404-5a0526db4d13?w=800&q=80',
+            actions: [{ action: 'view', title: 'Inspect Task' }]
+          }
+        ).catch(err => console.error('Push error for overdue task:', err))
+        notifiedCount++
+      }
+    }
+
+    return { success: true, notifiedCount }
+  } catch (err: any) {
+    console.error('Error in notifyOverdueTasks:', err)
+    return { success: false, error: err.message }
+  }
+}
+

@@ -14,6 +14,7 @@ import { Search, Plus } from 'lucide-react'
 import { cn, normalizePriority } from '@/lib/utils'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { useAuth } from '@/hooks/useAuth'
+import { notifyTaskUpdate } from '@/app/actions/task'
 
 export default function TasksPage() {
   const router = useRouter()
@@ -257,6 +258,8 @@ export default function TasksPage() {
               tasks={filteredTasks}
               onTaskClick={(task) => router.push(`/tasks/${task.id}`)}
               onTaskDragEnd={async (taskId, newStatus, newOrder) => {
+                const originalTask = tasks.find(t => t.id === taskId)
+
                 // Optimistic UI update
                 queryClient.setQueryData(['tasks', refreshCount], (oldData: any) => {
                   if (!oldData || !oldData.tasks) return oldData
@@ -276,6 +279,15 @@ export default function TasksPage() {
                     .eq('id', taskId)
                   
                   queryClient.invalidateQueries({ queryKey: ['tasks'] })
+
+                  // Notify assignee if task was approved or changed
+                  if (originalTask && originalTask.assigneeId) {
+                    if ((newStatus === 'done' && originalTask.status === 'review') || newStatus === 'approved') {
+                      await notifyTaskUpdate(taskId, originalTask.title, 'approved', originalTask.assigneeId)
+                    } else if (newStatus !== originalTask.status) {
+                      await notifyTaskUpdate(taskId, originalTask.title, 'status_changed', originalTask.assigneeId, newStatus)
+                    }
+                  }
                 } catch (error) {
                   console.error('Failed to update task:', error)
                   queryClient.invalidateQueries({ queryKey: ['tasks'] })

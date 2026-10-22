@@ -141,8 +141,11 @@ export default function TaskDetailPage() {
         if (originalTask.assigneeId) {
           await notifyTaskUpdate(taskId, originalTask.title, 'rejected', originalTask.assigneeId, data.rejectionReason)
         }
-      } else if (data.status === 'approved' && originalTask.status !== 'approved') {
-        // Task was approved
+      } else if (
+        (data.status === 'approved' || (data.status === 'done' && originalTask.status === 'review')) && 
+        originalTask.status !== 'done'
+      ) {
+        // Task was approved by manager/admin
         if (originalTask.assigneeId) {
           await notifyTaskUpdate(taskId, originalTask.title, 'approved', originalTask.assigneeId)
         }

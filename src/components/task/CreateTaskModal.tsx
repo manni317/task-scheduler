@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { X, Mic, Calendar, User, Tag, ChevronDown, Loader2, Play, Trash2, StopCircle } from 'lucide-react'
+import { X, Mic, Calendar, User, Tag, ChevronDown, Loader2, Play, Trash2, StopCircle, RotateCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createTask } from '@/app/actions/task'
 import { toast } from 'sonner'
@@ -35,6 +35,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
   const [assigneeId, setAssigneeId] = useState('')
   const [priority, setPriority] = useState('medium')
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
+  const [isRecurring, setIsRecurring] = useState(false)
 
   // Audio Recording states
   const [recordingDuration, setRecordingDuration] = useState(0)
@@ -188,6 +189,11 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       if (tags.length > 0) formData.append('tags', JSON.stringify(tags))
       if (checklistItems.length > 0) formData.append('checklistItems', JSON.stringify(checklistItems))
       
+      formData.append('isRecurring', isRecurring ? 'true' : 'false')
+      if (isRecurring) {
+        formData.append('recurringSchedule', 'daily')
+      }
+      
       const result = await createTask(formData)
       
       if (result && !result.success) {
@@ -201,6 +207,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
       setDescription('')
       setTags([])
       setChecklistItems([])
+      setIsRecurring(false)
       triggerRefresh()
       onClose()
     } catch (error: any) {
@@ -379,6 +386,45 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 </PopoverContent>
               </Popover>
             </div>
+          </div>
+
+          {/* Daily Recurring Task Toggle */}
+          <div className="flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-muted/20 hover:bg-muted/40 transition-all">
+            <div className="flex items-center gap-3">
+              <div className={cn("p-2 rounded-xl transition-colors", isRecurring ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                <RotateCw className={cn("h-4 w-4", isRecurring && "animate-spin-slow")} />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                  Daily Recurring Task
+                  {isRecurring && (
+                    <Badge variant="outline" className="text-[10px] uppercase tracking-wider py-0 px-1.5 border-primary/30 text-primary bg-primary/10 font-bold">
+                      Auto-Spawn Daily
+                    </Badge>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Automatically spawns a fresh copy every morning with today&apos;s deadline
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isRecurring}
+              onClick={() => setIsRecurring(!isRecurring)}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/20",
+                isRecurring ? "bg-primary" : "bg-muted"
+              )}
+            >
+              <span
+                className={cn(
+                  "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-lg ring-0 transition duration-200 ease-in-out",
+                  isRecurring ? "translate-x-5" : "translate-x-0"
+                )}
+              />
+            </button>
           </div>
 
           {/* Tags */}
