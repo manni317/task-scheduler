@@ -14,6 +14,7 @@ import { ArrowLeft, Plus, UserPlus, Settings, Upload, Loader2, Building2, Layers
 import { useAuth } from '@/hooks/useAuth'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Project, User } from '@/types/task'
+import { cn } from '@/lib/utils'
 
 export default function OrganizationDetailPage() {
   const params = useParams()
@@ -33,6 +34,11 @@ export default function OrganizationDetailPage() {
   const [editingDept, setEditingDept] = useState<any | null>(null)
   const [deptForm, setDeptForm] = useState({ name: '', description: '' })
   const [isSavingDept, setIsSavingDept] = useState(false)
+
+  const [selectedDeptForMembers, setSelectedDeptForMembers] = useState<any | null>(null)
+  const [isDeptMembersModalOpen, setIsDeptMembersModalOpen] = useState(false)
+  const [selectedMemberUserIds, setSelectedMemberUserIds] = useState<string[]>([])
+  const [isSavingDeptMembers, setIsSavingDeptMembers] = useState(false)
 
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -188,6 +194,58 @@ export default function OrganizationDetailPage() {
     } catch (error: any) {
       console.error(error)
       toast.error('Failed to delete department: ' + error.message)
+    }
+  }
+
+  const handleOpenDeptMembersModal = (dept: any) => {
+    setSelectedDeptForMembers(dept)
+    const currentMemberIds = orgMembers
+      .filter((m: any) => m.department_id === dept.id)
+      .map((m: any) => m.user_id)
+    setSelectedMemberUserIds(currentMemberIds)
+    setIsDeptMembersModalOpen(true)
+  }
+
+  const handleSaveDeptMembers = async () => {
+    if (!selectedDeptForMembers) return
+    setIsSavingDeptMembers(true)
+    try {
+      const deptId = selectedDeptForMembers.id
+      
+      const previouslyAssignedUserIds = orgMembers
+        .filter((m: any) => m.department_id === deptId)
+        .map((m: any) => m.user_id)
+      
+      const toRemove = previouslyAssignedUserIds.filter(id => !selectedMemberUserIds.includes(id))
+      const toAdd = selectedMemberUserIds.filter(id => !previouslyAssignedUserIds.includes(id))
+
+      if (toAdd.length > 0) {
+        const { error: addError } = await supabase
+          .from('organization_members')
+          .update({ department_id: deptId })
+          .eq('org_id', orgId)
+          .in('user_id', toAdd)
+        if (addError) throw addError
+      }
+
+      if (toRemove.length > 0) {
+        const { error: removeError } = await supabase
+          .from('organization_members')
+          .update({ department_id: null })
+          .eq('org_id', orgId)
+          .in('user_id', toRemove)
+        if (removeError) throw removeError
+      }
+
+      toast.success(`Department members updated for ${selectedDeptForMembers.name}!`)
+      setIsDeptMembersModalOpen(false)
+      setSelectedDeptForMembers(null)
+      fetchData()
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Failed to update department members: ' + error.message)
+    } finally {
+      setIsSavingDeptMembers(false)
     }
   }
 
@@ -558,7 +616,17 @@ export default function OrganizationDetailPage() {
                             <Button 
                               variant="ghost" 
                               size="icon" 
+                              className="h-8 w-8 text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
+                              title="Assign Members"
+                              onClick={() => handleOpenDeptMembersModal(dept)}
+                            >
+                              <UserPlus className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
                               className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              title="Edit Department"
                               onClick={() => handleOpenEditDept(dept)}
                             >
                               <Edit2 className="h-3.5 w-3.5" />
@@ -567,6 +635,7 @@ export default function OrganizationDetailPage() {
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                              title="Delete Department"
                               onClick={() => handleDeleteDept(dept.id)}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -578,17 +647,51 @@ export default function OrganizationDetailPage() {
                       <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
                         {dept.description || 'No description provided.'}
                       </p>
+
+                      {deptMembers.length > 0 && (
+                        <div className="mt-3 flex items-center gap-2">
+                          <div className="flex -space-x-2 overflow-hidden">
+                            {deptMembers.slice(0, 4).map((m: any) => (
+                              <Avatar key={m.user_id} className="inline-block h-6 w-6 rounded-full ring-2 ring-background">
+                                <AvatarImage src={m.profiles?.avatar_url || ''} />
+                                <AvatarFallback className="text-[10px]">
+                                  {m.profiles?.full_name?.charAt(0) || '?'}
+                                </AvatarFallback>
+                              </Avatar>
+                            ))}
+                          </div>
+                          {deptMembers.length > 4 && (
+                            <span className="text-[11px] text-muted-foreground">
+                              +{deptMembers.length - 4} more
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-4 mt-5 pt-3 border-t text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <FolderKanban className="h-3.5 w-3.5 text-primary/70" />
-                        {deptProjects.length} Projects
-                      </span>
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <Users className="h-3.5 w-3.5 text-primary/70" />
-                        {deptMembers.length} Members
-                      </span>
+                    <div className="flex items-center justify-between gap-3 mt-5 pt-3 border-t text-xs">
+                      <div className="flex items-center gap-3 text-muted-foreground">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <FolderKanban className="h-3.5 w-3.5 text-primary/70" />
+                          {deptProjects.length} Projects
+                        </span>
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <Users className="h-3.5 w-3.5 text-primary/70" />
+                          {deptMembers.length} Members
+                        </span>
+                      </div>
+
+                      {isManagerOrAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs px-2.5 gap-1.5 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 hover:border-indigo-300 transition-colors"
+                          onClick={() => handleOpenDeptMembersModal(dept)}
+                        >
+                          <UserPlus className="h-3 w-3" />
+                          {deptMembers.length === 0 ? 'Add Members' : 'Manage'}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )
@@ -771,6 +874,116 @@ export default function OrganizationDetailPage() {
               <Button onClick={handleSaveDept} disabled={isSavingDept || !deptForm.name.trim()}>
                 {isSavingDept ? 'Saving...' : editingDept ? 'Update Department' : 'Create Department'}
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Department Members Modal */}
+      <Dialog open={isDeptMembersModalOpen} onOpenChange={setIsDeptMembersModalOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-indigo-500" />
+              Manage Members — {selectedDeptForMembers?.name}
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className="text-sm text-muted-foreground -mt-2">
+            Select members from <strong className="text-foreground">{org?.name}</strong> to assign to this department.
+          </p>
+
+          <div className="space-y-4 pt-2">
+            {orgMembers.length === 0 ? (
+              <div className="text-center py-6 border border-dashed rounded-xl">
+                <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
+                <p className="text-sm text-muted-foreground">No members found in this organization.</p>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="mt-3"
+                  onClick={() => {
+                    setIsDeptMembersModalOpen(false)
+                    setIsAddMemberModalOpen(true)
+                  }}
+                >
+                  Add Members to Organization First
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
+                {orgMembers.map((member: any) => {
+                  const p = member.profiles || {}
+                  const isChecked = selectedMemberUserIds.includes(member.user_id)
+                  const otherDept = departments.find(d => d.id === member.department_id && d.id !== selectedDeptForMembers?.id)
+
+                  return (
+                    <label 
+                      key={member.user_id} 
+                      className={cn(
+                        "flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-colors",
+                        isChecked ? "bg-primary/5 border-primary/30" : "hover:bg-muted/50"
+                      )}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Checkbox 
+                          checked={isChecked}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedMemberUserIds(prev => [...prev, member.user_id])
+                            } else {
+                              setSelectedMemberUserIds(prev => prev.filter(id => id !== member.user_id))
+                            }
+                          }}
+                        />
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarImage src={p.avatar_url || ''} />
+                          <AvatarFallback className="text-xs">{p.full_name?.charAt(0) || '?'}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{p.full_name || 'Unnamed'}</p>
+                          <p className="text-xs text-muted-foreground truncate">{p.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="shrink-0 ml-2">
+                        {otherDept && !isChecked && (
+                          <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-medium">
+                            in {otherDept.name}
+                          </span>
+                        )}
+                        {isChecked && (
+                          <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-medium">
+                            Assigned
+                          </span>
+                        )}
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-3 border-t">
+              <span className="text-xs text-muted-foreground">
+                {selectedMemberUserIds.length} member{selectedMemberUserIds.length === 1 ? '' : 's'} selected
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setIsDeptMembersModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={handleSaveDeptMembers} 
+                  disabled={isSavingDeptMembers || orgMembers.length === 0}
+                >
+                  {isSavingDeptMembers ? 'Saving...' : 'Save Members'}
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
