@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar } from 'lucide-react'
+import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar, Zap } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { createBrowserClient } from '@supabase/ssr'
@@ -223,34 +223,61 @@ export function Header() {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-80 max-w-sm mr-2 sm:mr-0">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="max-h-[300px] overflow-y-auto">
-                {notifications.map((notif: any) => (
-                  <DropdownMenuItem 
-                    key={notif.id} 
-                    className={cn("cursor-pointer p-3 flex flex-col items-start gap-1", new Date(notif.time) <= new Date(lastReadTime) && "opacity-60")}
-                    onClick={() => {
-                      if (notif.link) {
-                        router.push(notif.link)
-                      }
-                    }}
-                  >
-                    <div className="flex items-center gap-2 w-full">
-                      <span className={cn("h-2 w-2 rounded-full shrink-0", notif.color)} />
-                      <span className="font-medium text-sm">{notif.title}</span>
-                      <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
-                        {formatDistanceToNow(new Date(notif.time), { addSuffix: true })}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground pl-4 line-clamp-2">{notif.message}</p>
-                  </DropdownMenuItem>
-                ))}
+            <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-80 max-w-sm mr-2 sm:mr-0 p-0">
+              <div className="flex items-center justify-between p-3 border-b border-border bg-muted/40">
+                <span className="font-semibold text-sm">Notifications</span>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="h-7 text-xs gap-1.5 px-2.5 bg-primary/10 hover:bg-primary/20 text-primary border-primary/30"
+                  onClick={async (e) => {
+                    e.stopPropagation()
+                    if (!profile?.id) return
+                    toast.loading('Sending instant push test...')
+                    const res = await testPushSubscription(profile.id)
+                    toast.dismiss()
+                    if (res.success) {
+                      toast.success(res.message)
+                    } else {
+                      toast.error(res.message)
+                    }
+                  }}
+                >
+                  <Zap className="h-3 w-3 fill-primary" />
+                  Test Push
+                </Button>
               </div>
-              <DropdownMenuSeparator />
+              <div className="max-h-[300px] overflow-y-auto p-1">
+                {notifications.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-muted-foreground">
+                    No new notifications
+                  </div>
+                ) : (
+                  notifications.map((notif: any) => (
+                    <DropdownMenuItem 
+                      key={notif.id} 
+                      className={cn("cursor-pointer p-3 flex flex-col items-start gap-1 rounded-lg", new Date(notif.time) <= new Date(lastReadTime) && "opacity-60")}
+                      onClick={() => {
+                        if (notif.link) {
+                          router.push(notif.link)
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <span className={cn("h-2 w-2 rounded-full shrink-0", notif.color)} />
+                        <span className="font-medium text-sm">{notif.title}</span>
+                        <span className="text-xs text-muted-foreground ml-auto whitespace-nowrap">
+                          {formatDistanceToNow(new Date(notif.time), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground pl-4 line-clamp-2">{notif.message}</p>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </div>
+              <DropdownMenuSeparator className="m-0" />
               <DropdownMenuItem 
-                className="cursor-pointer justify-center text-primary font-medium"
+                className="cursor-pointer justify-center text-primary font-medium py-2.5 rounded-none"
                 onClick={markAllAsRead}
               >
                 Mark all as read
@@ -293,10 +320,10 @@ export function Header() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem 
-                className="cursor-pointer flex items-center gap-2"
+                className="cursor-pointer flex items-center gap-2 font-medium text-primary"
                 onClick={async () => {
                   if (!profile?.id) return
-                  toast.loading('Testing notification setup...')
+                  toast.loading('Sending instant push notification...')
                   const res = await testPushSubscription(profile.id)
                   toast.dismiss()
                   if (res.success) {
@@ -306,8 +333,8 @@ export function Header() {
                   }
                 }}
               >
-                <Bell className="h-4 w-4 text-cyan-400" />
-                Setup Notifications
+                <Zap className="h-4 w-4 text-amber-500 fill-amber-500" />
+                Instant Push Test
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 

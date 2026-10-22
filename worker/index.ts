@@ -9,14 +9,15 @@ sw.addEventListener('push', (event) => {
   const options: NotificationOptions = {
     body: data.body,
     icon: data.icon || '/icon-192x192.png',
-    badge: data.badge || '/icon-192x192.png',
+    badge: data.badge || '/icons/icon-72x72.svg',
     image: data.image,
     actions: data.actions,
-    vibrate: [200, 100, 200, 100, 200], // More aesthetic vibration pattern
+    vibrate: [200, 100, 200, 100, 200], // Vibration pattern for mobile
     data: {
       url: data.url || '/',
     },
-    requireInteraction: true, // Keep notification visible until user interacts for important updates like reject/approve
+    tag: data.tag || 'task-notif-' + Date.now(),
+    renotify: true,
   };
 
   event.waitUntil(

@@ -10,13 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { User, Bell, Moon, Sun, Shield, Key, Palette, Globe, Download, Trash2, LogOut, Calendar } from 'lucide-react'
+import { User, Bell, Moon, Sun, Shield, Key, Palette, Globe, Download, Trash2, LogOut, Calendar, Zap, CheckCircle2, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTheme } from 'next-themes'
 import { useAuth, useProfile } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 import { useRef, useEffect } from 'react'
 import { useSupabase } from '@/lib/supabase-provider'
+import { testPushSubscription } from '@/components/pwa/PushManager'
 
 const timezones = [
   'UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles',
@@ -131,10 +132,11 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl">
-        <TabsList className="grid w-full grid-cols-3 h-auto p-1 gap-1">
-          <TabsTrigger value="profile" className="py-2">Profile</TabsTrigger>
-          <TabsTrigger value="appearance" className="py-2">Appearance</TabsTrigger>
-          <TabsTrigger value="integrations" className="py-2">Integrations</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 gap-1">
+          <TabsTrigger value="profile" className="py-2 text-xs sm:text-sm">Profile</TabsTrigger>
+          <TabsTrigger value="notifications" className="py-2 text-xs sm:text-sm">Notifications</TabsTrigger>
+          <TabsTrigger value="appearance" className="py-2 text-xs sm:text-sm">Theme</TabsTrigger>
+          <TabsTrigger value="integrations" className="py-2 text-xs sm:text-sm">Integrations</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6">
@@ -194,7 +196,62 @@ export default function SettingsPage() {
               </form>
             </CardContent>
           </Card>
+        </TabsContent>
 
+        <TabsContent value="notifications" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                Mobile & Web Push Notifications
+              </CardTitle>
+              <CardDescription>
+                Receive real-time instant alerts on your phone and desktop for task assignments, updates, and deadlines.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-4 rounded-xl border border-border bg-card/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Zap className="h-4 w-4 text-amber-500 fill-amber-500" />
+                    Instant Push Notification Test
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Send an immediate high-priority test push to verify sound, vibration, and notification tray alerts on your mobile.
+                  </p>
+                </div>
+                <Button
+                  onClick={async () => {
+                    if (!profile?.id) return
+                    toast.loading('Sending instant push test...')
+                    const res = await testPushSubscription(profile.id)
+                    toast.dismiss()
+                    if (res.success) {
+                      toast.success(res.message)
+                    } else {
+                      toast.error(res.message)
+                    }
+                  }}
+                  className="gap-2 shrink-0 bg-primary shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  <Zap className="h-4 w-4 fill-primary-foreground" />
+                  Send Instant Test Push
+                </Button>
+              </div>
+
+              <div className="rounded-xl border border-muted bg-muted/20 p-4 space-y-3">
+                <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  Tips for Android & Mobile users:
+                </h4>
+                <ul className="text-xs text-muted-foreground space-y-1.5 list-disc list-inside">
+                  <li>Ensure browser notification permission is allowed when prompted.</li>
+                  <li>On Xiaomi (MIUI/HyperOS), Vivo, or Oppo: Check app settings and allow &ldquo;Autostart&rdquo; or &ldquo;Show notifications&rdquo; for Chrome.</li>
+                  <li>Install the app as PWA (&ldquo;Add to Home Screen&rdquo;) for the best native app experience.</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
                 <TabsContent value="appearance" className="space-y-6">

@@ -37,20 +37,14 @@ const saveSubscriptionToServer = async (subscription: PushSubscription, userId: 
 
 export async function testPushSubscription(userId: string) {
   try {
+    if (typeof window === 'undefined') return { success: false, message: 'Window not available' }
+
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       return { success: false, message: 'Push notifications are not supported in this browser' }
     }
 
-    const registration = await navigator.serviceWorker.ready
-    
-    // FORCE UNSUBSCRIBE to ensure new VAPID keys are used
-    const existing = await registration.pushManager.getSubscription()
-    if (existing) {
-      await existing.unsubscribe()
-    }
-    
     if (Notification.permission === 'denied') {
-      return { success: false, message: 'Notifications are blocked in browser settings' }
+      return { success: false, message: 'Notifications are blocked in browser settings. Please allow notifications in site settings.' }
     }
     
     const permission = await Notification.requestPermission()
@@ -58,17 +52,39 @@ export async function testPushSubscription(userId: string) {
       return { success: false, message: 'Permission denied for notifications' }
     }
 
-    const vapidPublicKey = getVapidPublicKey()
+    const registration = await navigator.serviceWorker.ready
 
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-    })
+    const vapidPublicKey = getVapidPublicKey()
+    const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey)
+
+    let subscription = await registration.pushManager.getSubscription()
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey,
+      })
+    }
 
     const saved = await saveSubscriptionToServer(subscription, userId)
-    if (!saved) throw new Error('Server could not save subscription')
+    if (!saved) throw new Error('Could not save subscription to server')
 
-    return { success: true, message: 'Push notification setup successful!' }
+    // Immediately trigger a test push notification to this user
+    const res = await fetch('/api/test-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        title: '⚡ Instant Push Notification',
+        message: 'Notification system is working instantly on your device! 🎉'
+      })
+    })
+
+    const data = await res.json()
+    if (data.success) {
+      return { success: true, message: 'Instant notification sent! Check your notification bar.' }
+    } else {
+      return { success: false, message: data.error || 'Failed to send test push' }
+    }
   } catch (error: any) {
     return { success: false, message: error.message || 'Failed to setup push' }
   }

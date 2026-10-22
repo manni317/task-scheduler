@@ -30,9 +30,13 @@ export async function sendPushNotification(
     return
   }
 
+  const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY.includes('placeholder'))
+    ? process.env.SUPABASE_SERVICE_ROLE_KEY
+    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseKey,
     {
       global: {
         fetch: (url, options) => {
@@ -50,7 +54,14 @@ export async function sendPushNotification(
 
     if (!subscriptions || subscriptions.length === 0) return
 
-    const payload = JSON.stringify({ title, body, url, ...options })
+    const payload = JSON.stringify({ 
+      title, 
+      body, 
+      url, 
+      icon: options?.icon || '/icon-192x192.png',
+      badge: options?.badge || '/icons/icon-72x72.svg',
+      ...options 
+    })
 
     const sendPromises = subscriptions.map(async (sub) => {
       const pushSubscription = {
@@ -62,7 +73,13 @@ export async function sendPushNotification(
       }
 
       try {
-        await webpush.sendNotification(pushSubscription, payload)
+        await webpush.sendNotification(pushSubscription, payload, {
+          urgency: 'high',
+          TTL: 86400,
+          headers: {
+            'Urgency': 'high',
+          }
+        })
       } catch (error: any) {
         if (error.statusCode === 410 || error.statusCode === 404) {
           // Subscription has expired or is no longer valid

@@ -97,8 +97,8 @@ export async function createTask(formData: FormData) {
     revalidatePath('/tasks')
     revalidatePath('/projects')
     
-    // Send push notification to assignee if it's not the reporter
-    if (assigneeId && assigneeId !== 'unassigned' && assigneeId !== reporterId) {
+    // Send push notification to assignee
+    if (assigneeId && assigneeId !== 'unassigned') {
       // MUST await in serverless functions, otherwise it gets killed when the response is sent!
       await sendPushNotification(
         assigneeId,
@@ -146,7 +146,6 @@ export async function notifyTaskUpdate(
     const actorId = user?.id
 
     if (!actorId) return { success: false, error: 'Unauthorized' }
-    if (actorId === targetUserId) return { success: true, message: 'No self notification' }
 
     let pushTitle = 'Task Update'
     let pushBody = `Task "${title}" was updated.`
