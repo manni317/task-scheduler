@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { ArrowLeft, Plus, UserPlus, Settings, Upload, Loader2, Building2, Layers, Edit2, Trash2, FolderKanban, Users } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { Project, User } from '@/types/task'
 
 export default function OrganizationDetailPage() {
@@ -19,6 +20,7 @@ export default function OrganizationDetailPage() {
   const router = useRouter()
   const orgId = params.id as string
   const { profile } = useAuth()
+  const { refreshOrganizations } = useOrganization()
   
   const [org, setOrg] = useState<any>(null)
   const [projects, setProjects] = useState<Project[]>([])
@@ -330,6 +332,34 @@ export default function OrganizationDetailPage() {
     }
   }
 
+  const [isDeletingOrg, setIsDeletingOrg] = useState(false)
+
+  const handleDeleteOrg = async () => {
+    if (!org) return
+    if (!confirm(`Are you sure you want to permanently delete "${org.name}"? All associated departments and member associations will be removed.`)) {
+      return
+    }
+
+    setIsDeletingOrg(true)
+    try {
+      const { error } = await supabase.from('organizations').delete().eq('id', orgId)
+      if (error) throw error
+
+      toast.success('Organization deleted successfully')
+      if (typeof window !== 'undefined' && localStorage.getItem('active_org_id') === orgId) {
+        localStorage.removeItem('active_org_id')
+        document.cookie = 'active_org_id=; path=/; max-age=0'
+      }
+      await refreshOrganizations()
+      router.push('/organizations')
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Failed to delete organization: ' + error.message)
+    } finally {
+      setIsDeletingOrg(false)
+    }
+  }
+
   if (isLoading) {
     return <div className="h-full flex items-center justify-center">Loading organization...</div>
   }
@@ -433,9 +463,21 @@ export default function OrganizationDetailPage() {
                     onChange={(e) => setEditOrgData({ ...editOrgData, description: e.target.value })}
                   />
                 </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" onClick={() => setIsEditOrgModalOpen(false)}>Cancel</Button>
-                  <Button onClick={handleUpdateOrg} disabled={!editOrgData.name.trim()}>Save Changes</Button>
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1.5"
+                    onClick={handleDeleteOrg}
+                    disabled={isDeletingOrg}
+                  >
+                    {isDeletingOrg ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                    Delete Organization
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setIsEditOrgModalOpen(false)}>Cancel</Button>
+                    <Button onClick={handleUpdateOrg} disabled={!editOrgData.name.trim() || isDeletingOrg}>Save Changes</Button>
+                  </div>
                 </div>
               </div>
             </DialogContent>

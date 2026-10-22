@@ -3,15 +3,19 @@
 import { useQuery } from '@tanstack/react-query'
 import { createBrowserClient } from '@supabase/ssr'
 import { Button } from '@/components/ui/button'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Users, Trash2, MoreHorizontal } from 'lucide-react'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { useAuth } from '@/hooks/useAuth'
+import { useOrganization } from '@/contexts/OrganizationContext'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 export default function OrganizationsPage() {
   const router = useRouter()
-  const { openCreateOrgModal, refreshCount } = useUIStore()
+  const { openCreateOrgModal, refreshCount, triggerRefresh } = useUIStore()
   const { profile } = useAuth()
+  const { refreshOrganizations } = useOrganization()
   const userRole = profile?.role || 'employee'
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin'
 
@@ -40,6 +44,30 @@ export default function OrganizationsPage() {
       }))
     }
   })
+
+  const handleDeleteOrg = async (e: React.MouseEvent, orgId: string, orgName: string) => {
+    e.stopPropagation()
+    if (!confirm(`Are you sure you want to delete "${orgName}"? All associated departments and member associations will be removed.`)) {
+      return
+    }
+
+    try {
+      const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+      const { error } = await supabase.from('organizations').delete().eq('id', orgId)
+      if (error) throw error
+
+      toast.success('Organization deleted successfully')
+      if (typeof window !== 'undefined' && localStorage.getItem('active_org_id') === orgId) {
+        localStorage.removeItem('active_org_id')
+        document.cookie = 'active_org_id=; path=/; max-age=0'
+      }
+      await refreshOrganizations()
+      triggerRefresh()
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Failed to delete organization: ' + error.message)
+    }
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -82,22 +110,35 @@ export default function OrganizationsPage() {
             <div 
               key={org.id} 
               onClick={() => router.push(`/organizations/${org.id}`)}
-              className="p-6 bg-card border rounded-2xl hover:shadow-md transition-all flex flex-col cursor-pointer"
+              className="p-6 bg-card border rounded-2xl hover:shadow-md transition-all flex flex-col cursor-pointer relative group"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                  {org.logo_url ? (
-                    <img src={org.logo_url} alt={org.name} className="h-full w-full object-contain p-1" />
-                  ) : (
-                    <span className="text-primary font-bold text-xl">{org.name.charAt(0).toUpperCase()}</span>
-                  )}
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                    {org.logo_url ? (
+                      <img src={org.logo_url} alt={org.name} className="h-full w-full object-contain p-1" />
+                    ) : (
+                      <span className="text-primary font-bold text-xl">{org.name.charAt(0).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-lg truncate">{org.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {org.organization_members?.length || 0} Members
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{org.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {org.organization_members?.length || 0} Members
-                  </p>
-                </div>
+                {isManagerOrAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 opacity-80 group-hover:opacity-100"
+                    title="Delete Organization"
+                    onClick={(e) => handleDeleteOrg(e, org.id, org.name)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
               <p className="text-sm text-muted-foreground flex-1 line-clamp-3">
                 {org.description || 'No description provided.'}
