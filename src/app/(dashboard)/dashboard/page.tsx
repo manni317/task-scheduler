@@ -13,6 +13,7 @@ import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
 import Link from 'next/link'
+import { normalizePriority } from '@/lib/utils'
 
 export default function DashboardPage() {
   const { profile, loading: authLoading } = useAuth()
@@ -52,7 +53,7 @@ export default function DashboardPage() {
           title: t.title,
           description: t.description || '',
           status: t.status || 'todo',
-          priority: (() => { const p = Number(t.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
+          priority: normalizePriority(t.priority),
           projectId: t.project_id || '1',
           project: projectsData?.find(p => p.id === t.project_id) || null,
           orgId: projectsData?.find(p => p.id === t.project_id)?.org_id || null,

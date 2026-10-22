@@ -127,3 +127,13 @@ export function getInitials(name: string): string {
 export function classNames(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ')
 }
+
+export function normalizePriority(val: any): 'low' | 'medium' | 'high' | 'urgent' {
+  if (!val) return 'medium'
+  const str = String(val).toLowerCase().trim()
+  if (str === '1' || str === 'low') return 'low'
+  if (str === '2' || str === 'medium') return 'medium'
+  if (str === '3' || str === 'high') return 'high'
+  if (str === '4' || str === 'urgent' || str === 'critical') return 'urgent'
+  return 'medium'
+}

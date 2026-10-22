@@ -6,6 +6,7 @@ import { Task, User } from '@/types/task'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createBrowserClient } from '@supabase/ssr'
 import { notifyTaskUpdate } from '@/app/actions/task'
+import { normalizePriority } from '@/lib/utils'
 
 export default function TaskDetailPage() {
   const params = useParams()
@@ -39,7 +40,7 @@ export default function TaskDetailPage() {
           title: taskData.title,
           description: taskData.description || '',
           status: taskData.status || 'todo',
-          priority: taskData.priority || 'medium',
+          priority: normalizePriority(taskData.priority),
           projectId: taskData.project_id || null,
           assigneeId: taskData.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === taskData.assignee_id),
@@ -134,23 +135,23 @@ export default function TaskDetailPage() {
       if (data.rejectionReason && !originalTask.rejectionReason) {
         // Task was rejected
         if (originalTask.assigneeId) {
-          notifyTaskUpdate(taskId, originalTask.title, 'rejected', originalTask.assigneeId, data.rejectionReason)
+          await notifyTaskUpdate(taskId, originalTask.title, 'rejected', originalTask.assigneeId, data.rejectionReason)
         }
       } else if (data.status === 'approved' && originalTask.status !== 'approved') {
         // Task was approved
         if (originalTask.assigneeId) {
-          notifyTaskUpdate(taskId, originalTask.title, 'approved', originalTask.assigneeId)
+          await notifyTaskUpdate(taskId, originalTask.title, 'approved', originalTask.assigneeId)
         }
       } else if (data.assigneeId !== undefined && data.assigneeId !== originalTask.assigneeId && data.assigneeId !== null) {
         // Task was re-assigned to someone else
-        notifyTaskUpdate(taskId, originalTask.title, 'assigned', data.assigneeId)
+        await notifyTaskUpdate(taskId, originalTask.title, 'assigned', data.assigneeId)
       } else if (data.status && data.status !== originalTask.status) {
         // General status change
         // If assignee changes status, notify reporter. If reporter/admin changes status, notify assignee.
         const currentUser = (await supabase.auth.getUser()).data.user?.id
         const targetUser = currentUser === originalTask.assigneeId ? originalTask.reporterId : originalTask.assigneeId
         if (targetUser) {
-          notifyTaskUpdate(taskId, originalTask.title, 'status_changed', targetUser, data.status)
+          await notifyTaskUpdate(taskId, originalTask.title, 'status_changed', targetUser, data.status)
         }
       }
 

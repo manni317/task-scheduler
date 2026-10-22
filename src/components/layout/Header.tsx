@@ -72,16 +72,22 @@ export function Header() {
 
       const twoDaysAgo = new Date()
       twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
-      const { data: newTasks } = await supabase.from('tasks').select('*').eq('assignee_id', userId).gte('created_at', twoDaysAgo.toISOString()).order('created_at', { ascending: false }).limit(5)
+      const { data: newTasks } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('assignee_id', userId)
+        .or(`created_at.gte.${twoDaysAgo.toISOString()},updated_at.gte.${twoDaysAgo.toISOString()}`)
+        .order('updated_at', { ascending: false })
+        .limit(5)
       
       if (newTasks) {
         newTasks.forEach((t: any) => notifs.push({
-          id: t.id + '-new',
-          title: 'New Task',
+          id: t.id + '-assigned',
+          title: 'Assigned Task',
           message: `${profilesMap.get(t.reporter_id) || 'Someone'} assigned you to "${t.title}"`,
-          time: t.created_at,
+          time: t.updated_at || t.created_at,
           color: 'bg-blue-500',
-          link: '/tasks'
+          link: `/tasks/${t.id}`
         }))
       }
 

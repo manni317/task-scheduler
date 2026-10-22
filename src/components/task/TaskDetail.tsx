@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Calendar, Clock, User, Tag, X, Edit, Trash2, MessageSquare, Paperclip, GitBranch, MoreHorizontal, Mic, StopCircle, Send, Upload, Play } from 'lucide-react'
 import { format, isPast, isToday, isTomorrow } from 'date-fns'
 import { Task, User as UserType, ChecklistItem, Comment, Attachment, TimeEntry, ActivityLog } from '@/types/task'
-import { cn } from '@/lib/utils'
+import { cn, normalizePriority } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { TaskForm } from './TaskForm'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -105,6 +105,8 @@ export function TaskDetail({
   const isOverdueTask = dueDate && isPast(dueDate) && !isToday(dueDate)
   const isDueToday = dueDate && isToday(dueDate)
   const isDueTomorrow = dueDate && isTomorrow(dueDate)
+
+  const currentPriority = normalizePriority(task.priority)
 
   const priorityColors: Record<string, string> = {
     low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
@@ -267,8 +269,8 @@ export function TaskDetail({
         <div className="flex-1 min-w-0 w-full">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <h1 className="text-xl md:text-2xl font-bold w-full lg:w-auto">{task.title}</h1>
-            <Badge variant="outline" className={priorityColors[task.priority] || ''}>
-              {task.priority}
+            <Badge variant="outline" className={cn('capitalize', priorityColors[currentPriority] || '')}>
+              {currentPriority}
             </Badge>
             <Badge variant="outline" className={statusColors[task.status] || ''}>
               {task.status.replace('_', ' ')}
@@ -549,11 +551,11 @@ export function TaskDetail({
               <Label>Priority</Label>
               {userRole === 'manager' || userRole === 'admin' ? (
                 <Select
-                  value={task.priority}
+                  value={currentPriority}
                   onValueChange={(val: any) => onUpdate({ ...task, priority: val })}
                 >
-                  <SelectTrigger className="mt-1 w-full sm:w-[180px] h-8 text-xs">
-                    <SelectValue />
+                  <SelectTrigger className="mt-1 w-full sm:w-[180px] h-8 text-xs capitalize">
+                    <SelectValue placeholder="Select Priority" />
                   </SelectTrigger>
                   <SelectContent>
                     {(['low', 'medium', 'high', 'urgent'] as ('low' | 'medium' | 'high' | 'urgent')[]).map(p => (
@@ -566,7 +568,7 @@ export function TaskDetail({
                   </SelectContent>
                 </Select>
               ) : (
-                <Badge variant="outline" className={cn('mt-1', priorityColors[task.priority] || '')}>{task.priority}</Badge>
+                <Badge variant="outline" className={cn('mt-1 capitalize', priorityColors[currentPriority] || '')}>{currentPriority}</Badge>
               )}
             </div>
             <div>

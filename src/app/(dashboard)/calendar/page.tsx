@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
+import { cn, normalizePriority } from '@/lib/utils'
 import { Task, User as UserType } from '@/types/task'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
@@ -80,7 +80,7 @@ export default function CalendarPage() {
           title: t.title,
           description: t.description || '',
           status: t.status || 'todo',
-          priority: (() => { const p = Number(t.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
+          priority: normalizePriority(t.priority),
           projectId: t.project_id || null,
           project: projectsData?.find(p => p.id === t.project_id) || null,
           orgId: projectsData?.find(p => p.id === t.project_id)?.org_id || null,

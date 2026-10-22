@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Search, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, normalizePriority } from '@/lib/utils'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -54,7 +54,7 @@ export default function TasksPage() {
           title: t.title,
           description: t.description || '',
           status: t.status || 'todo',
-          priority: (() => { const p = Number(t.priority); return p === 1 ? 'low' : p === 3 ? 'high' : p === 4 ? 'urgent' : 'medium' })(),
+          priority: normalizePriority(t.priority),
           projectId: t.project_id || null,
           assigneeId: t.assignee_id || null,
           assignee: mappedUsers.find(u => u.id === t.assignee_id),

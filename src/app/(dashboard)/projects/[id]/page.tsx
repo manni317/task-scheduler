@@ -10,7 +10,7 @@ import { Plus, X, UserPlus, User as UserIcon, Building2, Layers } from 'lucide-r
 import { useUIStore } from '@/hooks/use-ui-store'
 import { ProjectCard } from '@/components/project/ProjectCard'
 import { Project, User as UserType } from '@/types/task'
-import { cn } from '@/lib/utils'
+import { cn, normalizePriority } from '@/lib/utils'
 import { createBrowserClient } from '@supabase/ssr'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
@@ -91,7 +91,7 @@ export default function ProjectDetailPage() {
             title: t.title,
             description: t.description || '',
             status: t.status,
-            priority: t.priority === 1 ? 'high' : t.priority === 2 ? 'medium' : 'low',
+            priority: normalizePriority(t.priority),
             projectId: t.project_id,
             assigneeId: t.assignee_id,
             assignee: mappedUsers.find(u => u.id === t.assignee_id),
