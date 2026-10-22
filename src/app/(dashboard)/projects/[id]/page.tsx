@@ -6,7 +6,7 @@ import { KanbanBoard } from '@/components/task/KanbanBoard'
 import { Task, User } from '@/types/task'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Plus, X, UserPlus, User as UserIcon, Building2 } from 'lucide-react'
+import { Plus, X, UserPlus, User as UserIcon, Building2, Layers } from 'lucide-react'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { ProjectCard } from '@/components/project/ProjectCard'
 import { Project, User as UserType } from '@/types/task'
@@ -49,7 +49,7 @@ export default function ProjectDetailPage() {
         setUsers(mappedUsers)
 
         // Fetch project
-        const { data: projData } = await supabase.from('projects').select('*, organizations(id, name, logo_url, organization_members(user_id))').eq('id', projectId).single()
+        const { data: projData } = await supabase.from('projects').select('*, organizations(id, name, logo_url, organization_members(user_id)), departments(id, name)').eq('id', projectId).single()
         if (projData) {
           let orgMembersIds: string[] = []
           if (projData.organizations?.organization_members) {
@@ -73,6 +73,8 @@ export default function ProjectDetailPage() {
             owner: null as any,
             orgId: projData.org_id,
             organization: projData.organizations,
+            departmentId: projData.department_id,
+            department: projData.departments,
             members: members,
             tasks: [],
             createdAt: new Date(projData.created_at || Date.now()),
@@ -185,6 +187,12 @@ export default function ProjectDetailPage() {
                 <span className="px-3 py-1 bg-muted border text-foreground text-sm font-medium rounded-full flex items-center gap-2 cursor-pointer hover:bg-muted/80" onClick={() => router.push(`/organizations/${project.orgId}`)}>
                   <Building2 className="h-3 w-3" />
                   {project.organization.name}
+                </span>
+              )}
+              {project.department && (
+                <span className="px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 dark:text-indigo-400 text-sm font-medium rounded-full flex items-center gap-1.5">
+                  <Layers className="h-3 w-3" />
+                  {project.department.name}
                 </span>
               )}
             </div>

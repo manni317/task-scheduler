@@ -91,6 +91,8 @@ export interface Task {
   project?: Project
   orgId?: string
   organization?: Organization
+  departmentId?: string
+  department?: Department
   assigneeId?: string
   assignee?: User
   reporterId: string
@@ -132,6 +134,8 @@ export interface Project {
   owner: User
   orgId?: string
   organization?: Organization
+  departmentId?: string
+  department?: Department
   members: User[]
   tasks: Task[]
   createdAt: Date

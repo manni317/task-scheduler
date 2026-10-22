@@ -16,6 +16,7 @@ interface ProjectListProps {
   projects: Project[]
   users: User[]
   organizations?: any[]
+  departments?: any[]
   onProjectClick: (project: Project) => void
   onCreateProject: (data: any) => Promise<void>
   onUpdateProject: (data: any) => Promise<void>
@@ -28,6 +29,7 @@ export function ProjectList({
   projects, 
   users, 
   organizations = [],
+  departments = [],
   onProjectClick, 
   onCreateProject, 
   onUpdateProject,
@@ -37,6 +39,7 @@ export function ProjectList({
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'archived'>('all')
   const [filterOrg, setFilterOrg] = useState<string>('all')
+  const [filterDept, setFilterDept] = useState<string>('all')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
@@ -48,7 +51,8 @@ export function ProjectList({
       (filterStatus === 'active' && !project.isArchived) ||
       (filterStatus === 'archived' && project.isArchived)
     const matchesOrg = filterOrg === 'all' || project.orgId === filterOrg
-    return matchesSearch && matchesFilter && matchesOrg
+    const matchesDept = filterDept === 'all' || project.departmentId === filterDept
+    return matchesSearch && matchesFilter && matchesOrg && matchesDept
   })
 
   const handleCreateProject = async (data: any) => {
@@ -101,6 +105,18 @@ export function ProjectList({
               ))}
             </select>
           )}
+          {departments.length > 0 && (
+            <select
+              value={filterDept}
+              onChange={e => setFilterDept(e.target.value)}
+              className="border rounded-md px-3 py-2 text-sm bg-background max-w-[150px] truncate"
+            >
+              <option value="all">All Departments</option>
+              {departments.map(dept => (
+                <option key={dept.id} value={dept.id}>{dept.name}</option>
+              ))}
+            </select>
+          )}
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value as any)}
@@ -138,6 +154,7 @@ export function ProjectList({
                 initialData={editingProject}
                 users={users}
                 organizations={organizations}
+                departments={departments}
                 onSubmit={editingProject ? handleUpdateProject : handleCreateProject}
                 onCancel={() => { setDialogOpen(false); setEditingProject(null); }}
               />

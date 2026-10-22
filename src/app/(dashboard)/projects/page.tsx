@@ -14,6 +14,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [organizations, setOrganizations] = useState<any[]>([])
+  const [departments, setDepartments] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
@@ -44,6 +45,9 @@ export default function ProjectsPage() {
       const { data: orgsData, error: orgsError } = await supabase.from('organizations').select('*')
       if (!orgsError && orgsData) setOrganizations(orgsData)
 
+      const { data: deptsData, error: deptsError } = await supabase.from('departments').select('*')
+      if (!deptsError && deptsData) setDepartments(deptsData)
+
       const userRole = profile?.role || 'employee'
       const userId = profile?.id
 
@@ -60,6 +64,8 @@ export default function ProjectsPage() {
         key: p.key_prefix || 'PRJ',
         orgId: p.org_id,
         organization: orgsData?.find((o: any) => o.id === p.org_id),
+        departmentId: p.department_id,
+        department: deptsData?.find((d: any) => d.id === p.department_id),
         color: '#3B82F6',
         icon: '📁',
         ownerId: '',
@@ -89,6 +95,7 @@ export default function ProjectsPage() {
         name: data.name,
         description: data.description,
         org_id: data.orgId || null,
+        department_id: data.departmentId || null,
       }
 
       const { error } = await supabase.from('projects').insert([newProject])
@@ -107,6 +114,7 @@ export default function ProjectsPage() {
       const { error } = await supabase.from('projects').update({
         name: data.name,
         description: data.description,
+        department_id: data.departmentId || null,
       }).eq('id', data.id)
       
       if (error) throw error
@@ -148,6 +156,7 @@ export default function ProjectsPage() {
           projects={projects}
           users={users}
           organizations={organizations}
+          departments={departments}
           onProjectClick={(project) => router.push(`/projects/${project.id}`)}
           onCreateProject={handleCreateProject}
           onUpdateProject={handleUpdateProject}

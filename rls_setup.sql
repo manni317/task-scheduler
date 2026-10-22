@@ -62,6 +62,25 @@ ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.organization_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.departments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sub_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.task_updates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.task_attachments ENABLE ROW LEVEL SECURITY;
+
+-- 5. Department Columns and Policies
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS department_id UUID REFERENCES public.departments(id) ON DELETE SET NULL;
+ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS department_id UUID REFERENCES public.departments(id) ON DELETE SET NULL;
+ALTER TABLE public.organization_members ADD COLUMN IF NOT EXISTS department_id UUID REFERENCES public.departments(id) ON DELETE SET NULL;
+
+CREATE POLICY "Users can see departments in their orgs" ON public.departments
+  FOR SELECT USING (organization_id IN (SELECT user_orgs()));
+
+CREATE POLICY "Managers can insert departments in their orgs" ON public.departments
+  FOR INSERT WITH CHECK (organization_id IN (SELECT user_managed_orgs()));
+
+CREATE POLICY "Managers can update departments in their orgs" ON public.departments
+  FOR UPDATE USING (organization_id IN (SELECT user_managed_orgs()));
+
+CREATE POLICY "Managers can delete departments in their orgs" ON public.departments
+  FOR DELETE USING (organization_id IN (SELECT user_managed_orgs()));
+

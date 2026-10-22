@@ -16,6 +16,7 @@ interface ProjectFormProps {
   initialData?: Partial<Project>
   users?: User[]
   organizations?: any[]
+  departments?: any[]
   onSubmit: (data: ProjectFormData) => Promise<void>
   onCancel: () => void
   isLoading?: boolean
@@ -25,6 +26,7 @@ const projectFormSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().optional(),
   orgId: z.string().optional(),
+  departmentId: z.string().optional(),
   memberIds: z.array(z.string()).default([]),
 })
 
@@ -35,14 +37,15 @@ const predefinedColors = [
   '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1',
 ]
 
-export function ProjectForm({ initialData, users = [], organizations = [], onSubmit, onCancel, isLoading }: ProjectFormProps) {
+export function ProjectForm({ initialData, users = [], organizations = [], departments = [], onSubmit, onCancel, isLoading }: ProjectFormProps) {
   const form = useForm<ProjectFormData>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: {
       name: initialData?.name || '',
       description: initialData?.description || '',
       orgId: initialData?.orgId || '',
-      memberIds: initialData?.memberIds || [],
+      departmentId: initialData?.departmentId || '',
+      memberIds: (initialData as any)?.memberIds || [],
     },
     watch: ['memberIds'],
   })
@@ -94,6 +97,24 @@ export function ProjectForm({ initialData, users = [], organizations = [], onSub
               {organizations.map((org: any) => (
                 <option key={org.id} value={org.id}>
                   {org.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {departments.length > 0 && (
+          <div className="sm:col-span-2">
+            <Label htmlFor="departmentId">Department</Label>
+            <select
+              id="departmentId"
+              {...form.register('departmentId')}
+              className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+              <option value="">No Department (General)</option>
+              {departments.map((dept: any) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name}
                 </option>
               ))}
             </select>

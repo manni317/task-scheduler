@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Users, FolderKanban, Clock, TrendingUp, MoreHorizontal, Edit, Trash2, Archive, Building2 } from 'lucide-react'
+import { Users, FolderKanban, Clock, TrendingUp, MoreHorizontal, Edit, Trash2, Archive, Building2, Layers } from 'lucide-react'
 import { format } from 'date-fns'
 import { Project, User } from '@/types/task'
 import { cn } from '@/lib/utils'
@@ -46,6 +46,12 @@ export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, on
                   <span className="text-[10px] text-primary flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 shrink-0 max-w-[130px]">
                     <Building2 className="h-3 w-3 shrink-0" />
                     <span className="truncate">{project.organization.name}</span>
+                  </span>
+                )}
+                {project.department && (
+                  <span className="text-[10px] text-indigo-500 dark:text-indigo-400 flex items-center gap-1 bg-indigo-500/10 px-2 py-0.5 rounded-md border border-indigo-500/20 shrink-0 max-w-[130px]">
+                    <Layers className="h-3 w-3 shrink-0" />
+                    <span className="truncate">{project.department.name}</span>
                   </span>
                 )}
               </div>
