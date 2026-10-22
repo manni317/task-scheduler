@@ -133,7 +133,7 @@ export default function TasksPage() {
     if (timeFilter === 'today') {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-      matchesTime = task.createdAt >= today
+      matchesTime = task.createdAt >= today || (task.updatedAt && task.updatedAt >= today)
     }
 
     return matchesSearch && matchesStatus && matchesPriority && matchesAssignee && matchesProject && matchesRole && matchesTime

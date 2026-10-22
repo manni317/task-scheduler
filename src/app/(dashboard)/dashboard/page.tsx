@@ -149,12 +149,13 @@ export default function DashboardPage() {
     performanceData = performanceData.filter(p => p.userId === userId)
   }
 
-  // Check for tasks assigned today
+  // Check for tasks assigned today that haven't been started yet (status is 'todo')
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const newTasksToday = displayTasks.filter(t => 
     t.assigneeId === userId && 
-    t.createdAt >= today
+    t.status === 'todo' &&
+    (t.createdAt >= today || (t.updatedAt && t.updatedAt >= today))
   ).length
 
   const rejectedTasks = displayTasks.filter(t => 
