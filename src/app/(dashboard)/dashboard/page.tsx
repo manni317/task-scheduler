@@ -81,7 +81,7 @@ export default function DashboardPage() {
       }
       return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [], organizations: orgsData || [] }
     },
-    enabled: !!profile
+    enabled: true
   })
 
   if (authLoading || isLoading) {

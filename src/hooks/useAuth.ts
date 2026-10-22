@@ -8,8 +8,27 @@ import { useEffect, useState } from 'react'
 export function useAuth() {
   const supabase = useSupabase()
   const [session, setSession] = useState<any>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<Profile | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('taskflow_cached_profile')
+        return cached ? JSON.parse(cached) : null
+      } catch (e) {
+        return null
+      }
+    }
+    return null
+  })
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return !localStorage.getItem('taskflow_cached_profile')
+      } catch (e) {
+        return true
+      }
+    }
+    return true
+  })
 
   useEffect(() => {
     let mounted = true
@@ -23,6 +42,9 @@ export function useAuth() {
             await fetchProfile(currentSession.user.id, currentSession.user.email)
           } else {
             setProfile(null)
+            try {
+              localStorage.removeItem('taskflow_cached_profile')
+            } catch (e) {}
             setLoading(false)
           }
         }
@@ -42,6 +64,9 @@ export function useAuth() {
           await fetchProfile(newSession.user.id, newSession.user.email)
         } else {
           setProfile(null)
+          try {
+            localStorage.removeItem('taskflow_cached_profile')
+          } catch (e) {}
           setLoading(false)
         }
       }
@@ -66,22 +91,30 @@ export function useAuth() {
       }
       
       // If profile doesn't have email but session does, use session email
-      setProfile({
+      const resolvedProfile = {
         ...data,
         email: data?.email || email || 'user@example.com',
         full_name: data?.full_name || 'User'
-      })
+      }
+      setProfile(resolvedProfile)
+      try {
+        localStorage.setItem('taskflow_cached_profile', JSON.stringify(resolvedProfile))
+      } catch (e) {}
     } catch (err) {
       console.error('Failed to fetch profile:', err)
       // Fallback to basic auth info if profile fetch fails
-      setProfile({
+      const fallbackProfile = {
         id: userId,
         email: email || 'user@example.com',
         full_name: 'User',
         role: 'employee',
         avatar_url: null,
         created_at: new Date().toISOString()
-      } as any)
+      } as any
+      setProfile(fallbackProfile)
+      try {
+        localStorage.setItem('taskflow_cached_profile', JSON.stringify(fallbackProfile))
+      } catch (e) {}
     } finally {
       setLoading(false)
     }

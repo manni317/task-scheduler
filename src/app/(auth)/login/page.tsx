@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { loginWithEmail, signUpWithEmail } from '@/app/actions/auth'
+import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { Loader2, Zap, Lock, Mail } from 'lucide-react'
 import { AnimatedBackground } from '@/components/ui/animated-background'
@@ -12,11 +13,20 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
 
+  // Prefetch dashboard in background while user types credentials
+  useEffect(() => {
+    try {
+      router.prefetch('/dashboard')
+    } catch (e) {}
+  }, [router])
+
   const handleEmailAuth = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     
     const formData = new FormData(e.currentTarget)
+    const email = (formData.get('email') as string)?.trim()
+    const password = formData.get('password') as string
     
     try {
       if (isSignUp) {
@@ -30,16 +40,30 @@ export default function LoginPage() {
         setIsSignUp(false)
         setIsLoading(false)
       } else {
-        const res = await loginWithEmail(formData)
-        if (res.error) {
-          toast.error(res.error)
+        const supabase = createBrowserClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        })
+
+        if (error) {
+          const isWrong = 
+            error.message.toLowerCase().includes('invalid') || 
+            error.message.toLowerCase().includes('credential')
+          toast.error(isWrong ? 'Wrong email or password' : error.message)
           setIsLoading(false)
           return
         }
-        toast.success('Logged in successfully!')
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 1000)
+
+        // Keep server cookies synchronized in background without waiting
+        loginWithEmail(formData).catch(() => {})
+
+        // Direct instant navigation to dashboard with zero artificial delay
+        window.location.href = '/dashboard'
       }
     } catch (err) {
       toast.error('An unexpected error occurred')
