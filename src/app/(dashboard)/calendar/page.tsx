@@ -213,81 +213,100 @@ export default function CalendarPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-          <p className="text-muted-foreground text-lg">{format(currentDate, 'MMMM yyyy')}</p>
-        </div>
-        <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3">
-          <select 
-            value={selectedOrgId} 
-            onChange={(e) => { setSelectedOrgId(e.target.value); setSelectedProjectId('all') }}
-            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="all">All Organizations</option>
-            {organizations.map(org => (
-              <option key={org.id} value={org.id}>{org.name}</option>
-            ))}
-          </select>
-          <select 
-            value={selectedProjectId} 
-            onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50"
-            disabled={selectedOrgId !== 'all' && !projects.some(p => p.org_id === selectedOrgId)}
-          >
-            <option value="all">All Projects</option>
-            {projects
-              .filter(p => selectedOrgId === 'all' || p.org_id === selectedOrgId)
-              .map(project => (
-              <option key={project.id} value={project.id}>{project.name}</option>
-            ))}
-          </select>
-          {(userRole === 'admin' || userRole === 'manager') && (
-            <select 
-              value={selectedEmployeeId} 
-              onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:bg-accent/50 cursor-pointer sm:min-w-[150px]"
-            >
-              <option value="all">All Employees</option>
-              {users
-                .filter(u => u.role !== 'admin' && u.role !== 'manager')
-                .map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name}</option>
-              ))}
-            </select>
-          )}
-
-          <div className="flex bg-muted rounded-lg p-1 ml-auto sm:ml-0" role="radiogroup">
-            {(['month', 'week', 'day'] as CalendarView[]).map(v => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={cn(
-                  'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
-                  view === v ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                )}
-                role="radio"
-                aria-checked={view === v}
-              >
-                {v.charAt(0).toUpperCase() + v.slice(1)}
-              </button>
-            ))}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4 sm:mb-6 gap-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Calendar</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">{format(currentDate, 'MMMM yyyy')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={goToPrevious} aria-label="Previous">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" onClick={goToToday} className="px-3">
-            Today
-          </Button>
-          <Button variant="outline" size="sm" onClick={goToNext} aria-label="Next">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
           {(userRole === 'admin' || userRole === 'manager') && (
-            <Button onClick={openCreateTaskModal} className="gap-2">
+            <Button onClick={openCreateTaskModal} size="sm" className="gap-1.5 lg:hidden">
               <Plus className="h-4 w-4" />
-              New Task
+              <span>New Task</span>
             </Button>
           )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5">
+          {/* Controls: Date Nav + View Switcher */}
+          <div className="flex items-center justify-between sm:justify-start gap-2">
+            <div className="flex items-center border rounded-lg bg-card shadow-sm p-0.5">
+              <Button variant="ghost" size="icon" onClick={goToPrevious} className="h-8 w-8" aria-label="Previous">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={goToToday} className="h-8 px-2.5 text-xs font-semibold">
+                Today
+              </Button>
+              <Button variant="ghost" size="icon" onClick={goToNext} className="h-8 w-8" aria-label="Next">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex bg-muted rounded-lg p-0.5 shrink-0" role="radiogroup">
+              {(['month', 'week', 'day'] as CalendarView[]).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={cn(
+                    'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
+                    view === v ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  role="radio"
+                  aria-checked={view === v}
+                >
+                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filters Row */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+            <select 
+              value={selectedOrgId} 
+              onChange={(e) => { setSelectedOrgId(e.target.value); setSelectedProjectId('all') }}
+              className="h-8 sm:h-9 px-2 text-xs sm:text-sm rounded-md border border-input bg-background flex-1 sm:flex-none sm:min-w-[140px] truncate"
+            >
+              <option value="all">All Organizations</option>
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>{org.name}</option>
+              ))}
+            </select>
+            <select 
+              value={selectedProjectId} 
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className="h-8 sm:h-9 px-2 text-xs sm:text-sm rounded-md border border-input bg-background flex-1 sm:flex-none sm:min-w-[130px] truncate disabled:opacity-50"
+              disabled={selectedOrgId !== 'all' && !projects.some(p => p.org_id === selectedOrgId)}
+            >
+              <option value="all">All Projects</option>
+              {projects
+                .filter(p => selectedOrgId === 'all' || p.org_id === selectedOrgId)
+                .map(project => (
+                <option key={project.id} value={project.id}>{project.name}</option>
+              ))}
+            </select>
+            {(userRole === 'admin' || userRole === 'manager') && (
+              <select 
+                value={selectedEmployeeId} 
+                onChange={(e) => setSelectedEmployeeId(e.target.value)}
+                className="h-8 sm:h-9 px-2 text-xs sm:text-sm rounded-md border border-input bg-background flex-1 sm:flex-none sm:min-w-[130px] truncate"
+              >
+                <option value="all">All Employees</option>
+                {users
+                  .filter(u => u.role !== 'admin' && u.role !== 'manager')
+                  .map(emp => (
+                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+                ))}
+              </select>
+            )}
+
+            {(userRole === 'admin' || userRole === 'manager') && (
+              <Button onClick={openCreateTaskModal} size="sm" className="gap-1.5 hidden lg:inline-flex shrink-0">
+                <Plus className="h-4 w-4" />
+                <span>New Task</span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -296,13 +315,13 @@ export default function CalendarPage() {
         <div className="flex-1 overflow-hidden rounded-xl border bg-card">
           <div className="grid grid-cols-7 border-b bg-muted/50">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
+              <div key={day} className="p-1.5 sm:p-2 text-center text-xs sm:text-sm font-medium text-muted-foreground">
                 {day}
               </div>
             ))}
           </div>
-          <div className="flex-1 overflow-auto p-2">
-            <div className="grid grid-cols-7 min-h-[500px]">
+          <div className="flex-1 overflow-auto p-1 sm:p-2">
+            <div className="grid grid-cols-7 min-h-[450px]">
               {getWeeksInMonth(currentDate).map((week, weekIndex) =>
                 week.map((day, dayIndex) => {
                   const isCurrentMonth = isSameMonth(day, currentDate)
@@ -315,7 +334,7 @@ export default function CalendarPage() {
                       key={`${weekIndex}-${dayIndex}`}
                       onClick={() => setSelectedDate(day)}
                       className={cn(
-                        'relative min-h-[100px] border p-2 transition-colors',
+                        'relative min-h-[75px] sm:min-h-[100px] border p-1 sm:p-2 transition-colors',
                         !isCurrentMonth && 'bg-muted/30 text-muted-foreground',
                         today && 'bg-primary/10 ring-2 ring-primary',
                         isSelected && 'bg-primary/20 ring-2 ring-primary'
@@ -325,21 +344,21 @@ export default function CalendarPage() {
                         'flex items-center justify-between mb-1',
                         today && 'font-bold text-primary'
                       )}>
-                        <span className="text-sm">{format(day, 'd')}</span>
-                        {dayTasks.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{dayTasks.length - 3} more
+                        <span className="text-xs sm:text-sm">{format(day, 'd')}</span>
+                        {dayTasks.length > 2 && (
+                          <Badge variant="outline" className="text-[9px] sm:text-xs px-1 py-0">
+                            +{dayTasks.length - 2}
                           </Badge>
                         )}
                       </div>
-                      <div className="h-[80px] overflow-y-auto">
+                      <div className="h-[48px] sm:h-[80px] overflow-y-auto">
                         <div className="space-y-1">
-                          {dayTasks.slice(0, 3).map(task => (
+                          {dayTasks.slice(0, 2).map(task => (
                             <div
                               key={task.id}
                               onClick={e => handleTaskClick(task, e)}
                               className={cn(
-                                'px-2 py-1 rounded text-xs truncate cursor-pointer hover:shadow-sm',
+                                'px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-[10px] sm:text-xs truncate cursor-pointer hover:shadow-sm',
                                 getTaskColor(task)
                               )}
                             >
@@ -361,8 +380,8 @@ export default function CalendarPage() {
 
       {/* Week View */}
       {view === 'week' && (
-        <div className="flex-1 overflow-hidden rounded-xl border bg-card">
-          <div className="flex border-b bg-muted/50">
+        <div className="flex-1 overflow-x-auto rounded-xl border bg-card">
+          <div className="flex border-b bg-muted/50 min-w-[700px] sm:min-w-full">
             {Array.from({ length: 7 }, (_, i) => {
               const day = addDays(startOfWeek(currentDate), i)
               const dayTasks = tasksByDate[format(day, 'yyyy-MM-dd')] || []
@@ -372,7 +391,7 @@ export default function CalendarPage() {
                 <div
                   key={i}
                   className={cn(
-                    'flex-1 min-w-0 border-r p-3',
+                    'flex-1 min-w-[100px] sm:min-w-0 border-r p-2 sm:p-3',
                     today && 'bg-primary/10'
                   )}
                 >
@@ -381,11 +400,11 @@ export default function CalendarPage() {
                     today && 'text-primary font-bold'
                   )}>
                     <div>
-                      <p className="text-sm text-muted-foreground">{format(day, 'EEE')}</p>
-                      <p className="text-lg font-medium">{format(day, 'd')}</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{format(day, 'EEE')}</p>
+                      <p className="text-base sm:text-lg font-medium">{format(day, 'd')}</p>
                     </div>
                     {dayTasks.length > 0 && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-[10px] sm:text-xs">
                         {dayTasks.length}
                       </Badge>
                     )}
@@ -397,11 +416,11 @@ export default function CalendarPage() {
                           key={task.id}
                           onClick={e => handleTaskClick(task, e)}
                           className={cn(
-                            'px-3 py-2 rounded-lg cursor-pointer hover:shadow-sm border-l-4',
+                            'px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg cursor-pointer hover:shadow-sm border-l-4',
                             getTaskColor(task).replace('text-', 'border-')
                           )}
                         >
-                          <p className="font-medium truncate">{task.title}</p>
+                          <p className="font-medium text-xs sm:text-sm truncate">{task.title}</p>
                           <div className="flex items-center gap-1 mt-1 flex-wrap">
                             {task.organization && (
                               <Badge variant="outline" className="text-[9px] h-3 px-1 py-0">{task.organization.name}</Badge>
@@ -410,7 +429,7 @@ export default function CalendarPage() {
                               <Badge variant="secondary" className="text-[9px] h-3 px-1 py-0">{task.project.name}</Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-2 mt-1 text-[10px] sm:text-xs text-muted-foreground">
                             {task.assignee && (
                               <span className="flex items-center gap-1">
                                 <User className="h-3 w-3" />

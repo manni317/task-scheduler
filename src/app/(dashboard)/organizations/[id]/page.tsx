@@ -452,25 +452,25 @@ export default function OrganizationDetailPage() {
   }
 
   return (
-    <div className="h-full flex flex-col space-y-6 max-w-7xl mx-auto pb-10">
-      <div className="flex items-start justify-between bg-card p-6 rounded-2xl border shadow-sm">
-        <div className="flex items-center gap-6">
-          <Button variant="ghost" size="icon" onClick={() => router.push('/organizations')} className="h-10 w-10 shrink-0 rounded-full bg-muted/50 hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
+    <div className="h-full flex flex-col space-y-4 sm:space-y-6 max-w-7xl mx-auto pb-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-card p-4 sm:p-6 rounded-2xl border shadow-sm gap-4">
+        <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+          <Button variant="ghost" size="icon" onClick={() => router.push('/organizations')} className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full bg-muted/50 hover:bg-muted">
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
           
-          <div className="flex items-center gap-5">
-            <div className="h-20 w-20 rounded-2xl border-2 border-primary/20 bg-primary/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            <div className="h-14 w-14 sm:h-18 sm:w-18 rounded-2xl border-2 border-primary/20 bg-primary/5 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
               {org.logo_url ? (
-                <img src={org.logo_url} alt={org.name} className="h-full w-full object-contain p-2" />
+                <img src={org.logo_url} alt={org.name} className="h-full w-full object-contain p-1.5 sm:p-2" />
               ) : (
-                <Building2 className="h-8 w-8 text-primary/40" />
+                <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary/40" />
               )}
             </div>
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-foreground">{org.name}</h1>
-              <p className="text-muted-foreground mt-1 max-w-xl line-clamp-2">
-                {org.description || 'No description provided. Click edit to add one.'}
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-foreground truncate">{org.name}</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 max-w-xl line-clamp-2">
+                {org.description || 'No description provided.'}
               </p>
             </div>
           </div>
@@ -479,7 +479,7 @@ export default function OrganizationDetailPage() {
         {isManagerOrAdmin && (
           <Dialog open={isEditOrgModalOpen} onOpenChange={setIsEditOrgModalOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2 shadow-sm">
+              <Button variant="outline" size="sm" className="gap-2 shadow-sm shrink-0 self-end sm:self-auto">
                 <Settings className="h-4 w-4" /> Edit Profile
               </Button>
             </DialogTrigger>
@@ -569,10 +569,10 @@ export default function OrganizationDetailPage() {
       </div>
 
       <Tabs defaultValue="projects" className="flex-1 flex flex-col">
-        <TabsList>
-          <TabsTrigger value="projects">Projects ({projects.length})</TabsTrigger>
-          <TabsTrigger value="departments">Departments ({departments.length})</TabsTrigger>
-          <TabsTrigger value="members">Members ({orgMembers.length})</TabsTrigger>
+        <TabsList className="grid grid-cols-3 sm:flex sm:w-auto h-auto p-1">
+          <TabsTrigger value="projects" className="py-2 text-xs sm:text-sm">Projects ({projects.length})</TabsTrigger>
+          <TabsTrigger value="departments" className="py-2 text-xs sm:text-sm">Departments ({departments.length})</TabsTrigger>
+          <TabsTrigger value="members" className="py-2 text-xs sm:text-sm">Members ({orgMembers.length})</TabsTrigger>
         </TabsList>
         
         <TabsContent value="projects" className="flex-1 mt-4">

@@ -169,85 +169,87 @@ export default function TasksPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground">Manage and track all your tasks</p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tasks</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Manage and track all your tasks</p>
         </div>
         {(userRole === 'admin' || userRole === 'manager') && (
-          <Button onClick={openCreateTaskModal} className="gap-2 bg-primary">
+          <Button onClick={openCreateTaskModal} className="gap-2 bg-primary self-start sm:self-auto">
             <Plus className="h-4 w-4" />
             New Task
           </Button>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-4 mb-6">
-        <div className="relative w-[250px] shrink-0">
+      <div className="flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-4 mb-6">
+        <div className="relative w-full sm:w-[240px] shrink-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search tasks..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-9 w-full"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="todo">To Do</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="review">Review</SelectItem>
-            <SelectItem value="done">Done</SelectItem>
-            <SelectItem value="overdue">Overdue</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Priority" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Priorities</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="urgent">Urgent</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Assignee" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Assignees</SelectItem>
-            <SelectItem value="">Unassigned</SelectItem>
-            {users.map(user => (
-              <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={projectFilter} onValueChange={setProjectFilter}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Project" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Projects</SelectItem>
-            <SelectItem value="">No Project</SelectItem>
-            {projects.map(project => (
-              <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-[130px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="todo">To Do</SelectItem>
+              <SelectItem value="in_progress">In Progress</SelectItem>
+              <SelectItem value="review">Review</SelectItem>
+              <SelectItem value="done">Done</SelectItem>
+              <SelectItem value="overdue">Overdue</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <SelectTrigger className="w-full sm:w-[130px]">
+              <SelectValue placeholder="Priority" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Priorities</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="urgent">Urgent</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Assignee" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Assignees</SelectItem>
+              <SelectItem value="">Unassigned</SelectItem>
+              {users.map(user => (
+                <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={projectFilter} onValueChange={setProjectFilter}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              <SelectItem value="">No Project</SelectItem>
+              {projects.map(project => (
+                <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-        <TabsList className="mb-4 flex flex-wrap h-auto w-full sm:w-auto">
-          <TabsTrigger value="board" className="flex-1 sm:flex-none py-2">Kanban Board</TabsTrigger>
-          <TabsTrigger value="list" className="flex-1 sm:flex-none py-2">List View</TabsTrigger>
-          <TabsTrigger value="calendar" className="flex-1 sm:flex-none py-2">Calendar</TabsTrigger>
+        <TabsList className="mb-4 grid grid-cols-3 sm:flex sm:w-auto h-auto p-1">
+          <TabsTrigger value="board" className="py-2 text-xs sm:text-sm">Board</TabsTrigger>
+          <TabsTrigger value="list" className="py-2 text-xs sm:text-sm">List</TabsTrigger>
+          <TabsTrigger value="calendar" className="py-2 text-xs sm:text-sm">Calendar</TabsTrigger>
         </TabsList>
 
         <TabsContent value="board" className="min-h-[600px]">

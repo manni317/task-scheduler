@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { ProjectCard } from './ProjectCard'
 import { ProjectForm } from './ProjectForm'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Project, User } from '@/types/task'
-import { Plus, Search, Filter, Grid, List } from 'lucide-react'
+import { Plus, Search, Filter, Grid, List, FolderKanban, Edit, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface ProjectListProps {
@@ -83,21 +82,24 @@ export function ProjectList({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex-1 max-w-md">
+      {/* Header & Filter Controls */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+        <div className="relative w-full md:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search projects..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-9 w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {organizations.length > 0 && (
             <select
               value={filterOrg}
               onChange={e => setFilterOrg(e.target.value)}
-              className="border rounded-md px-3 py-2 text-sm bg-background max-w-[150px] truncate"
+              className="border rounded-md px-2.5 py-1.5 text-xs sm:text-sm bg-background flex-1 sm:flex-none max-w-[140px] truncate"
             >
               <option value="all">All Orgs</option>
               {organizations.map(org => (
@@ -109,9 +111,9 @@ export function ProjectList({
             <select
               value={filterDept}
               onChange={e => setFilterDept(e.target.value)}
-              className="border rounded-md px-3 py-2 text-sm bg-background max-w-[150px] truncate"
+              className="border rounded-md px-2.5 py-1.5 text-xs sm:text-sm bg-background flex-1 sm:flex-none max-w-[140px] truncate"
             >
-              <option value="all">All Departments</option>
+              <option value="all">All Depts</option>
               {departments.map(dept => (
                 <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
@@ -120,30 +122,35 @@ export function ProjectList({
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value as any)}
-            className="border rounded-md px-3 py-2 text-sm bg-background"
+            className="border rounded-md px-2.5 py-1.5 text-xs sm:text-sm bg-background flex-1 sm:flex-none"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
             <option value="archived">Archived</option>
           </select>
-          <div className="flex border rounded-md overflow-hidden">
+
+          <div className="flex border rounded-md overflow-hidden shrink-0">
             <button
               onClick={() => setViewMode('grid')}
-              className={cn('p-2 transition-colors', viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              className={cn('p-1.5 sm:p-2 transition-colors', viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              aria-label="Grid view"
             >
               <Grid className="h-4 w-4" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={cn('p-2 transition-colors', viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              className={cn('p-1.5 sm:p-2 transition-colors', viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted')}
+              aria-label="List view"
             >
               <List className="h-4 w-4" />
             </button>
           </div>
+
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button disabled={userRole === 'doer'} className={userRole === 'doer' ? 'hidden' : ''}>
-                <Plus className="h-4 w-4 mr-2" /> New Project
+              <Button disabled={userRole === 'doer'} className={cn("gap-1.5 shrink-0 ml-auto md:ml-0", userRole === 'doer' && 'hidden')}>
+                <Plus className="h-4 w-4" />
+                <span>New Project</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -219,14 +226,20 @@ export function ProjectList({
       )}
 
       {filteredProjects.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-          <FolderKanban className="h-12 w-12 mb-4 opacity-50" />
-          <h3 className="text-lg font-medium mb-1">No projects found</h3>
-          <p className="text-sm">Create your first project to get started</p>
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center text-muted-foreground border border-dashed rounded-2xl bg-card/40 my-4">
+          <div className="h-14 w-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <FolderKanban className="h-7 w-7" />
+          </div>
+          <h3 className="text-lg font-semibold text-foreground mb-1">No projects found</h3>
+          <p className="text-sm max-w-sm mb-6">Create your first project to organize your team and track milestones.</p>
+          {userRole !== 'doer' && (
+            <Button onClick={() => { setEditingProject(null); setDialogOpen(true); }} className="gap-2 bg-primary">
+              <Plus className="h-4 w-4" />
+              Create Project
+            </Button>
+          )}
         </div>
       )}
     </div>
   )
 }
-
-import { FolderKanban, Edit, Trash2 } from 'lucide-react'
