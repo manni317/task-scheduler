@@ -10,7 +10,8 @@ import { DashboardHero } from '@/components/dashboard/DashboardHero'
 import { Task, User } from '@/types/task'
 import { createBrowserClient } from '@supabase/ssr'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, Filter, Building2, FolderKanban, Users } from 'lucide-react'
+import { Loader2, Filter, Building2, FolderKanban, Users, Flame, LayoutDashboard } from 'lucide-react'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
 import Link from 'next/link'
@@ -27,6 +28,31 @@ export default function DashboardPage() {
   const [selectedOrgId, setSelectedOrgId] = useState<string>('all')
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all')
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('all')
+  const [activeTab, setActiveTab] = useState<'overview' | 'workload'>('overview')
+
+  // Check URL query for tab (e.g. ?tab=workload)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tabParam = params.get('tab')
+    if (tabParam === 'workload' || tabParam === 'heatmap') {
+      setActiveTab('workload')
+    } else if (tabParam === 'overview') {
+      setActiveTab('overview')
+    }
+  }, [])
+
+  const handleTabChange = (val: string) => {
+    const tabVal = val as 'overview' | 'workload'
+    setActiveTab(tabVal)
+    const params = new URLSearchParams(window.location.search)
+    if (tabVal === 'workload') {
+      params.set('tab', 'workload')
+    } else {
+      params.delete('tab')
+    }
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`
+    window.history.replaceState({}, '', newUrl)
+  }
 
   // Auto-spawn recurring daily tasks and check for overdue tasks in background
   useEffect(() => {
@@ -276,30 +302,58 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <StatsCards stats={stats} userRole={userRole} />
-
-      {/* Employee Workload Heatmap */}
-      <div className="w-full min-w-0">
-        <WorkloadHeatmap tasks={tasks} users={users} />
-      </div>
-
-      {(userRole === 'admin' || userRole === 'manager') ? (
-        <>
-          <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
-            <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>
-            <div className="min-w-0"><EmployeePerformanceTable data={performanceData} users={users} /></div>
-          </div>
-
-          <div className="grid gap-6 w-full min-w-0">
-            <div className="min-w-0"><OverdueTable tasks={displayTasks} users={users} /></div>
-          </div>
-        </>
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
-          <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>
-          <div className="min-w-0"><OverdueTable tasks={displayTasks} users={users} /></div>
+      {/* Dashboard View Tabs */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <TabsList className="bg-card/90 border border-border/80 shadow-sm p-1 rounded-2xl h-auto flex flex-wrap">
+            <TabsTrigger 
+              value="overview" 
+              className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Executive Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="workload" 
+              className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+            >
+              <Flame className="h-4 w-4 text-amber-500 data-[state=active]:text-primary-foreground" />
+              Workload Heatmap
+              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-muted text-foreground data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground">
+                {users.length} Members
+              </span>
+            </TabsTrigger>
+          </TabsList>
         </div>
-      )}
+
+        {/* Overview Tab: Lean, Fast Executive Overview */}
+        <TabsContent value="overview" className="space-y-6 mt-0 animate-in fade-in-50 duration-200">
+          <StatsCards stats={stats} userRole={userRole} />
+
+          {(userRole === 'admin' || userRole === 'manager') ? (
+            <>
+              <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
+                <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>
+                <div className="min-w-0"><EmployeePerformanceTable data={performanceData} users={users} /></div>
+              </div>
+
+              <div className="grid gap-6 w-full min-w-0">
+                <div className="min-w-0"><OverdueTable tasks={displayTasks} users={users} /></div>
+              </div>
+            </>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-2 w-full min-w-0">
+              <div className="min-w-0"><UpcomingDeadlines tasks={displayTasks} users={users} /></div>
+              <div className="min-w-0"><OverdueTable tasks={displayTasks} users={users} /></div>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Workload Heatmap Tab: Dedicated Team Bandwidth & Per-Employee Task Inspector */}
+        <TabsContent value="workload" className="space-y-6 mt-0 animate-in fade-in-50 duration-200">
+          <WorkloadHeatmap tasks={tasks} users={users} projects={projects} />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

@@ -135,6 +135,7 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
   useEffect(() => {
     if (isOpen) {
       if (taskDefaults?.projectId) setProjectId(taskDefaults.projectId)
+      if (taskDefaults?.assigneeId) setAssigneeId(taskDefaults.assigneeId)
       
       // Fetch available projects and users
       const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)

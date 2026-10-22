@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ChevronDown,
   Calendar,
+  Flame,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useUIStore } from '@/hooks/use-ui-store'
@@ -31,6 +32,7 @@ const mainNavigation = [
 ]
 
 const secondaryNavigation = [
+  { name: 'Workload Heatmap', href: '/dashboard?tab=workload', icon: Flame },
   { name: 'Team', href: '/team', icon: Users },
   { name: 'Archived', href: '/archived', icon: Archive },
   { name: 'Settings', href: '/settings', icon: Settings },
