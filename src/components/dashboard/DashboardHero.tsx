@@ -86,9 +86,9 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
         </div>
 
         {avatarUrl && (
-          <div className="hidden sm:block shrink-0 self-start">
-            <div className="h-18 w-18 rounded-full border-2 border-white/40 p-1 backdrop-blur-xl bg-white/10 shadow-lg">
-              <img src={avatarUrl} alt={userName} className="h-full w-full rounded-full object-cover" />
+          <div className="hidden sm:flex shrink-0 self-start items-center">
+            <div className="w-16 h-16 rounded-full border-2 border-white/50 p-1 backdrop-blur-xl bg-white/10 shadow-xl overflow-hidden aspect-square">
+              <img src={avatarUrl} alt={userName} className="h-full w-full rounded-full object-cover aspect-square" />
             </div>
           </div>
         )}
