@@ -76,7 +76,7 @@ export default function ProjectsPage() {
       const mappedProjects = (projectsData || []).map((p: any) => {
         const projectMembers = Array.isArray(p.member_ids) && p.member_ids.length > 0
           ? mappedUsers.filter((u: any) => p.member_ids.includes(u.id))
-          : mappedUsers
+          : []
 
         return {
           id: p.id,

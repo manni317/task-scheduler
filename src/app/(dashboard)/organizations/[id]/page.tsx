@@ -109,24 +109,30 @@ export default function OrganizationDetailPage() {
         .select('*')
         .eq('org_id', orgId)
 
-      const mappedProjects = (projectsData || []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        description: p.description || '',
-        key: p.key_prefix || 'PRJ',
-        orgId: p.org_id,
-        departmentId: p.department_id,
-        department: currentDepts.find((d: any) => d.id === p.department_id),
-        color: '#3B82F6',
-        icon: '📁',
-        ownerId: '',
-        owner: null,
-        members: mappedUsers,
-        tasks: [],
-        createdAt: new Date(p.created_at || Date.now()),
-        updatedAt: new Date(p.updated_at || Date.now()),
-        isArchived: false,
-      }))
+      const mappedProjects = (projectsData || []).map((p: any) => {
+        const projectMembers = Array.isArray(p.member_ids) && p.member_ids.length > 0
+          ? mappedUsers.filter((u: any) => p.member_ids.includes(u.id))
+          : []
+
+        return {
+          id: p.id,
+          name: p.name,
+          description: p.description || '',
+          key: p.key_prefix || 'PRJ',
+          orgId: p.org_id,
+          departmentId: p.department_id,
+          department: currentDepts.find((d: any) => d.id === p.department_id),
+          color: '#3B82F6',
+          icon: '📁',
+          ownerId: '',
+          owner: null,
+          members: projectMembers,
+          tasks: [],
+          createdAt: new Date(p.created_at || Date.now()),
+          updatedAt: new Date(p.updated_at || Date.now()),
+          isArchived: false,
+        }
+      })
 
       setProjects(mappedProjects)
 

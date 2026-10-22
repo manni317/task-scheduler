@@ -1,11 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Users, FolderKanban, Clock, TrendingUp, MoreHorizontal, Edit, Trash2, Archive, Building2, Layers } from 'lucide-react'
-import { format } from 'date-fns'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Users, FolderKanban, TrendingUp, MoreHorizontal, Edit, Trash2, Archive, Building2, Layers } from 'lucide-react'
 import { Project, User } from '@/types/task'
 import { cn } from '@/lib/utils'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
@@ -89,7 +86,7 @@ export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, on
         </div>
       </CardHeader>
       
-      <CardContent className="pb-3">
+      <CardContent className="pb-4">
         {project.description && (
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
         )}
@@ -130,27 +127,6 @@ export function ProjectCard({ project, userRole = 'manager', onClick, onEdit, on
           </div>
         </div>
       </CardContent>
-
-      <CardFooter className="pt-0 border-t">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            {project.members?.slice(0, 3).map((member: User) => (
-              <Avatar key={member.id} className="h-6 w-6 ring-2 ring-background -ml-1">
-                <AvatarImage src={member.avatar} alt={member.name} />
-                <AvatarFallback>{member.name[0]}</AvatarFallback>
-              </Avatar>
-            ))}
-            {(project.members?.length || 0) > 3 && (
-              <Badge variant="outline" className="text-xs ml-1">
-                +{(project.members?.length || 0) - 3}
-              </Badge>
-            )}
-          </div>
-          <span className="text-xs text-muted-foreground">
-            Updated {format(new Date(project.updatedAt), 'MMM d')}
-          </span>
-        </div>
-      </CardFooter>
     </Card>
   )
 }
