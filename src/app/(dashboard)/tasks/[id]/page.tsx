@@ -47,7 +47,7 @@ export default function TaskDetailPage() {
           reporterId: taskData.reporter_id || null,
           reporter: mappedUsers.find(u => u.id === taskData.reporter_id),
           dueDate: taskData.due_date ? new Date(taskData.due_date) : undefined,
-          estimatedHours: taskData.estimated_hours || 0,
+          estimatedHours: taskData.time_spent || 0,
           tags: taskData.tags || [],
           checklistItems: taskData.sub_tasks ? taskData.sub_tasks.map((st: any) => ({
             id: st.id,
@@ -80,7 +80,7 @@ export default function TaskDetailPage() {
     return <div className="p-8 text-center">Loading task details...</div>
   }
 
-  const handleUpdate = async (data: Partial<Task>) => {
+  const handleUpdate = async (data: Partial<Task> & { syncChecklist?: boolean }) => {
     // Optimistic UI update
     queryClient.setQueryData(['task', taskId], (oldData: any) => {
       if (!oldData || !oldData.task) return oldData
@@ -93,7 +93,7 @@ export default function TaskDetailPage() {
     try {
       const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
-      // Build update object - always update status if provided
+      // Build update object - only valid columns of tasks table!
       const updateObj: any = {
         updated_at: new Date().toISOString(),
       }
@@ -105,14 +105,18 @@ export default function TaskDetailPage() {
       if (data.projectId !== undefined) updateObj.project_id = data.projectId
       if (data.assigneeId !== undefined) updateObj.assignee_id = data.assigneeId === 'unassigned' ? null : data.assigneeId
       if (data.dueDate !== undefined) updateObj.due_date = data.dueDate?.toISOString() || null
-      if (data.startDate !== undefined) updateObj.start_date = data.startDate?.toISOString() || null
-      if (data.estimatedHours !== undefined) updateObj.estimated_hours = data.estimatedHours
+      if (data.estimatedHours !== undefined) updateObj.time_spent = Math.round(Number(data.estimatedHours) || 0)
       if (data.rejectionReason !== undefined) updateObj.rejection_reason = data.rejectionReason
 
-      await supabase.from('tasks').update(updateObj).eq('id', taskId)
+      const { error: updateError } = await supabase.from('tasks').update(updateObj).eq('id', taskId)
+      if (updateError) {
+        console.error('Update failed in Supabase:', updateError)
+        queryClient.invalidateQueries({ queryKey: ['task', taskId] })
+        throw updateError
+      }
 
-      // Sync checklist items if provided
-      if (data.checklistItems && data.title) {
+      // Sync checklist items ONLY if explicitly requested from task edit form
+      if (data.syncChecklist && data.checklistItems) {
         await supabase.from('sub_tasks').delete().eq('task_id', taskId)
         
         if (data.checklistItems.length > 0) {

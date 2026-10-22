@@ -129,7 +129,7 @@ export function TaskDetail({
   const handleStatusUpdate = async (newStatus: string, note?: string, extraUpdateData?: Partial<Task>) => {
     setIsUpdatingStatus(true)
     try {
-      await onUpdate({ ...task, status: newStatus as any, ...extraUpdateData })
+      await onUpdate({ id: task.id, status: newStatus as any, ...extraUpdateData })
       // Save activity log
       if (userId) {
         await supabase.from('task_updates').insert({
@@ -140,7 +140,10 @@ export function TaskDetail({
         })
         await loadUpdates()
       }
-      toast.success(newStatus === 'review' ? 'Submitted for review!' : `Status updated to ${newStatus}`)
+      toast.success(newStatus === 'review' ? 'Submitted for review!' : `Status updated to ${newStatus.replace('_', ' ')}`)
+    } catch (err: any) {
+      console.error('Failed to update status', err)
+      toast.error('Failed to update status: ' + (err?.message || 'Server error'))
     } finally {
       setIsUpdatingStatus(false)
     }
@@ -351,7 +354,7 @@ export function TaskDetail({
                   <DialogHeader><DialogTitle>Edit Task</DialogTitle></DialogHeader>
                   <ErrorBoundary>
                     <TaskForm initialData={task} users={users} projects={projects}
-                      onSubmit={async (data) => { await onUpdate({ ...data, id: task.id } as any); setEditDialogOpen(false) }}
+                      onSubmit={async (data) => { await onUpdate({ ...data, id: task.id, syncChecklist: true } as any); setEditDialogOpen(false) }}
                       onCancel={() => setEditDialogOpen(false)}
                     />
                   </ErrorBoundary>
@@ -493,7 +496,7 @@ export function TaskDetail({
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="sm" onClick={() => { setIsEditingDesc(false); setEditedDesc(task.description || '') }}>Cancel</Button>
               <Button size="sm" onClick={async () => {
-                await onUpdate({ ...task, description: editedDesc })
+                await onUpdate({ id: task.id, description: editedDesc })
                 setIsEditingDesc(false)
               }}>Save</Button>
             </div>
@@ -552,7 +555,7 @@ export function TaskDetail({
               {userRole === 'manager' || userRole === 'admin' ? (
                 <Select
                   value={currentPriority}
-                  onValueChange={(val: any) => onUpdate({ ...task, priority: val })}
+                  onValueChange={(val: any) => onUpdate({ id: task.id, priority: val })}
                 >
                   <SelectTrigger className="mt-1 w-full sm:w-[180px] h-8 text-xs capitalize">
                     <SelectValue placeholder="Select Priority" />
@@ -576,7 +579,7 @@ export function TaskDetail({
               {userRole === 'manager' || userRole === 'admin' ? (
                 <Select
                   value={task.assigneeId || 'unassigned'}
-                  onValueChange={(val) => onUpdate({ ...task, assigneeId: val === 'unassigned' ? null : val })}
+                  onValueChange={(val) => onUpdate({ id: task.id, assigneeId: val === 'unassigned' ? null : val })}
                 >
                   <SelectTrigger className="mt-1 w-full sm:w-[220px] h-8 text-xs">
                     <SelectValue />
