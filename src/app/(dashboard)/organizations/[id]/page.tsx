@@ -274,6 +274,7 @@ export default function OrganizationDetailPage() {
         description: data.description,
         org_id: orgId, // Force bind to this org
         department_id: data.departmentId || null,
+        member_ids: data.memberIds || [],
       }
 
       const { error } = await supabase.from('projects').insert([newProject])
@@ -293,6 +294,7 @@ export default function OrganizationDetailPage() {
         name: data.name,
         description: data.description,
         department_id: data.departmentId || null,
+        member_ids: data.memberIds || [],
       }).eq('id', data.id)
       
       if (error) throw error

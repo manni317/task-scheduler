@@ -51,31 +51,53 @@ export default function ProjectsPage() {
       const userRole = profile?.role || 'employee'
       const userId = profile?.id
 
-      if (userRole === 'employee' && userId) {
+      if ((userRole === 'employee' || userRole === 'doer') && userId) {
         const { data: userTasks } = await supabase.from('tasks').select('project_id').eq('assignee_id', userId)
-        const allowedProjectIds = new Set((userTasks || []).map(t => t.project_id))
-        projectsData = (projectsData || []).filter(p => allowedProjectIds.has(p.id))
+        const allowedTaskProjectIds = new Set((userTasks || []).map((t: any) => t.project_id).filter(Boolean))
+
+        // Get organizations user belongs to
+        const { data: userOrgs } = await supabase
+          .from('organization_members')
+          .select('org_id, organization_id')
+          .eq('user_id', userId)
+
+        const userOrgIds = new Set(
+          (userOrgs || []).map((o: any) => o.org_id || o.organization_id).filter(Boolean)
+        )
+
+        projectsData = (projectsData || []).filter((p: any) => {
+          const isDirectMember = Array.isArray(p.member_ids) && p.member_ids.includes(userId)
+          const hasTask = allowedTaskProjectIds.has(p.id)
+          const isOrgMember = p.org_id && userOrgIds.has(p.org_id)
+          return isDirectMember || hasTask || isOrgMember
+        })
       }
 
-      const mappedProjects = (projectsData || []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        description: p.description || '',
-        key: p.key_prefix || 'PRJ',
-        orgId: p.org_id,
-        organization: orgsData?.find((o: any) => o.id === p.org_id),
-        departmentId: p.department_id,
-        department: deptsData?.find((d: any) => d.id === p.department_id),
-        color: '#3B82F6',
-        icon: '📁',
-        ownerId: '',
-        owner: null,
-        members: mappedUsers,
-        tasks: [],
-        createdAt: new Date(p.created_at || Date.now()),
-        updatedAt: new Date(p.updated_at || Date.now()),
-        isArchived: false,
-      }))
+      const mappedProjects = (projectsData || []).map((p: any) => {
+        const projectMembers = Array.isArray(p.member_ids) && p.member_ids.length > 0
+          ? mappedUsers.filter((u: any) => p.member_ids.includes(u.id))
+          : mappedUsers
+
+        return {
+          id: p.id,
+          name: p.name,
+          description: p.description || '',
+          key: p.key_prefix || 'PRJ',
+          orgId: p.org_id,
+          organization: orgsData?.find((o: any) => o.id === p.org_id),
+          departmentId: p.department_id,
+          department: deptsData?.find((d: any) => d.id === p.department_id),
+          color: '#3B82F6',
+          icon: '📁',
+          ownerId: '',
+          owner: null,
+          members: projectMembers,
+          tasks: [],
+          createdAt: new Date(p.created_at || Date.now()),
+          updatedAt: new Date(p.updated_at || Date.now()),
+          isArchived: false,
+        }
+      })
       
       setProjects(mappedProjects)
     } catch (err: any) {
@@ -96,10 +118,23 @@ export default function ProjectsPage() {
         description: data.description,
         org_id: data.orgId || null,
         department_id: data.departmentId || null,
+        member_ids: data.memberIds || [],
       }
 
-      const { error } = await supabase.from('projects').insert([newProject])
+      const { data: createdProj, error } = await supabase.from('projects').insert([newProject]).select().single()
       if (error) throw error
+
+      // Ensure members belong to organization if orgId is set
+      if (data.orgId && data.memberIds && data.memberIds.length > 0) {
+        for (const mId of data.memberIds) {
+          await supabase.from('organization_members').insert({
+            org_id: data.orgId,
+            organization_id: data.orgId,
+            user_id: mId,
+            role: 'member'
+          }).catch(() => {})
+        }
+      }
       
       toast.success('Project created successfully!')
       fetchData()
@@ -115,6 +150,7 @@ export default function ProjectsPage() {
         name: data.name,
         description: data.description,
         department_id: data.departmentId || null,
+        member_ids: data.memberIds || [],
       }).eq('id', data.id)
       
       if (error) throw error

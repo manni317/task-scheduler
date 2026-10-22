@@ -149,6 +149,17 @@ export default function ProjectDetailPage() {
     const newMemberIds = [...currentMembers.map(m => m.id), userIdToAdd]
     try {
       await supabase.from('projects').update({ member_ids: newMemberIds }).eq('id', project!.id)
+      
+      // Also ensure member belongs to project's organization
+      if (project?.orgId) {
+        await supabase.from('organization_members').insert({
+          org_id: project.orgId,
+          organization_id: project.orgId,
+          user_id: userIdToAdd,
+          role: 'member'
+        }).catch(() => {})
+      }
+
       const userObj = users.find(u => u.id === userIdToAdd)
       if (userObj) {
         setProject(prev => prev ? { ...prev, members: [...prev.members, userObj] } : prev)
