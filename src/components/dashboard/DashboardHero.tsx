@@ -12,9 +12,61 @@ interface DashboardHeroProps {
   avatarUrl?: string
 }
 
+const THEME_BANNER_MAP: Record<string, { gradient: string; shadow: string; glow1: string; glow2: string }> = {
+  aurora: {
+    gradient: 'from-indigo-600 via-purple-600 to-pink-500',
+    shadow: 'shadow-indigo-500/25',
+    glow1: 'bg-white/25',
+    glow2: 'bg-amber-400/25',
+  },
+  ocean: {
+    gradient: 'from-blue-600 via-sky-600 to-cyan-500',
+    shadow: 'shadow-blue-500/25',
+    glow1: 'bg-cyan-300/30',
+    glow2: 'bg-blue-400/25',
+  },
+  emerald: {
+    gradient: 'from-emerald-600 via-teal-600 to-cyan-500',
+    shadow: 'shadow-emerald-500/25',
+    glow1: 'bg-emerald-300/30',
+    glow2: 'bg-teal-400/25',
+  },
+  sunset: {
+    gradient: 'from-rose-600 via-orange-600 to-amber-500',
+    shadow: 'shadow-orange-500/25',
+    glow1: 'bg-amber-300/30',
+    glow2: 'bg-rose-400/25',
+  },
+  cyberpunk: {
+    gradient: 'from-fuchsia-600 via-pink-600 to-violet-600',
+    shadow: 'shadow-fuchsia-500/25',
+    glow1: 'bg-cyan-300/30',
+    glow2: 'bg-pink-400/25',
+  },
+  midnight: {
+    gradient: 'from-zinc-950 via-slate-900 to-amber-600',
+    shadow: 'shadow-amber-500/20',
+    glow1: 'bg-amber-400/30',
+    glow2: 'bg-yellow-500/20',
+  },
+  ruby: {
+    gradient: 'from-red-600 via-rose-600 to-pink-600',
+    shadow: 'shadow-red-500/25',
+    glow1: 'bg-rose-300/30',
+    glow2: 'bg-red-400/25',
+  },
+  slate: {
+    gradient: 'from-slate-800 via-slate-900 to-indigo-950',
+    shadow: 'shadow-slate-600/25',
+    glow1: 'bg-sky-400/25',
+    glow2: 'bg-indigo-400/20',
+  },
+}
+
 export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardHeroProps) {
   const router = useRouter()
-  const { currentTheme } = useColorTheme()
+  const { colorTheme } = useColorTheme()
+  const themeStyle = THEME_BANNER_MAP[colorTheme] || THEME_BANNER_MAP.aurora
   const firstName = userName?.split(' ')[0] || 'User'
 
   const [time, setTime] = useState<Date | null>(null)
@@ -57,13 +109,13 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
   return (
     <div className={cn(
       "relative overflow-hidden rounded-[2.25rem] p-6 sm:p-9 bg-gradient-to-br shadow-2xl text-white animate-in fade-in slide-in-from-bottom-4 duration-500 border border-white/20 transition-all duration-500",
-      currentTheme.bannerGradient,
-      currentTheme.bannerShadow
+      themeStyle.gradient,
+      themeStyle.shadow
     )}>
       
       {/* Decorative Lighting Accents */}
-      <div className={cn("absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[3.5rem] pointer-events-none transition-colors duration-500", currentTheme.bannerGlow1)} />
-      <div className={cn("absolute -bottom-32 -left-32 w-80 h-80 rounded-full blur-[3.5rem] pointer-events-none transition-colors duration-500", currentTheme.bannerGlow2)} />
+      <div className={cn("absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[3.5rem] pointer-events-none transition-colors duration-500", themeStyle.glow1)} />
+      <div className={cn("absolute -bottom-32 -left-32 w-80 h-80 rounded-full blur-[3.5rem] pointer-events-none transition-colors duration-500", themeStyle.glow2)} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
