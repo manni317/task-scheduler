@@ -92,6 +92,98 @@
     --warning: 38 95% 52%;
     --warning-foreground: 0 0% 100%;
   }
+
+  /* Theme Custom Color Palettes */
+  :root[data-color-theme="ocean"] {
+    --primary: 217 91% 55%;
+    --ring: 217 91% 55%;
+    --accent: 214 95% 95%;
+    --accent-foreground: 217 91% 45%;
+  }
+  .dark[data-color-theme="ocean"], [data-color-theme="ocean"].dark {
+    --primary: 212 96% 63%;
+    --ring: 212 96% 63%;
+    --accent: 217 50% 18%;
+    --accent-foreground: 212 96% 75%;
+  }
+
+  :root[data-color-theme="emerald"] {
+    --primary: 158 82% 38%;
+    --ring: 158 82% 38%;
+    --accent: 152 75% 94%;
+    --accent-foreground: 158 82% 28%;
+  }
+  .dark[data-color-theme="emerald"], [data-color-theme="emerald"].dark {
+    --primary: 156 72% 48%;
+    --ring: 156 72% 48%;
+    --accent: 158 50% 16%;
+    --accent-foreground: 156 72% 75%;
+  }
+
+  :root[data-color-theme="sunset"] {
+    --primary: 16 90% 54%;
+    --ring: 16 90% 54%;
+    --accent: 20 95% 95%;
+    --accent-foreground: 16 90% 45%;
+  }
+  .dark[data-color-theme="sunset"], [data-color-theme="sunset"].dark {
+    --primary: 20 95% 62%;
+    --ring: 20 95% 62%;
+    --accent: 20 50% 18%;
+    --accent-foreground: 20 95% 75%;
+  }
+
+  :root[data-color-theme="cyberpunk"] {
+    --primary: 292 84% 52%;
+    --ring: 292 84% 52%;
+    --accent: 292 84% 96%;
+    --accent-foreground: 292 84% 45%;
+  }
+  .dark[data-color-theme="cyberpunk"], [data-color-theme="cyberpunk"].dark {
+    --primary: 292 90% 66%;
+    --ring: 292 90% 66%;
+    --accent: 292 50% 18%;
+    --accent-foreground: 292 90% 78%;
+  }
+
+  :root[data-color-theme="midnight"] {
+    --primary: 38 92% 50%;
+    --ring: 38 92% 50%;
+    --accent: 42 95% 95%;
+    --accent-foreground: 38 92% 35%;
+  }
+  .dark[data-color-theme="midnight"], [data-color-theme="midnight"].dark {
+    --primary: 43 96% 56%;
+    --ring: 43 96% 56%;
+    --accent: 38 50% 18%;
+    --accent-foreground: 43 96% 75%;
+  }
+
+  :root[data-color-theme="ruby"] {
+    --primary: 348 83% 53%;
+    --ring: 348 83% 53%;
+    --accent: 348 85% 96%;
+    --accent-foreground: 348 83% 40%;
+  }
+  .dark[data-color-theme="ruby"], [data-color-theme="ruby"].dark {
+    --primary: 348 88% 62%;
+    --ring: 348 88% 62%;
+    --accent: 348 50% 18%;
+    --accent-foreground: 348 88% 75%;
+  }
+
+  :root[data-color-theme="slate"] {
+    --primary: 222 47% 42%;
+    --ring: 222 47% 42%;
+    --accent: 220 25% 94%;
+    --accent-foreground: 222 47% 30%;
+  }
+  .dark[data-color-theme="slate"], [data-color-theme="slate"].dark {
+    --primary: 217 91% 68%;
+    --ring: 217 91% 68%;
+    --accent: 222 30% 18%;
+    --accent-foreground: 217 91% 80%;
+  }
 }
 
 @layer base {

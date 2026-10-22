@@ -4,6 +4,7 @@ import { Bell, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useColorTheme } from '@/contexts/ColorThemeContext'
 
 interface DashboardHeroProps {
   userName: string
@@ -13,6 +14,7 @@ interface DashboardHeroProps {
 
 export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardHeroProps) {
   const router = useRouter()
+  const { currentTheme } = useColorTheme()
   const firstName = userName?.split(' ')[0] || 'User'
 
   const [time, setTime] = useState<Date | null>(null)
@@ -53,11 +55,15 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[2.25rem] p-6 sm:p-9 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 shadow-2xl shadow-indigo-500/25 text-white animate-in fade-in slide-in-from-bottom-4 duration-500 border border-white/20">
+    <div className={cn(
+      "relative overflow-hidden rounded-[2.25rem] p-6 sm:p-9 bg-gradient-to-br shadow-2xl text-white animate-in fade-in slide-in-from-bottom-4 duration-500 border border-white/20 transition-all duration-500",
+      currentTheme.bannerGradient,
+      currentTheme.bannerShadow
+    )}>
       
       {/* Decorative Lighting Accents */}
-      <div className="absolute -top-32 -right-32 w-80 h-80 bg-white/25 rounded-full blur-[3.5rem] pointer-events-none" />
-      <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-amber-400/25 rounded-full blur-[3.5rem] pointer-events-none" />
+      <div className={cn("absolute -top-32 -right-32 w-80 h-80 rounded-full blur-[3.5rem] pointer-events-none transition-colors duration-500", currentTheme.bannerGlow1)} />
+      <div className={cn("absolute -bottom-32 -left-32 w-80 h-80 rounded-full blur-[3.5rem] pointer-events-none transition-colors duration-500", currentTheme.bannerGlow2)} />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">

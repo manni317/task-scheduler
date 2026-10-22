@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar, Zap } from 'lucide-react'
+import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar, Zap, Palette, Check } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { useColorTheme, COLOR_THEMES } from '@/contexts/ColorThemeContext'
 import { cn } from '@/lib/utils'
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
@@ -32,6 +33,7 @@ export function Header() {
   const pathname = usePathname()
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const { colorTheme, setColorTheme } = useColorTheme()
   const { profile } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -291,10 +293,47 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} title="Toggle Light/Dark">
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
+
+          {/* Quick Color Theme Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" title="Change Color Theme" className="hover:text-primary">
+                <Palette className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-xl border-border/80">
+              <DropdownMenuLabel className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider px-2 py-1 flex items-center justify-between">
+                <span>Color Palette</span>
+                <Link href="/settings" className="text-[10px] text-primary hover:underline lowercase font-normal">more in settings</Link>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="grid grid-cols-1 gap-1 max-h-64 overflow-y-auto">
+                {COLOR_THEMES.map(t => (
+                  <DropdownMenuItem
+                    key={t.id}
+                    onClick={() => {
+                      setColorTheme(t.id)
+                      toast.success(`Theme set to ${t.name}`)
+                    }}
+                    className={cn(
+                      "flex items-center justify-between px-2.5 py-2 rounded-xl cursor-pointer text-xs font-semibold transition-colors",
+                      colorTheme === t.id ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted"
+                    )}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className={cn("h-3.5 w-3.5 rounded-full shadow-sm bg-gradient-to-r shrink-0", t.previewGradient)} />
+                      <span>{t.name}</span>
+                    </div>
+                    {colorTheme === t.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  </DropdownMenuItem>
+                ))}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
