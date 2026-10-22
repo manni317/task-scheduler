@@ -120,10 +120,13 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
 
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3 drop-shadow-sm">
-            {getGreeting()} <br className="sm:hidden" />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3 drop-shadow-sm flex items-center flex-wrap gap-x-2.5">
+            <span>{getGreeting()}</span>
             <span className="bg-gradient-to-r from-white via-white to-pink-100 bg-clip-text text-transparent">
-              {firstName}! 👋
+              {firstName}!
+            </span>
+            <span className="animate-waving-hand select-none cursor-default drop-shadow-sm text-3xl sm:text-4xl md:text-5xl" role="img" aria-label="wave">
+              👋
             </span>
           </h1>
           

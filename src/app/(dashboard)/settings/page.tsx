@@ -302,8 +302,9 @@ export default function SettingsPage() {
                         <Sparkles className="w-3 h-3" />
                         Preview Mode
                       </div>
-                      <h3 className="text-2xl sm:text-3xl font-black tracking-tight">
-                        Good Afternoon, {profile?.full_name?.split(' ')[0] || 'User'}! 👋
+                      <h3 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2">
+                        <span>Good Afternoon, {profile?.full_name?.split(' ')[0] || 'User'}!</span>
+                        <span className="animate-waving-hand select-none text-2xl sm:text-3xl" role="img" aria-label="wave">👋</span>
                       </h3>
                       <p className="text-white/85 text-xs sm:text-sm font-medium mt-1">Ready to conquer your day?</p>
                     </div>
