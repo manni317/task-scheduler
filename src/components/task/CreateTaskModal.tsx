@@ -217,48 +217,45 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Blurred Overlay */}
       <div 
-        className="absolute inset-0 bg-background/40 backdrop-blur-md transition-opacity"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm dark:bg-black/60 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Container */}
       <div 
-        className="relative w-full sm:w-11/12 max-w-2xl max-h-[90vh] h-full sm:h-auto overflow-y-auto rounded-t-[2rem] sm:rounded-[2rem] border border-white/10 bg-slate-950 p-6 shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-300 fixed sm:relative bottom-0 sm:bottom-auto inset-x-0"
-        style={{
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1)',
-        }}
+        className="relative w-full sm:w-11/12 max-w-2xl max-h-[90vh] h-full sm:h-auto overflow-y-auto rounded-t-[2.25rem] sm:rounded-[2.25rem] border border-border/80 bg-card text-card-foreground p-6 sm:p-7 shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 sm:fade-in sm:zoom-in-95 duration-300 fixed sm:relative bottom-0 sm:bottom-auto inset-x-0"
       >
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 rounded-full p-2 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+          className="absolute right-5 top-5 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <X className="h-5 w-5" />
         </button>
 
-        <h2 className="mb-6 text-2xl font-semibold text-white">Create New Task</h2>
+        <h2 className="mb-6 text-2xl font-bold tracking-tight text-foreground">Create New Task</h2>
 
         <div className="space-y-5">
           {/* Title */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-white/70">Task Title</label>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Task Title</label>
             <input
               type="text"
               placeholder="e.g., Design user flow for onboarding"
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white placeholder:text-white/30 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all"
+              className="w-full rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 focus:bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-white/70">Description</label>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</label>
             <textarea
               placeholder="Add details about the task..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white placeholder:text-white/30 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all resize-none"
+              className="w-full rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 focus:bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium resize-none"
             />
           </div>
 
@@ -266,12 +263,12 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {/* Assign To */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-white/70">Assign To (Role)</label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Assign To (Role)</label>
               <Select value={assigneeId} onValueChange={setAssigneeId}>
-                <SelectTrigger className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-6 text-left text-white/80 transition-all hover:bg-black/40 focus:ring-1 focus:ring-primary/50">
+                <SelectTrigger className="w-full h-12 rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 px-4 py-3 text-left text-foreground transition-all focus:ring-2 focus:ring-primary/20">
                   <SelectValue placeholder="Select Doer/Manager" />
                 </SelectTrigger>
-                <SelectContent className="z-[110] bg-[#0f111a]/95 border-white/10 text-white backdrop-blur-xl">
+                <SelectContent className="z-[110] bg-popover border-border text-popover-foreground shadow-2xl rounded-2xl">
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {availableUsers.map(u => (
                     <SelectItem key={u.id} value={u.id}>{u.full_name}</SelectItem>
@@ -281,13 +278,13 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
             </div>
 
             {/* Voice Recording */}
-            <div className="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-black/20 p-4 min-h-[120px]">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-border/70 bg-muted/30 p-4 min-h-[120px]">
               {audioUrl ? (
                 <div className="w-full flex flex-col items-center gap-3">
-                  <audio src={audioUrl} controls className="w-full h-8 [&::-webkit-media-controls-panel]:bg-white/10 [&::-webkit-media-controls-current-time-display]:text-white [&::-webkit-media-controls-time-remaining-display]:text-white" />
+                  <audio src={audioUrl} controls className="w-full h-9" />
                   <button 
                     onClick={clearAudio}
-                    className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 transition-colors bg-red-400/10 px-3 py-1.5 rounded-full"
+                    className="flex items-center gap-2 text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors px-3 py-1.5 rounded-full"
                   >
                     <Trash2 className="h-3 w-3" /> Re-record
                   </button>
@@ -297,18 +294,18 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                   <button
                     onClick={toggleRecording}
                     className={cn(
-                      "relative flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300",
+                      "relative flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 shadow-md",
                       isRecording 
-                        ? "bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)] animate-pulse" 
-                        : "bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:scale-110 hover:bg-cyan-400"
+                        ? "bg-red-500 shadow-red-500/50 animate-pulse text-white" 
+                        : "bg-primary text-primary-foreground shadow-primary/30 hover:scale-105 hover:brightness-110 active:scale-95"
                     )}
                   >
                     {isRecording && (
                       <span className="absolute -inset-2 rounded-full border border-red-500/50 animate-ping" />
                     )}
-                    {isRecording ? <StopCircle className="h-6 w-6 text-white" /> : <Mic className="h-6 w-6 text-white" />}
+                    {isRecording ? <StopCircle className="h-6 w-6 text-white" /> : <Mic className="h-6 w-6" />}
                   </button>
-                  <span className={cn("mt-2 text-xs font-medium transition-colors", isRecording ? "text-red-400 font-bold" : "text-white/60")}>
+                  <span className={cn("mt-2 text-xs font-semibold transition-colors", isRecording ? "text-red-500 font-bold" : "text-muted-foreground")}>
                     {isRecording ? `Recording... ${formatTime(recordingDuration)}` : "Record Voice Note"}
                   </span>
                 </>
@@ -319,18 +316,18 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
           <div className="grid grid-cols-2 gap-4">
             {/* Project */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-white/70">Project</label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Project</label>
               <Select value={projectId} onValueChange={setProjectId}>
-                <SelectTrigger className="w-full h-12 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-left text-white/80 transition-all hover:bg-black/40 focus:ring-1 focus:ring-primary/50">
+                <SelectTrigger className="w-full h-12 rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 px-4 py-3 text-left text-foreground transition-all focus:ring-2 focus:ring-primary/20">
                   <SelectValue placeholder="Select Project" />
                 </SelectTrigger>
-                <SelectContent className="z-[110] bg-[#0f111a]/95 border-white/10 text-white backdrop-blur-xl">
+                <SelectContent className="z-[110] bg-popover border-border text-popover-foreground shadow-2xl rounded-2xl">
                   <SelectItem value="unassigned">Direct Task (No Project)</SelectItem>
                   {availableProjects.map(p => (
                     <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                   ))}
                   {availableProjects.length === 0 && (
-                    <div className="px-2 py-2 text-sm text-white/50">No projects found</div>
+                    <div className="px-2 py-2 text-sm text-muted-foreground">No projects found</div>
                   )}
                 </SelectContent>
               </Select>
@@ -338,12 +335,12 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
             
             {/* Priority */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-white/70">Priority</label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Priority</label>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="w-full h-12 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-left text-white/80 transition-all hover:bg-black/40 focus:ring-1 focus:ring-primary/50">
+                <SelectTrigger className="w-full h-12 rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 px-4 py-3 text-left text-foreground transition-all focus:ring-2 focus:ring-primary/20">
                   <SelectValue placeholder="Select Priority" />
                 </SelectTrigger>
-                <SelectContent className="z-[110] bg-[#0f111a]/95 border-white/10 text-white backdrop-blur-xl">
+                <SelectContent className="z-[110] bg-popover border-border text-popover-foreground shadow-2xl rounded-2xl">
                   <SelectItem value="low">
                     <span className="flex items-center gap-2 text-sm"><span className="h-2 w-2 rounded-full bg-blue-500"></span>Low</span>
                   </SelectItem>
@@ -363,21 +360,21 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
 
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-white/70">Due Date</label>
+              <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Due Date</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <button className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-left text-white/80 transition-all hover:bg-black/40">
-                    <span className="text-sm">{dueDate ? format(dueDate, 'PPP') : 'Select Date'}</span>
-                    <Calendar className="h-4 w-4 text-white/50" />
+                  <button className="flex w-full items-center justify-between rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 px-4 py-3 text-left text-foreground transition-all focus:ring-2 focus:ring-primary/20">
+                    <span className="text-sm font-medium">{dueDate ? format(dueDate, 'PPP') : 'Select Date'}</span>
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="z-[110] w-auto p-0 border-white/10 bg-[#0f111a]" align="start">
+                <PopoverContent className="z-[110] w-auto p-2 border-border bg-popover text-popover-foreground rounded-2xl shadow-2xl" align="start">
                   <CalendarPicker
                     mode="single"
                     selected={dueDate}
                     onSelect={setDueDate}
                     initialFocus
-                    className="bg-[#0f111a] text-white rounded-xl"
+                    className="bg-popover text-foreground rounded-xl"
                   />
                 </PopoverContent>
               </Popover>
@@ -386,12 +383,12 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
 
           {/* Tags */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-white/70">Tags</label>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Tags</label>
             <div className="flex flex-wrap gap-2 mb-2">
               {tags.map(tag => (
-                <Badge key={tag} variant="secondary" className="bg-primary/20 text-primary border-primary/30 gap-1 rounded-lg">
+                <Badge key={tag} variant="secondary" className="bg-primary/10 text-primary border-primary/20 gap-1.5 rounded-xl px-2.5 py-1 text-xs font-semibold">
                   {tag}
-                  <button onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-red-400">
+                  <button onClick={() => setTags(tags.filter(t => t !== tag))} className="hover:text-destructive transition-colors">
                     <X className="h-3 w-3" />
                   </button>
                 </Badge>
@@ -404,25 +401,25 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 value={newTag}
                 onChange={e => setNewTag(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="w-full sm:w-1/2 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-primary focus:outline-none"
+                className="w-full sm:w-1/2 rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 focus:bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
-              <button type="button" onClick={handleAddTag} className="rounded-xl bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20">Add</button>
+              <button type="button" onClick={handleAddTag} className="rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 text-xs font-bold transition-colors">Add</button>
             </div>
           </div>
 
           {/* Checklist */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-white/70">Checklist</label>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Checklist</label>
             <div className="space-y-2 mb-3 max-h-32 overflow-y-auto">
               {checklistItems.map(item => (
-                <div key={item.id} className="flex items-center gap-3 bg-black/10 p-2 rounded-lg border border-white/5">
+                <div key={item.id} className="flex items-center gap-3 bg-muted/40 p-2.5 rounded-xl border border-border/60">
                   <Checkbox 
                     checked={item.completed}
                     onCheckedChange={(c) => setChecklistItems(items => items.map(i => i.id === item.id ? { ...i, completed: !!c } : i))}
-                    className="border-white/30 data-[state=checked]:bg-primary"
+                    className="border-muted-foreground data-[state=checked]:bg-primary"
                   />
-                  <span className={cn("text-sm flex-1", item.completed ? "text-white/40 line-through" : "text-white/90")}>{item.title}</span>
-                  <button onClick={() => setChecklistItems(items => items.filter(i => i.id !== item.id))} className="text-white/40 hover:text-red-400">
+                  <span className={cn("text-sm flex-1 font-medium", item.completed ? "text-muted-foreground line-through" : "text-foreground")}>{item.title}</span>
+                  <button onClick={() => setChecklistItems(items => items.filter(i => i.id !== item.id))} className="text-muted-foreground hover:text-destructive transition-colors">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -435,26 +432,26 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
                 value={newChecklistItem}
                 onChange={e => setNewChecklistItem(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleAddChecklistItem())}
-                className="flex-1 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white placeholder:text-white/30 focus:border-primary focus:outline-none"
+                className="flex-1 rounded-2xl border border-input bg-muted/30 hover:bg-muted/50 focus:bg-background px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
-              <button type="button" onClick={handleAddChecklistItem} className="rounded-xl bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20">Add</button>
+              <button type="button" onClick={handleAddChecklistItem} className="rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 text-xs font-bold transition-colors">Add</button>
             </div>
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="mt-8 flex items-center justify-end gap-3">
+        <div className="mt-8 flex items-center justify-end gap-3 pt-4 border-t border-border/60">
           <button 
             onClick={onClose}
             disabled={isLoading}
-            className="rounded-xl px-5 py-2.5 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:opacity-50"
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             Cancel
           </button>
           <button 
             onClick={handleCreateTask}
             disabled={isLoading}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition-all hover:scale-105 hover:shadow-cyan-500/50 disabled:opacity-50 disabled:hover:scale-100"
+            className="flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground px-6 py-2.5 text-sm font-bold shadow-lg shadow-primary/25 transition-all hover:scale-[1.02] active:scale-[0.98] hover:shadow-primary/40 disabled:opacity-50 disabled:hover:scale-100"
           >
             {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
             {isLoading ? 'Creating...' : 'Create Task'}
