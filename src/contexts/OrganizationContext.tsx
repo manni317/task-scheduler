@@ -34,35 +34,33 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 
     try {
       setIsLoading(true)
-      // Fetch orgs where user is a member
-      const { data, error } = await supabase
+      // 1. Fetch org IDs where user is a member
+      const { data: memberRows, error: memberError } = await supabase
         .from('organization_members')
-        .select(`
-          org_id,
-          organization_id,
-          organizations (
-            id,
-            name,
-            business_type,
-            description,
-            created_at,
-            logo_url
-          )
-        `)
+        .select('org_id')
         .eq('user_id', profile.id)
 
-      if (error) throw error
+      if (memberError) throw memberError
 
-      if (data && data.length > 0) {
-        const orgs = data
-          .filter((item: any) => item.organizations)
-          .map((item: any) => ({
-            id: item.organizations.id,
-            name: item.organizations.name,
-            businessType: item.organizations.business_type || 'general',
-            description: item.organizations.description,
-            createdAt: new Date(item.organizations.created_at)
-          }))
+      const orgIds = (memberRows || []).map((m: any) => m.org_id).filter(Boolean)
+
+      if (orgIds.length > 0) {
+        // 2. Fetch those organizations directly
+        const { data: orgsData, error: orgsError } = await supabase
+          .from('organizations')
+          .select('*')
+          .in('id', orgIds)
+          .order('created_at', { ascending: false })
+
+        if (orgsError) throw orgsError
+
+        const orgs = (orgsData || []).map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          businessType: item.business_type || 'general',
+          description: item.description,
+          createdAt: new Date(item.created_at)
+        }))
         
         setOrganizations(orgs)
         

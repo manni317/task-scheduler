@@ -20,12 +20,24 @@ export default function OrganizationsPage() {
     queryFn: async () => {
       const supabase = createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
       
-      const { data } = await supabase
+      const { data: orgsData, error: orgsError } = await supabase
         .from('organizations')
-        .select('*, organization_members(user_id, profiles(full_name, avatar_url))')
+        .select('*')
         .order('created_at', { ascending: false })
 
-      return data || []
+      if (orgsError) {
+        console.error('Error fetching organizations:', orgsError)
+        return []
+      }
+
+      const { data: membersData } = await supabase
+        .from('organization_members')
+        .select('org_id, user_id')
+
+      return (orgsData || []).map((org: any) => ({
+        ...org,
+        organization_members: (membersData || []).filter((m: any) => m.org_id === org.id || (m as any).organization_id === org.id)
+      }))
     }
   })
 
