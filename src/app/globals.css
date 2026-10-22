@@ -16,8 +16,8 @@
       box-shadow: inset 0 0 20px 20px transparent;
   }
   :root {
-    /* EverSync inspired — clean off-white with Electric Blue accent */
-    --background: 220 20% 97%;
+    /* Ultra-clean modern porcelain with Electric Indigo accent */
+    --background: 220 25% 97.5%;
     --foreground: 224 71% 8%;
 
     --card: 0 0% 100%;
@@ -26,30 +26,30 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71% 8%;
 
-    /* Electric Blue — the hero color */
-    --primary: 221 100% 50%;
+    /* Electric Royal Indigo — vibrant, sleek, premium */
+    --primary: 234 89% 62%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 20% 93%;
     --secondary-foreground: 224 71% 20%;
 
     --muted: 220 20% 94%;
-    --muted-foreground: 220 15% 55%;
+    --muted-foreground: 220 15% 50%;
 
-    --accent: 221 100% 96%;
-    --accent-foreground: 221 100% 40%;
+    --accent: 234 89% 96%;
+    --accent-foreground: 234 89% 50%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 350 89% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 90%;
-    --input: 220 20% 92%;
-    --ring: 221 100% 50%;
+    --border: 220 20% 89%;
+    --input: 220 20% 91%;
+    --ring: 234 89% 62%;
 
-    /* Bigger radius = rounder = friendlier = EverSync vibe */
+    /* Bigger radius = rounder = friendlier */
     --radius: 1rem;
 
-    --success: 142 76% 36%;
+    --success: 152 70% 40%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
@@ -58,38 +58,38 @@
   }
 
   .dark {
-    /* Deep navy dark mode — still feels premium */
-    --background: 224 40% 7%;
-    --foreground: 220 20% 95%;
+    /* Deep luxury midnight slate — rich OLED feel */
+    --background: 224 45% 6.5%;
+    --foreground: 215 25% 95%;
 
-    --card: 224 35% 11%;
-    --card-foreground: 220 20% 95%;
+    --card: 224 40% 10%;
+    --card-foreground: 215 25% 95%;
 
-    --popover: 224 35% 11%;
-    --popover-foreground: 220 20% 95%;
+    --popover: 224 40% 10%;
+    --popover-foreground: 215 25% 95%;
 
-    --primary: 221 100% 58%;
+    --primary: 234 95% 66%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 224 30% 16%;
-    --secondary-foreground: 220 20% 85%;
+    --secondary: 224 30% 15%;
+    --secondary-foreground: 215 25% 85%;
 
-    --muted: 224 30% 15%;
-    --muted-foreground: 220 15% 55%;
+    --muted: 224 30% 14%;
+    --muted-foreground: 220 15% 58%;
 
-    --accent: 221 60% 18%;
-    --accent-foreground: 221 100% 75%;
+    --accent: 234 50% 18%;
+    --accent-foreground: 234 95% 78%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 350 78% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 224 25% 18%;
-    --input: 224 25% 17%;
-    --ring: 221 100% 58%;
+    --border: 224 25% 17%;
+    --input: 224 25% 16%;
+    --ring: 234 95% 66%;
 
-    --success: 142 70% 45%;
+    --success: 152 70% 48%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
+    --warning: 38 95% 52%;
     --warning-foreground: 0 0% 100%;
   }
 }
@@ -99,11 +99,23 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground min-h-screen;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(234, 89%, 64%, 0.06) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(280, 84%, 60%, 0.04) 0px, transparent 40%),
+      radial-gradient(at 50% 100%, hsla(210, 100%, 56%, 0.04) 0px, transparent 50%);
+    background-attachment: fixed;
     font-family: var(--font-sans), 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     font-feature-settings: 'rlig' 1, 'calt' 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+  .dark body {
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(234, 89%, 64%, 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(280, 84%, 60%, 0.07) 0px, transparent 40%),
+      radial-gradient(at 50% 100%, hsla(210, 100%, 56%, 0.06) 0px, transparent 50%);
+    background-attachment: fixed;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-sans), 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;

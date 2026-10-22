@@ -109,17 +109,18 @@ export function TaskDetail({
   const currentPriority = normalizePriority(task.priority)
 
   const priorityColors: Record<string, string> = {
-    low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-    high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-    urgent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    low: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 shadow-sm shadow-sky-500/5 font-semibold',
+    medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-sm shadow-amber-500/5 font-semibold',
+    high: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 shadow-sm shadow-orange-500/5 font-semibold',
+    urgent: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-sm shadow-rose-500/5 font-semibold',
   }
 
   const statusColors: Record<string, string> = {
-    todo: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-    in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    review: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    done: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    todo: 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border border-slate-500/20 font-semibold',
+    in_progress: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shadow-sm shadow-indigo-500/5 font-semibold',
+    review: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shadow-sm shadow-purple-500/5 font-semibold',
+    approved: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5 font-semibold',
+    done: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm shadow-emerald-500/5 font-semibold',
   }
 
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
@@ -266,9 +267,9 @@ export function TaskDetail({
   const userInitial = userName?.charAt(0)?.toUpperCase() || 'U'
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-card/85 dark:bg-card/75 backdrop-blur-xl rounded-[2rem] border border-border/70 shadow-xl shadow-black/5 dark:shadow-black/20 overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start justify-between gap-4 p-4 border-b">
+      <div className="flex flex-col lg:flex-row items-start justify-between gap-4 p-5 sm:p-6 border-b border-border/60 bg-muted/20">
         <div className="flex-1 min-w-0 w-full">
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <h1 className="text-xl md:text-2xl font-bold w-full lg:w-auto">{task.title}</h1>
@@ -515,7 +516,7 @@ export function TaskDetail({
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab as any} className="flex-1 overflow-hidden">
-        <TabsList className="border-b px-4 w-full justify-start rounded-none h-auto flex-wrap gap-1 py-2">
+        <TabsList className="border-b border-border/60 bg-muted/20 px-4 sm:px-6 w-full justify-start rounded-none h-auto flex-wrap gap-1.5 py-2.5 backdrop-blur-sm">
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="checklist">Checklist ({task.checklistItems?.filter(c => c.completed).length || 0}/{task.checklistItems?.length || 0})</TabsTrigger>
           <TabsTrigger value="comments">Updates ({updates.length})</TabsTrigger>

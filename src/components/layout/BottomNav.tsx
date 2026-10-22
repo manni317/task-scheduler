@@ -38,7 +38,7 @@ export function BottomNav() {
       style={{ width: isManager ? '92%' : '88%', maxWidth: '440px' }}
       aria-label="Bottom navigation"
     >
-      <div className="relative flex h-[64px] items-center justify-around rounded-[22px] bg-card border border-border shadow-xl shadow-black/10 dark:shadow-black/30 px-2">
+      <div className="relative flex h-[66px] items-center justify-around rounded-[26px] bg-card/90 dark:bg-card/80 backdrop-blur-2xl border border-border/70 shadow-2xl shadow-indigo-500/10 dark:shadow-black/50 px-2">
 
         {navigation.map((item, idx) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -64,15 +64,15 @@ export function BottomNav() {
               >
                 {/* active pill indicator */}
                 {isActive && (
-                  <span className="absolute -top-px left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
+                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-primary shadow-sm shadow-primary/50" />
                 )}
                 <div className={cn(
                   'flex items-center justify-center h-8 w-8 rounded-xl transition-all duration-200',
-                  isActive ? 'bg-primary/10' : ''
+                  isActive ? 'bg-primary/15 text-primary scale-105 shadow-sm shadow-primary/10' : ''
                 )}>
                   <Icon className={cn('h-[18px] w-[18px]', isActive ? 'stroke-[2.5px]' : 'stroke-[1.8px]')} aria-hidden="true" />
                 </div>
-                <span className={cn('text-[10px] font-semibold leading-none', isActive ? 'text-primary' : '')}>
+                <span className={cn('text-[10px] font-bold leading-none tracking-tight', isActive ? 'text-primary' : '')}>
                   {item.name}
                 </span>
               </Link>

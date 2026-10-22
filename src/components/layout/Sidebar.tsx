@@ -99,16 +99,17 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
                       <Link
                         href={item.href}
                         className={cn(
-                          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                          'group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                           isActive
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm shadow-primary/5 dark:bg-primary/15'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
                           !isOpen && 'justify-center px-2'
                         )}
                         title={isOpen ? undefined : item.name}
                       >
-                        <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                        {isOpen && <span>{item.name}</span>}
+                        {isActive && <div className="absolute left-1 top-2.5 bottom-2.5 w-1 rounded-full bg-primary" />}
+                        <Icon className={cn("h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-105", isActive ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
+                        {isOpen && <span className="ml-0.5">{item.name}</span>}
                       </Link>
                     </li>
                   )
@@ -146,16 +147,17 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
                       <Link
                         href={item.href}
                         className={cn(
-                          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                          'group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                           isActive
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                            ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm shadow-primary/5 dark:bg-primary/15'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
                           !isOpen && 'justify-center px-2'
                         )}
                         title={isOpen ? undefined : item.name}
                       >
-                        <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                        {isOpen && <span>{item.name}</span>}
+                        {isActive && <div className="absolute left-1 top-2.5 bottom-2.5 w-1 rounded-full bg-primary" />}
+                        <Icon className={cn("h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-105", isActive ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
+                        {isOpen && <span className="ml-0.5">{item.name}</span>}
                       </Link>
                     </li>
                   )

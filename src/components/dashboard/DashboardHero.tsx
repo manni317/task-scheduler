@@ -53,24 +53,27 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[2rem] p-6 sm:p-8 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-xl shadow-purple-500/20 text-white animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="relative overflow-hidden rounded-[2.25rem] p-6 sm:p-9 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 shadow-2xl shadow-indigo-500/25 text-white animate-in fade-in slide-in-from-bottom-4 duration-500 border border-white/20">
       
-      {/* Decorative Blur Orbs */}
-      <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/20 rounded-full blur-[3rem] pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-orange-400/30 rounded-full blur-[3rem] pointer-events-none" />
+      {/* Decorative Lighting Accents */}
+      <div className="absolute -top-32 -right-32 w-80 h-80 bg-white/25 rounded-full blur-[3.5rem] pointer-events-none" />
+      <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-amber-400/25 rounded-full blur-[3.5rem] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-3 drop-shadow-sm">
             {getGreeting()} <br className="sm:hidden" />
-            {firstName}! 👋
+            <span className="bg-gradient-to-r from-white via-white to-pink-100 bg-clip-text text-transparent">
+              {firstName}! 👋
+            </span>
           </h1>
           
-          <div className="flex flex-col gap-2">
-            <p className="text-white/80 font-medium">Ready to conquer your day?</p>
+          <div className="flex flex-col gap-2.5">
+            <p className="text-white/90 text-sm sm:text-base font-semibold drop-shadow-sm">Ready to conquer your day?</p>
             
-            <div className="flex items-center gap-2 mt-1 text-white/90 bg-black/10 w-fit px-3.5 py-2 rounded-full backdrop-blur-md border border-white/20 text-sm font-semibold shadow-inner">
-              <Clock className="w-4 h-4 opacity-80" />
+            <div className="flex items-center gap-2 mt-0.5 text-white bg-black/15 w-fit px-4 py-2 rounded-full backdrop-blur-xl border border-white/20 text-xs sm:text-sm font-semibold shadow-inner">
+              <Clock className="w-3.5 h-3.5 opacity-90 text-pink-200" />
               <span className="tabular-nums tracking-wide">{time ? `${formatDate()} • ${formatTime()}` : 'Loading...'}</span>
             </div>
           </div>
@@ -78,7 +81,7 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
 
         {avatarUrl && (
           <div className="hidden sm:block shrink-0 self-start">
-            <div className="h-16 w-16 rounded-full border-2 border-white/50 p-1 backdrop-blur-md bg-white/10">
+            <div className="h-18 w-18 rounded-full border-2 border-white/40 p-1 backdrop-blur-xl bg-white/10 shadow-lg">
               <img src={avatarUrl} alt={userName} className="h-full w-full rounded-full object-cover" />
             </div>
           </div>
@@ -90,18 +93,18 @@ export function DashboardHero({ userName, newTasksCount, avatarUrl }: DashboardH
           onClick={() => router.push('/tasks?filter=today')}
           className={cn(
             "relative z-10 mt-6 sm:mt-8 inline-flex items-center gap-3 rounded-full py-2.5 px-5 cursor-pointer",
-            "bg-white/20 backdrop-blur-md border border-white/30",
-            "hover:bg-white/30 transition-all duration-300 hover:scale-[1.02]",
-            "animate-pulse" // Subtle pulse animation for new tasks
+            "bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/40",
+            "transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
+            "shadow-lg shadow-black/10 animate-pulse"
           )}
         >
-          <div className="h-8 w-8 rounded-full bg-white text-pink-500 flex items-center justify-center shrink-0 shadow-sm">
+          <div className="h-8 w-8 rounded-full bg-white text-indigo-600 flex items-center justify-center shrink-0 shadow-md">
             <Bell className="h-4 w-4" />
           </div>
-          <span className="font-semibold text-sm sm:text-base">
+          <span className="font-bold text-sm sm:text-base">
             You have {newTasksCount} new task{newTasksCount > 1 ? 's' : ''} today
           </span>
-          <span className="ml-2 opacity-60">→</span>
+          <span className="ml-1 opacity-80 font-bold">→</span>
         </div>
       )}
     </div>

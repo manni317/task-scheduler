@@ -9,7 +9,7 @@ import { DashboardHero } from '@/components/dashboard/DashboardHero'
 import { Task, User } from '@/types/task'
 import { createBrowserClient } from '@supabase/ssr'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Filter, Building2, FolderKanban, Users } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/hooks/use-ui-store'
 import Link from 'next/link'
@@ -173,45 +173,56 @@ export default function DashboardPage() {
       />
 
       {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-card p-4 rounded-xl border shadow-sm">
-        <span className="text-sm font-medium text-muted-foreground hidden sm:inline-block">Filter Tasks:</span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card/75 dark:bg-card/60 p-4 sm:p-5 rounded-2xl border border-border/70 shadow-sm backdrop-blur-xl">
+        <div className="flex items-center gap-2 text-sm font-bold text-foreground/80">
+          <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+            <Filter className="h-4 w-4" />
+          </div>
+          <span>Filter Tasks</span>
+        </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <select 
-            value={selectedOrgId} 
-            onChange={(e) => { setSelectedOrgId(e.target.value); setSelectedProjectId('all') }}
-            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:bg-accent/50 cursor-pointer sm:min-w-[200px]"
-          >
-            <option value="all">All Organizations</option>
-            {organizations.map(org => (
-              <option key={org.id} value={org.id}>{org.name}</option>
-            ))}
-          </select>
-          <select 
-            value={selectedProjectId} 
-            onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50 hover:bg-accent/50 cursor-pointer sm:min-w-[200px]"
-            disabled={selectedOrgId !== 'all' && !projects.some(p => p.org_id === selectedOrgId)}
-          >
-            <option value="all">All Projects</option>
-            {projects
-              .filter(p => selectedOrgId === 'all' || p.org_id === selectedOrgId)
-              .map(project => (
-              <option key={project.id} value={project.id}>{project.name}</option>
-            ))}
-          </select>
-          {(userRole === 'admin' || userRole === 'manager') && (
+          <div className="relative flex-1 sm:flex-initial">
             <select 
-              value={selectedEmployeeId} 
-              onChange={(e) => setSelectedEmployeeId(e.target.value)}
-              className="h-9 px-3 rounded-md border border-input bg-background text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:bg-accent/50 cursor-pointer sm:min-w-[180px]"
+              value={selectedOrgId} 
+              onChange={(e) => { setSelectedOrgId(e.target.value); setSelectedProjectId('all') }}
+              className="h-10 w-full px-3.5 pr-8 rounded-xl border border-border/80 bg-background/90 hover:bg-card hover:border-primary/50 text-xs sm:text-sm font-semibold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 cursor-pointer sm:min-w-[190px]"
             >
-              <option value="all">All Employees</option>
-              {users
-                .filter(u => u.role !== 'admin' && u.role !== 'manager')
-                .map(emp => (
-                <option key={emp.id} value={emp.id}>{emp.name}</option>
+              <option value="all">🏢 All Organizations</option>
+              {organizations.map(org => (
+                <option key={org.id} value={org.id}>{org.name}</option>
               ))}
             </select>
+          </div>
+          <div className="relative flex-1 sm:flex-initial">
+            <select 
+              value={selectedProjectId} 
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className="h-10 w-full px-3.5 pr-8 rounded-xl border border-border/80 bg-background/90 hover:bg-card hover:border-primary/50 text-xs sm:text-sm font-semibold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-50 cursor-pointer sm:min-w-[190px]"
+              disabled={selectedOrgId !== 'all' && !projects.some(p => p.org_id === selectedOrgId)}
+            >
+              <option value="all">📁 All Projects</option>
+              {projects
+                .filter(p => selectedOrgId === 'all' || p.org_id === selectedOrgId)
+                .map(project => (
+                <option key={project.id} value={project.id}>{project.name}</option>
+              ))}
+            </select>
+          </div>
+          {(userRole === 'admin' || userRole === 'manager') && (
+            <div className="relative flex-1 sm:flex-initial">
+              <select 
+                value={selectedEmployeeId} 
+                onChange={(e) => setSelectedEmployeeId(e.target.value)}
+                className="h-10 w-full px-3.5 pr-8 rounded-xl border border-border/80 bg-background/90 hover:bg-card hover:border-primary/50 text-xs sm:text-sm font-semibold shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 cursor-pointer sm:min-w-[180px]"
+              >
+                <option value="all">👥 All Employees</option>
+                {users
+                  .filter(u => u.role !== 'admin' && u.role !== 'manager')
+                  .map(emp => (
+                  <option key={emp.id} value={emp.id}>{emp.name}</option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
       </div>

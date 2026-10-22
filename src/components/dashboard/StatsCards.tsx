@@ -12,49 +12,50 @@ interface StatCardProps {
   icon: React.ReactNode
   iconClass: string
   bgClass: string
+  glowBorderClass: string
+  glowShadowClass: string
   description?: string
   onClick?: () => void
 }
 
-function StatCard({ title, value, change, icon, iconClass, bgClass, description, onClick }: StatCardProps) {
+function StatCard({ title, value, change, icon, iconClass, bgClass, glowBorderClass, glowShadowClass, description, onClick }: StatCardProps) {
   const isPositive = change !== undefined ? change >= 0 : null
 
   return (
     <div 
       onClick={onClick}
       className={cn(
-        "group relative rounded-[1.5rem] border p-4 transition-all duration-300 overflow-hidden",
-        "bg-card/50 backdrop-blur-xl border-border/50",
-        "hover:shadow-lg hover:-translate-y-1",
-        onClick && "cursor-pointer active:scale-[0.98]",
-        // Subdued neon glow at the bottom matching the card's color theme
-        title === 'Total Tasks' && "shadow-[0_8px_30px_rgb(59,130,246,0.12)] dark:shadow-[0_8px_30px_rgb(59,130,246,0.05)]",
-        title === 'Completed' && "shadow-[0_8px_30px_rgb(16,185,129,0.12)] dark:shadow-[0_8px_30px_rgb(16,185,129,0.05)]",
-        title === 'In Progress' && "shadow-[0_8px_30px_rgb(245,158,11,0.12)] dark:shadow-[0_8px_30px_rgb(245,158,11,0.05)]",
-        title === 'Pending Review' && "shadow-[0_8px_30px_rgb(147,51,234,0.12)] dark:shadow-[0_8px_30px_rgb(147,51,234,0.05)]",
-        title === 'Overdue' && "shadow-[0_8px_30px_rgb(239,68,68,0.12)] dark:shadow-[0_8px_30px_rgb(239,68,68,0.05)]"
+        "group relative rounded-[1.75rem] border p-5 transition-all duration-300 overflow-hidden",
+        "bg-card/75 dark:bg-card/60 backdrop-blur-xl",
+        "hover:-translate-y-1 hover:scale-[1.01]",
+        glowBorderClass,
+        glowShadowClass,
+        onClick && "cursor-pointer active:scale-[0.98]"
       )}>
-      {/* Soft gradient background blob */}
+      {/* Top ambient highlight line */}
+      <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 dark:via-white/20 to-transparent" />
+      
+      {/* Ambient background bloom */}
       <div className={cn(
-        "absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-[2xl] opacity-50 dark:opacity-30 pointer-events-none",
-        bgClass.replace('100', '300').replace('900/40', '600')
+        "absolute -bottom-8 -right-8 w-28 h-28 rounded-full blur-[2.5rem] opacity-40 dark:opacity-25 pointer-events-none transition-opacity duration-300 group-hover:opacity-70",
+        bgClass
       )} />
 
-      <div className="flex items-center gap-3 mb-4">
-        <div className={cn('h-10 w-10 rounded-2xl flex items-center justify-center shrink-0', bgClass)}>
+      <div className="relative z-10 flex items-center gap-3.5 mb-4">
+        <div className={cn('h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 shadow-sm', bgClass)}>
           <span className={cn('', iconClass)}>{icon}</span>
         </div>
-        <p className="text-sm font-semibold text-foreground/80 tracking-tight leading-tight">{title}</p>
+        <p className="text-xs sm:text-sm font-bold text-foreground/85 tracking-tight leading-tight">{title}</p>
       </div>
 
-      <div className="text-3xl font-black text-foreground mb-1 tracking-tighter">
+      <div className="relative z-10 text-3xl sm:text-4xl font-extrabold text-foreground mb-1 tracking-tight">
         {value.toString().padStart(2, '0')}
       </div>
       
       {(change !== undefined || description) && (
-        <div className="mt-2">
+        <div className="relative z-10 mt-2">
           {change !== undefined ? (
-            <div className={cn('flex items-center gap-1 text-xs font-semibold', isPositive ? 'text-emerald-500' : 'text-red-500')}>
+            <div className={cn('flex items-center gap-1 text-xs font-bold', isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
               {isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
               <span>{isPositive ? '+' : ''}{change}%</span>
             </div>
@@ -88,8 +89,10 @@ export function StatsCards({ stats, userRole }: StatsCardsProps) {
       title: 'Total Tasks',
       value: stats.totalTasks,
       icon: <ListTodo className="h-5 w-5" />,
-      iconClass: 'text-blue-600 dark:text-blue-400',
-      bgClass: 'bg-blue-100 dark:bg-blue-900/40',
+      iconClass: 'text-indigo-600 dark:text-indigo-400',
+      bgClass: 'bg-gradient-to-br from-indigo-500/20 to-blue-500/10 border border-indigo-500/20',
+      glowBorderClass: 'border-indigo-500/25 hover:border-indigo-500/50',
+      glowShadowClass: 'shadow-[0_8px_30px_-6px_rgba(99,102,241,0.15)] dark:shadow-[0_8px_30px_-6px_rgba(99,102,241,0.08)] hover:shadow-[0_12px_36px_-4px_rgba(99,102,241,0.25)]',
       description: 'All assigned tasks',
       onClick: () => router.push('/tasks')
     },
@@ -99,7 +102,9 @@ export function StatsCards({ stats, userRole }: StatsCardsProps) {
       change: 5,
       icon: <CheckCircle className="h-5 w-5" />,
       iconClass: 'text-emerald-600 dark:text-emerald-400',
-      bgClass: 'bg-emerald-100 dark:bg-emerald-900/40',
+      bgClass: 'bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/20',
+      glowBorderClass: 'border-emerald-500/25 hover:border-emerald-500/50',
+      glowShadowClass: 'shadow-[0_8px_30px_-6px_rgba(16,185,129,0.15)] dark:shadow-[0_8px_30px_-6px_rgba(16,185,129,0.08)] hover:shadow-[0_12px_36px_-4px_rgba(16,185,129,0.25)]',
       onClick: () => router.push('/tasks?status=done')
     },
     {
@@ -107,7 +112,9 @@ export function StatsCards({ stats, userRole }: StatsCardsProps) {
       value: stats.inProgressTasks,
       icon: <Clock className="h-5 w-5" />,
       iconClass: 'text-amber-600 dark:text-amber-400',
-      bgClass: 'bg-amber-100 dark:bg-amber-900/40',
+      bgClass: 'bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/20',
+      glowBorderClass: 'border-amber-500/25 hover:border-amber-500/50',
+      glowShadowClass: 'shadow-[0_8px_30px_-6px_rgba(245,158,11,0.15)] dark:shadow-[0_8px_30px_-6px_rgba(245,158,11,0.08)] hover:shadow-[0_12px_36px_-4px_rgba(245,158,11,0.25)]',
       description: 'Currently active',
       onClick: () => router.push('/tasks?status=in_progress')
     },
@@ -119,7 +126,9 @@ export function StatsCards({ stats, userRole }: StatsCardsProps) {
       value: stats.reviewTasks,
       icon: <ClipboardCheck className="h-5 w-5" />,
       iconClass: 'text-purple-600 dark:text-purple-400',
-      bgClass: 'bg-purple-100 dark:bg-purple-900/40',
+      bgClass: 'bg-gradient-to-br from-purple-500/20 to-pink-500/10 border border-purple-500/20',
+      glowBorderClass: 'border-purple-500/25 hover:border-purple-500/50',
+      glowShadowClass: 'shadow-[0_8px_30px_-6px_rgba(168,85,247,0.15)] dark:shadow-[0_8px_30px_-6px_rgba(168,85,247,0.08)] hover:shadow-[0_12px_36px_-4px_rgba(168,85,247,0.25)]',
       description: 'Waiting for approval',
       onClick: () => router.push('/tasks?status=review')
     })
@@ -130,8 +139,10 @@ export function StatsCards({ stats, userRole }: StatsCardsProps) {
     value: stats.overdueTasks,
     change: stats.overdueTasks > 0 ? -stats.overdueTasks : 0,
     icon: <AlertTriangle className="h-5 w-5" />,
-    iconClass: 'text-red-600 dark:text-red-400',
-    bgClass: 'bg-red-100 dark:bg-red-900/40',
+    iconClass: 'text-rose-600 dark:text-rose-400',
+    bgClass: 'bg-gradient-to-br from-rose-500/20 to-red-500/10 border border-rose-500/20',
+    glowBorderClass: 'border-rose-500/25 hover:border-rose-500/50',
+    glowShadowClass: 'shadow-[0_8px_30px_-6px_rgba(244,63,94,0.15)] dark:shadow-[0_8px_30px_-6px_rgba(244,63,94,0.08)] hover:shadow-[0_12px_36px_-4px_rgba(244,63,94,0.25)]',
     onClick: () => router.push('/tasks?status=overdue')
   })
 

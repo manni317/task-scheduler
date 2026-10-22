@@ -34,24 +34,25 @@ export function TaskCard({
   const isDueTomorrow = dueDate && isTomorrow(dueDate)
 
   const priorityColors = {
-    low: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-    high: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-    urgent: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    low: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 font-semibold capitalize',
+    medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-semibold capitalize',
+    high: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 font-semibold capitalize',
+    urgent: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-semibold capitalize',
   }
 
   const statusColors = {
-    todo: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-    in_progress: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    review: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    done: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    todo: 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border border-slate-500/20 font-semibold',
+    in_progress: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-semibold',
+    review: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-semibold',
+    approved: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold',
+    done: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-semibold',
   }
 
   if (compact) {
     return (
       <div
         className={cn(
-          'group relative flex items-center gap-3 p-3 rounded-lg border bg-card transition-all hover:shadow-md',
+          'group relative flex items-center gap-3 p-3.5 rounded-xl border border-border/70 bg-card/80 backdrop-blur-xl transition-all duration-300 hover:shadow-md hover:border-primary/40',
           draggable && 'cursor-grab active:cursor-grabbing',
           task.isCompleted && 'opacity-60 line-through'
         )}
@@ -110,10 +111,10 @@ export function TaskCard({
   return (
     <div
       className={cn(
-        'group relative p-4 rounded-lg border bg-card shadow-sm transition-all hover:shadow-md',
+        'group relative p-4 rounded-2xl border border-border/70 bg-card/85 dark:bg-card/70 backdrop-blur-xl shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/40 hover:-translate-y-0.5',
         draggable && 'cursor-grab active:cursor-grabbing',
         task.isCompleted && 'opacity-60',
-        task.rejectionReason && task.status === 'in_progress' && 'border-red-400 bg-red-50/30 dark:bg-red-950/20'
+        task.rejectionReason && task.status === 'in_progress' && 'border-rose-400/80 bg-rose-500/10 dark:bg-rose-950/20'
       )}
       onClick={onClick}
       onDragStart={onDragStart}
