@@ -10,11 +10,12 @@ import { ProjectList } from '@/components/project/ProjectList'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { ArrowLeft, Plus, UserPlus, Settings, Upload, Loader2, Building2, Layers, Edit2, Trash2, FolderKanban, Users } from 'lucide-react'
+import { ArrowLeft, Plus, UserPlus, Settings, Upload, Loader2, Building2, Layers, Edit2, Trash2, FolderKanban, Users, Search } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useOrganization } from '@/contexts/OrganizationContext'
 import { Project, User } from '@/types/task'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
 
 export default function OrganizationDetailPage() {
   const params = useParams()
@@ -47,6 +48,7 @@ export default function OrganizationDetailPage() {
   const [isAddingMember, setIsAddingMember] = useState(false)
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false)
   const [selectedUsersToAdd, setSelectedUsersToAdd] = useState<string[]>([])
+  const [memberSearchQuery, setMemberSearchQuery] = useState('')
   
   const [isEditOrgModalOpen, setIsEditOrgModalOpen] = useState(false)
   const [editOrgData, setEditOrgData] = useState({ name: '', description: '', logoUrl: '' })
@@ -325,6 +327,7 @@ export default function OrganizationDetailPage() {
       const { error } = await supabase.from('organization_members').insert(
         selectedUsersToAdd.map(userId => ({
           org_id: orgId,
+          organization_id: orgId,
           user_id: userId,
           role: 'member'
         }))
@@ -333,12 +336,34 @@ export default function OrganizationDetailPage() {
       toast.success('Members added successfully!')
       setIsAddMemberModalOpen(false)
       setSelectedUsersToAdd([])
+      setMemberSearchQuery('')
       fetchData()
     } catch (error: any) {
       console.error(error)
-      toast.error('Failed to add members')
+      toast.error('Failed to add members: ' + error.message)
     } finally {
       setIsAddingMember(false)
+    }
+  }
+
+  const handleRemoveMember = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to remove "${userName}" from this organization?`)) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('organization_members')
+        .delete()
+        .eq('org_id', orgId)
+        .eq('user_id', userId)
+
+      if (error) throw error
+      toast.success(`${userName} removed from organization`)
+      fetchData()
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Failed to remove member: ' + error.message)
     }
   }
 
@@ -720,81 +745,129 @@ export default function OrganizationDetailPage() {
         <TabsContent value="members" className="flex-1 mt-4">
           <div className="bg-card border rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold">Organization Members ({orgMembers.length})</h3>
+              <div>
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Organization Members ({orgMembers.length})
+                </h3>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Manage members and their roles in this organization.
+                </p>
+              </div>
+
               {isManagerOrAdmin && (
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={() => router.push('/team')}>
-                    Manage Team
-                  </Button>
-                  <Dialog 
-                    open={isAddMemberModalOpen} 
-                    onOpenChange={(open) => {
-                      setIsAddMemberModalOpen(open)
-                      if (!open) setSelectedUsersToAdd([])
-                    }}
-                  >
-                    <DialogTrigger asChild>
-                      <Button className="gap-2">
-                        <UserPlus className="h-4 w-4" /> Add Member
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Existing Members</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4 max-h-[60vh] overflow-y-auto pr-2">
-                        {users.filter(u => !orgMembers.some(om => om.user_id === u.id)).length === 0 ? (
-                          <p className="text-center text-muted-foreground py-4">All system users are already in this organization.</p>
+                <Dialog 
+                  open={isAddMemberModalOpen} 
+                  onOpenChange={(open) => {
+                    setIsAddMemberModalOpen(open)
+                    if (!open) {
+                      setSelectedUsersToAdd([])
+                      setMemberSearchQuery('')
+                    }
+                  }}
+                >
+                  <DialogTrigger asChild>
+                    <Button className="gap-2 bg-primary">
+                      <UserPlus className="h-4 w-4" /> Add Member
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[480px]">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2 text-lg">
+                        <UserPlus className="h-5 w-5 text-primary" />
+                        Add Members to {org.name}
+                      </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 pt-2">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search users by name or email..."
+                          value={memberSearchQuery}
+                          onChange={(e) => setMemberSearchQuery(e.target.value)}
+                          className="pl-9 h-9"
+                        />
+                      </div>
+
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        {users
+                          .filter(u => !orgMembers.some(om => om.user_id === u.id))
+                          .filter(u => {
+                            if (!memberSearchQuery.trim()) return true
+                            const q = memberSearchQuery.toLowerCase()
+                            return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+                          }).length === 0 ? (
+                          <div className="text-center py-8 text-muted-foreground text-sm">
+                            {memberSearchQuery ? 'No matching users found.' : 'All system users are already in this organization.'}
+                          </div>
                         ) : (
-                          <>
-                            <div className="space-y-2">
-                              {users.filter(u => !orgMembers.some(om => om.user_id === u.id)).map(user => (
-                                <label key={user.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
-                                  <Checkbox 
-                                    checked={selectedUsersToAdd.includes(user.id)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        setSelectedUsersToAdd(prev => [...prev, user.id])
-                                      } else {
-                                        setSelectedUsersToAdd(prev => prev.filter(id => id !== user.id))
-                                      }
-                                    }}
-                                  />
-                                  <div className="flex items-center gap-3 flex-1">
-                                    <Avatar className="h-8 w-8">
-                                      <AvatarImage src={user.avatar || ''} />
-                                      <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                      <p className="text-sm font-medium">{user.name}</p>
-                                      <p className="text-xs text-muted-foreground">{user.email}</p>
-                                    </div>
+                          users
+                            .filter(u => !orgMembers.some(om => om.user_id === u.id))
+                            .filter(u => {
+                              if (!memberSearchQuery.trim()) return true
+                              const q = memberSearchQuery.toLowerCase()
+                              return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+                            })
+                            .map(user => (
+                              <label key={user.id} className="flex items-center space-x-3 p-3 border rounded-xl hover:bg-muted/50 cursor-pointer transition-colors">
+                                <Checkbox 
+                                  checked={selectedUsersToAdd.includes(user.id)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedUsersToAdd(prev => [...prev, user.id])
+                                    } else {
+                                      setSelectedUsersToAdd(prev => prev.filter(id => id !== user.id))
+                                    }
+                                  }}
+                                />
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <Avatar className="h-8 w-8 shrink-0">
+                                    <AvatarImage src={user.avatar || ''} />
+                                    <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium truncate">{user.name}</p>
+                                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                                   </div>
-                                </label>
-                              ))}
-                            </div>
-                            <div className="pt-4 flex justify-end sticky bottom-0 bg-background pb-2">
-                              <Button 
-                                onClick={handleAddMembers} 
-                                disabled={isAddingMember || selectedUsersToAdd.length === 0}
-                              >
-                                {isAddingMember ? 'Adding...' : `Add Selected (${selectedUsersToAdd.length})`}
-                              </Button>
-                            </div>
-                          </>
+                                </div>
+                              </label>
+                            ))
                         )}
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
+
+                      <div className="pt-3 border-t flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          {selectedUsersToAdd.length} user{selectedUsersToAdd.length === 1 ? '' : 's'} selected
+                        </span>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => setIsAddMemberModalOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={handleAddMembers} 
+                            disabled={isAddingMember || selectedUsersToAdd.length === 0}
+                          >
+                            {isAddingMember ? 'Adding...' : `Add Selected (${selectedUsersToAdd.length})`}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               )}
             </div>
             
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {orgMembers.map((member) => {
-                const p = member.profiles
+                const p = member.profiles || {}
                 return (
-                  <div key={member.user_id} className="flex items-center justify-between gap-3 p-4 border rounded-xl hover:bg-muted/50 transition-colors">
+                  <div key={member.user_id} className="flex items-center justify-between gap-3 p-4 border rounded-xl hover:bg-muted/50 transition-colors group">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <Avatar className="h-10 w-10 shrink-0">
                         <AvatarImage src={p.avatar_url || ''} alt={p.full_name} />
@@ -806,27 +879,41 @@ export default function OrganizationDetailPage() {
                       </div>
                     </div>
                     
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <div className="text-xs font-semibold capitalize px-2 py-0.5 bg-primary/10 text-primary rounded-md">
-                        {member.role || 'Member'}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex flex-col items-end gap-1.5">
+                        <div className="text-xs font-semibold capitalize px-2 py-0.5 bg-primary/10 text-primary rounded-md">
+                          {member.role || 'Member'}
+                        </div>
+                        {isManagerOrAdmin && departments.length > 0 ? (
+                          <select
+                            value={member.department_id || 'none'}
+                            onChange={(e) => handleAssignMemberDept(member.user_id, e.target.value)}
+                            className="text-[11px] h-6 px-1.5 py-0 rounded border bg-background text-muted-foreground focus:outline-none max-w-[110px] truncate"
+                            title="Assign Department"
+                          >
+                            <option value="none">No Dept</option>
+                            {departments.map((d: any) => (
+                              <option key={d.id} value={d.id}>{d.name}</option>
+                            ))}
+                          </select>
+                        ) : member.department_id && departments.find(d => d.id === member.department_id) ? (
+                          <span className="text-[10px] text-indigo-500 font-medium bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded">
+                            {departments.find(d => d.id === member.department_id)?.name}
+                          </span>
+                        ) : null}
                       </div>
-                      {isManagerOrAdmin && departments.length > 0 ? (
-                        <select
-                          value={member.department_id || 'none'}
-                          onChange={(e) => handleAssignMemberDept(member.user_id, e.target.value)}
-                          className="text-[11px] h-6 px-1.5 py-0 rounded border bg-background text-muted-foreground focus:outline-none max-w-[110px] truncate"
-                          title="Assign Department"
+
+                      {isManagerOrAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title={`Remove ${p.full_name || 'member'} from organization`}
+                          onClick={() => handleRemoveMember(member.user_id, p.full_name || 'Member')}
                         >
-                          <option value="none">No Dept</option>
-                          {departments.map((d: any) => (
-                            <option key={d.id} value={d.id}>{d.name}</option>
-                          ))}
-                        </select>
-                      ) : member.department_id && departments.find(d => d.id === member.department_id) ? (
-                        <span className="text-[10px] text-indigo-500 font-medium bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded">
-                          {departments.find(d => d.id === member.department_id)?.name}
-                        </span>
-                      ) : null}
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )
