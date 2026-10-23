@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar, Zap, Palette, Check } from 'lucide-react'
+import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar, Zap, Palette, Check, Flame } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useColorTheme, COLOR_THEMES } from '@/contexts/ColorThemeContext'
 import { cn } from '@/lib/utils'
@@ -494,9 +494,19 @@ export function Header() {
               })}
               <div className="pt-4 border-t border-border mt-4 space-y-1">
                 <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground px-3 mb-3">More</p>
-                <Link href="/team" className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all" onClick={() => setMobileMenuOpen(false)}>
-                  Team
+                <Link 
+                  href="/dashboard?tab=workload" 
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all" 
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Flame className="h-5 w-5 text-amber-500" />
+                  {profile?.role === 'admin' || profile?.role === 'manager' ? 'Workload Heatmap' : 'My Workload'}
                 </Link>
+                {(profile?.role === 'admin' || profile?.role === 'manager') && (
+                  <Link href="/team" className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all" onClick={() => setMobileMenuOpen(false)}>
+                    Team
+                  </Link>
+                )}
                 <Link href="/archived" className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-base font-semibold text-muted-foreground hover:bg-muted hover:text-foreground transition-all" onClick={() => setMobileMenuOpen(false)}>
                   Archived
                 </Link>

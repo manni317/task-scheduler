@@ -311,18 +311,28 @@ export default function DashboardPage() {
               className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
             >
               <LayoutDashboard className="h-4 w-4" />
-              Executive Overview
+              {isManagement ? "Executive Overview" : "Overview"}
             </TabsTrigger>
-            <TabsTrigger 
-              value="workload" 
-              className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
-            >
-              <Flame className="h-4 w-4 text-amber-500 data-[state=active]:text-primary-foreground" />
-              Workload Heatmap
-              <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-muted text-foreground data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground">
-                {users.length} Members
-              </span>
-            </TabsTrigger>
+            {isManagement ? (
+              <TabsTrigger 
+                value="workload" 
+                className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+              >
+                <Flame className="h-4 w-4 text-amber-500 data-[state=active]:text-primary-foreground" />
+                Workload Heatmap
+                <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-muted text-foreground data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground">
+                  {users.length} Members
+                </span>
+              </TabsTrigger>
+            ) : activeTab === 'workload' ? (
+              <TabsTrigger 
+                value="workload" 
+                className="flex items-center gap-2 rounded-xl px-4 py-2 text-xs sm:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all"
+              >
+                <Flame className="h-4 w-4 text-amber-500 data-[state=active]:text-primary-foreground" />
+                My Workload & Capacity
+              </TabsTrigger>
+            ) : null}
           </TabsList>
         </div>
 
@@ -349,9 +359,15 @@ export default function DashboardPage() {
           )}
         </TabsContent>
 
-        {/* Workload Heatmap Tab: Dedicated Team Bandwidth & Per-Employee Task Inspector */}
+        {/* Workload Heatmap Tab: Dedicated Team Bandwidth for Management / Personal Workload for Employee */}
         <TabsContent value="workload" className="space-y-6 mt-0 animate-in fade-in-50 duration-200">
-          <WorkloadHeatmap tasks={tasks} users={users} projects={projects} />
+          <WorkloadHeatmap 
+            tasks={tasks} 
+            users={users} 
+            projects={projects} 
+            userRole={userRole}
+            currentUserId={userId}
+          />
         </TabsContent>
       </Tabs>
     </div>

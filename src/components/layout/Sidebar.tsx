@@ -100,6 +100,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
                     <li key={item.name}>
                       <Link
                         href={item.href}
+                        onClick={onClose}
                         className={cn(
                           'group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                           isActive
@@ -142,12 +143,18 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
                 {secondaryNavigation
                   .filter(item => userRole === 'admin' || userRole === 'manager' || item.name !== 'Team')
                   .map(item => {
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                  const isHeatmapItem = item.href === '/dashboard?tab=workload'
+                  const displayName = isHeatmapItem 
+                    ? (userRole === 'admin' || userRole === 'manager' ? 'Workload Heatmap' : 'My Workload')
+                    : item.name
+
+                  const isActive = pathname === item.href || (item.href === '/dashboard?tab=workload' && pathname === '/dashboard' && typeof window !== 'undefined' && window.location.search.includes('tab=workload'))
                   const Icon = item.icon
                   return (
                     <li key={item.name}>
                       <Link
                         href={item.href}
+                        onClick={onClose}
                         className={cn(
                           'group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                           isActive
@@ -155,11 +162,11 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
                             : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
                           !isOpen && 'justify-center px-2'
                         )}
-                        title={isOpen ? undefined : item.name}
+                        title={isOpen ? undefined : displayName}
                       >
                         {isActive && <div className="absolute left-1 top-2.5 bottom-2.5 w-1 rounded-full bg-primary" />}
                         <Icon className={cn("h-5 w-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-105", isActive ? "text-primary" : "text-muted-foreground")} aria-hidden="true" />
-                        {isOpen && <span className="ml-0.5">{item.name}</span>}
+                        {isOpen && <span className="ml-0.5">{displayName}</span>}
                       </Link>
                     </li>
                   )

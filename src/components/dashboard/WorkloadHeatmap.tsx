@@ -35,6 +35,8 @@ interface WorkloadHeatmapProps {
   projects?: { id: string; name: string }[]
   className?: string
   initialSelectedUserId?: string
+  userRole?: string
+  currentUserId?: string
 }
 
 type WorkloadLevel = 'available' | 'optimal' | 'overloaded'
@@ -56,8 +58,28 @@ interface MemberWorkload {
 // Healthy baseline capacity threshold: 5 active tasks = 100%
 const MAX_HEALTHY_CAPACITY = 5
 
-export function WorkloadHeatmap({ tasks, users, projects = [], className, initialSelectedUserId }: WorkloadHeatmapProps) {
+export function WorkloadHeatmap({ 
+  tasks, 
+  users, 
+  projects = [], 
+  className, 
+  initialSelectedUserId,
+  userRole = 'employee',
+  currentUserId
+}: WorkloadHeatmapProps) {
   const { openCreateTaskModal } = useUIStore()
+  const isManagement = userRole === 'admin' || userRole === 'manager'
+
+  // If normal employee, only show their own workload data!
+  const effectiveUsers = useMemo(() => {
+    if (isManagement) return users
+    if (currentUserId) {
+      const match = users.filter(u => u.id === currentUserId)
+      if (match.length > 0) return match
+    }
+    return users.slice(0, 1)
+  }, [users, isManagement, currentUserId])
+
   const [filterLevel, setFilterLevel] = useState<'all' | WorkloadLevel>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(initialSelectedUserId || null)
@@ -73,7 +95,7 @@ export function WorkloadHeatmap({ tasks, users, projects = [], className, initia
   const workloadData: MemberWorkload[] = useMemo(() => {
     const now = new Date()
 
-    return users.map(user => {
+    return effectiveUsers.map(user => {
       const userTasks = tasks.filter(t => t.assigneeId === user.id)
       
       const inProgressTasks = userTasks.filter(t => t.status === 'in_progress')
@@ -114,7 +136,7 @@ export function WorkloadHeatmap({ tasks, users, projects = [], className, initia
         capacityPercent
       }
     })
-  }, [tasks, users])
+  }, [tasks, effectiveUsers])
 
   // Automatically select the first user who has tasks if none selected
   const activeSelectedUserId = useMemo(() => {
@@ -207,68 +229,72 @@ export function WorkloadHeatmap({ tasks, users, projects = [], className, initia
                 </div>
                 <div>
                   <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    Employee Workload Heatmap
+                    {isManagement ? "Employee Workload Heatmap" : "My Workload & Capacity"}
                     <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-widest text-primary border-primary/30 bg-primary/5">
                       Live Capacity
                     </Badge>
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                    Click any team member to inspect their assigned tasks and current progress
+                    {isManagement 
+                      ? "Click any team member to inspect their assigned tasks and current progress"
+                      : "Track your personal active tasks, deadlines, and bandwidth in real-time"}
                   </CardDescription>
                 </div>
               </div>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-muted/50 border border-border/60 self-start sm:self-auto">
-              <button
-                onClick={() => setFilterLevel('all')}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                  filterLevel === 'all'
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                All ({counts.all})
-              </button>
-              <button
-                onClick={() => setFilterLevel('available')}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                  filterLevel === 'available'
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm"
-                    : "text-muted-foreground hover:text-emerald-600"
-                )}
-              >
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                Available ({counts.available})
-              </button>
-              <button
-                onClick={() => setFilterLevel('optimal')}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                  filterLevel === 'optimal'
-                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-sm"
-                    : "text-muted-foreground hover:text-amber-600"
-                )}
-              >
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
-                Optimal ({counts.optimal})
-              </button>
-              <button
-                onClick={() => setFilterLevel('overloaded')}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                  filterLevel === 'overloaded'
-                    ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-sm"
-                    : "text-muted-foreground hover:text-rose-600"
-                )}
-              >
-                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                Overloaded ({counts.overloaded})
-              </button>
-            </div>
+            {/* Filter Pills (Visible for Managers and Admins) */}
+            {isManagement && (
+              <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-muted/50 border border-border/60 self-start sm:self-auto">
+                <button
+                  onClick={() => setFilterLevel('all')}
+                  className={cn(
+                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                    filterLevel === 'all'
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  All ({counts.all})
+                </button>
+                <button
+                  onClick={() => setFilterLevel('available')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                    filterLevel === 'available'
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm"
+                      : "text-muted-foreground hover:text-emerald-600"
+                  )}
+                >
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  Available ({counts.available})
+                </button>
+                <button
+                  onClick={() => setFilterLevel('optimal')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                    filterLevel === 'optimal'
+                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-sm"
+                      : "text-muted-foreground hover:text-amber-600"
+                  )}
+                >
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />
+                  Optimal ({counts.optimal})
+                </button>
+                <button
+                  onClick={() => setFilterLevel('overloaded')}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                    filterLevel === 'overloaded'
+                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-sm"
+                      : "text-muted-foreground hover:text-rose-600"
+                  )}
+                >
+                  <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                  Overloaded ({counts.overloaded})
+                </button>
+              </div>
+            )}
           </div>
         </CardHeader>
 
@@ -457,18 +483,20 @@ export function WorkloadHeatmap({ tasks, users, projects = [], className, initia
                         {isSelected ? "Inspecting Tasks ↓" : `Inspect Tasks (${userTasks.length})`}
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          openCreateTaskModal({ assigneeId: user.id })
-                        }}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors py-1 px-2 rounded-lg hover:bg-primary/5"
-                        title={`Assign task to ${user.name}`}
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                        Assign Task
-                      </button>
+                      {isManagement && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openCreateTaskModal({ assigneeId: user.id })
+                          }}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors py-1 px-2 rounded-lg hover:bg-primary/5"
+                          title={`Assign task to ${user.name}`}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Assign Task
+                        </button>
+                      )}
                     </div>
                   </div>
                 )
@@ -493,7 +521,7 @@ export function WorkloadHeatmap({ tasks, users, projects = [], className, initia
                 <div>
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-xl font-bold text-foreground">
-                      Tasks Assigned to {selectedMember.user.name}
+                      {isManagement ? `Tasks Assigned to ${selectedMember.user.name}` : `My Assigned Tasks`}
                     </CardTitle>
                     <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10 uppercase">
                       {selectedMember.user.role}
@@ -507,16 +535,18 @@ export function WorkloadHeatmap({ tasks, users, projects = [], className, initia
 
               {/* Action buttons */}
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => openCreateTaskModal({ assigneeId: selectedMember.user.id })}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-sm transition-all"
-                >
-                  <Plus className="h-4 w-4" />
-                  Assign New Task
-                </button>
+                {isManagement && (
+                  <button
+                    type="button"
+                    onClick={() => openCreateTaskModal({ assigneeId: selectedMember.user.id })}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-sm transition-all"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Assign New Task
+                  </button>
+                )}
                 <Link
-                  href={`/tasks?assignee=${selectedMember.user.id}`}
+                  href={isManagement ? `/tasks?assignee=${selectedMember.user.id}` : '/tasks'}
                   className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-muted/70 hover:bg-muted text-foreground text-xs font-semibold transition-all border border-border"
                 >
                   Kanban View <ExternalLink className="h-3.5 w-3.5" />
@@ -571,16 +601,20 @@ export function WorkloadHeatmap({ tasks, users, projects = [], className, initia
                 <ListTodo className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
                 <p className="font-semibold text-sm">No tasks found matching filter</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Try clearing the search or status filter, or assign a new task to {selectedMember.user.name}.
+                  {isManagement 
+                    ? `Try clearing the search or status filter, or assign a new task to ${selectedMember.user.name}.`
+                    : `No tasks found matching this filter.`}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => openCreateTaskModal({ assigneeId: selectedMember.user.id })}
-                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
-                >
-                  <Plus className="h-4 w-4" />
-                  Assign Task Now
-                </button>
+                {isManagement && (
+                  <button
+                    type="button"
+                    onClick={() => openCreateTaskModal({ assigneeId: selectedMember.user.id })}
+                    className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Assign Task Now
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
