@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { StatsCards } from '@/components/dashboard/StatsCards'
 import { UpcomingDeadlines } from '@/components/dashboard/UpcomingDeadlines'
 import { OverdueTable } from '@/components/dashboard/OverdueTable'
@@ -202,6 +202,22 @@ export default function DashboardPage() {
     t.assigneeId === userId
   )
 
+  const isEmployeeRole = (role?: string) => {
+    const r = (role || '').toLowerCase().trim()
+    return r !== 'admin' && r !== 'manager'
+  }
+  const isManagerRole = (role?: string) => (role || '').toLowerCase().trim() === 'manager'
+
+  const workloadMembersCount = useMemo(() => {
+    if (userRole === 'admin') {
+      return users.filter(u => isEmployeeRole(u.role) || isManagerRole(u.role)).length
+    }
+    if (userRole === 'manager') {
+      return users.filter(u => isEmployeeRole(u.role)).length
+    }
+    return 1
+  }, [users, userRole])
+
   return (
     <div className="space-y-6">
       <DashboardHero 
@@ -325,7 +341,7 @@ export default function DashboardPage() {
                 <Flame className="h-4 w-4 text-amber-500 data-[state=active]:text-primary-foreground" />
                 Workload Heatmap
                 <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-muted text-foreground data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground">
-                  {users.length} Members
+                  {workloadMembersCount} {workloadMembersCount === 1 ? 'Member' : 'Members'}
                 </span>
               </TabsTrigger>
             ) : activeTab === 'workload' ? (

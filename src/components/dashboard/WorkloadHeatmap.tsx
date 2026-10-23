@@ -70,17 +70,31 @@ export function WorkloadHeatmap({
   const { openCreateTaskModal } = useUIStore()
   const isManagement = userRole === 'admin' || userRole === 'manager'
 
-  // If normal employee, only show their own workload data!
+  // Role helpers
+  const isManagerRole = (role?: string) => (role || '').toLowerCase().trim() === 'manager'
+  const isAdminRole = (role?: string) => (role || '').toLowerCase().trim() === 'admin'
+  const isEmployeeRole = (role?: string) => !isManagerRole(role) && !isAdminRole(role)
+
+  // User visibility rules:
+  // - Employee / Doer: Only see their own workload
+  // - Manager: Only see employees (who do tasks)
+  // - Admin: Sees Managers ALSO along with Employees (does not include Admins)
   const effectiveUsers = useMemo(() => {
-    if (isManagement) return users
+    if (userRole === 'admin') {
+      return users.filter(u => isEmployeeRole(u.role) || isManagerRole(u.role))
+    }
+    if (userRole === 'manager') {
+      return users.filter(u => isEmployeeRole(u.role))
+    }
     if (currentUserId) {
       const match = users.filter(u => u.id === currentUserId)
       if (match.length > 0) return match
     }
-    return users.slice(0, 1)
-  }, [users, isManagement, currentUserId])
+    return users.filter(u => isEmployeeRole(u.role)).slice(0, 1)
+  }, [users, userRole, currentUserId])
 
   const [filterLevel, setFilterLevel] = useState<'all' | WorkloadLevel>('all')
+  const [roleFilter, setRoleFilter] = useState<'all' | 'employee' | 'manager'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedUserId, setSelectedUserId] = useState<string | null>(initialSelectedUserId || null)
   const [taskStatusFilter, setTaskStatusFilter] = useState<string>('all')
@@ -188,6 +202,8 @@ export function WorkloadHeatmap({
       available: workloadData.filter(w => w.level === 'available').length,
       optimal: workloadData.filter(w => w.level === 'optimal').length,
       overloaded: workloadData.filter(w => w.level === 'overloaded').length,
+      employees: workloadData.filter(w => isEmployeeRole(w.user.role)).length,
+      managers: workloadData.filter(w => isManagerRole(w.user.role)).length,
     }
   }, [workloadData])
 
@@ -195,6 +211,8 @@ export function WorkloadHeatmap({
   const filteredMembers = useMemo(() => {
     return workloadData
       .filter(item => {
+        if (roleFilter === 'employee' && !isEmployeeRole(item.user.role)) return false
+        if (roleFilter === 'manager' && !isManagerRole(item.user.role)) return false
         if (filterLevel !== 'all' && item.level !== filterLevel) return false
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase()
@@ -214,7 +232,7 @@ export function WorkloadHeatmap({
         }
         return orderWeight[b.level] - orderWeight[a.level] || b.activeCount - a.activeCount
       })
-  }, [workloadData, filterLevel, searchQuery])
+  }, [workloadData, roleFilter, filterLevel, searchQuery])
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -229,15 +247,21 @@ export function WorkloadHeatmap({
                 </div>
                 <div>
                   <CardTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    {isManagement ? "Employee Workload Heatmap" : "My Workload & Capacity"}
+                    {userRole === 'admin' 
+                      ? "Team Workload & Capacity Heatmap" 
+                      : userRole === 'manager' 
+                        ? "Employee Workload Heatmap" 
+                        : "My Workload & Capacity"}
                     <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-widest text-primary border-primary/30 bg-primary/5">
                       Live Capacity
                     </Badge>
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                    {isManagement 
-                      ? "Click any team member to inspect their assigned tasks and current progress"
-                      : "Track your personal active tasks, deadlines, and bandwidth in real-time"}
+                    {userRole === 'admin'
+                      ? "Monitor bandwidth and active tasks across all managers and employees"
+                      : userRole === 'manager'
+                        ? "Click any employee to inspect their assigned tasks and capacity"
+                        : "Track your personal active tasks, deadlines, and bandwidth in real-time"}
                   </CardDescription>
                 </div>
               </div>
@@ -245,54 +269,96 @@ export function WorkloadHeatmap({
 
             {/* Filter Pills (Visible for Managers and Admins) */}
             {isManagement && (
-              <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-muted/50 border border-border/60 self-start sm:self-auto">
-                <button
-                  onClick={() => setFilterLevel('all')}
-                  className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                    filterLevel === 'all'
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  All ({counts.all})
-                </button>
-                <button
-                  onClick={() => setFilterLevel('available')}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                    filterLevel === 'available'
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm"
-                      : "text-muted-foreground hover:text-emerald-600"
-                  )}
-                >
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  Available ({counts.available})
-                </button>
-                <button
-                  onClick={() => setFilterLevel('optimal')}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                    filterLevel === 'optimal'
-                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-sm"
-                      : "text-muted-foreground hover:text-amber-600"
-                  )}
-                >
-                  <span className="h-2 w-2 rounded-full bg-amber-500" />
-                  Optimal ({counts.optimal})
-                </button>
-                <button
-                  onClick={() => setFilterLevel('overloaded')}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
-                    filterLevel === 'overloaded'
-                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-sm"
-                      : "text-muted-foreground hover:text-rose-600"
-                  )}
-                >
-                  <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
-                  Overloaded ({counts.overloaded})
-                </button>
+              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                {userRole === 'admin' && (
+                  <div className="flex items-center gap-1 p-1 rounded-2xl bg-muted/60 border border-border/60">
+                    <button
+                      onClick={() => setRoleFilter('all')}
+                      className={cn(
+                        "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                        roleFilter === 'all'
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      All ({counts.all})
+                    </button>
+                    <button
+                      onClick={() => setRoleFilter('employee')}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                        roleFilter === 'employee'
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm"
+                          : "text-muted-foreground hover:text-emerald-600"
+                      )}
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      Employees ({counts.employees})
+                    </button>
+                    <button
+                      onClick={() => setRoleFilter('manager')}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                        roleFilter === 'manager'
+                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shadow-sm"
+                          : "text-muted-foreground hover:text-blue-600"
+                      )}
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                      Managers ({counts.managers})
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-muted/50 border border-border/60">
+                  <button
+                    onClick={() => setFilterLevel('all')}
+                    className={cn(
+                      "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                      filterLevel === 'all'
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    All ({counts.all})
+                  </button>
+                  <button
+                    onClick={() => setFilterLevel('available')}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                      filterLevel === 'available'
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shadow-sm"
+                        : "text-muted-foreground hover:text-emerald-600"
+                    )}
+                  >
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    Available ({counts.available})
+                  </button>
+                  <button
+                    onClick={() => setFilterLevel('optimal')}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                      filterLevel === 'optimal'
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-sm"
+                        : "text-muted-foreground hover:text-amber-600"
+                    )}
+                  >
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    Optimal ({counts.optimal})
+                  </button>
+                  <button
+                    onClick={() => setFilterLevel('overloaded')}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                      filterLevel === 'overloaded'
+                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-sm"
+                        : "text-muted-foreground hover:text-rose-600"
+                    )}
+                  >
+                    <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+                    Overloaded ({counts.overloaded})
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -367,8 +433,13 @@ export function WorkloadHeatmap({
                               )}
                             </h4>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                                {user.role}
+                              <span className={cn(
+                                "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md",
+                                isManagerRole(user.role)
+                                  ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25" 
+                                  : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
+                              )}>
+                                {isManagerRole(user.role) ? 'Manager' : 'Employee'}
                               </span>
                               {overdueCount > 0 && (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md text-[10px] font-bold bg-rose-500 text-white">
@@ -523,8 +594,13 @@ export function WorkloadHeatmap({
                     <CardTitle className="text-xl font-bold text-foreground">
                       {isManagement ? `Tasks Assigned to ${selectedMember.user.name}` : `My Assigned Tasks`}
                     </CardTitle>
-                    <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30 bg-primary/10 uppercase">
-                      {selectedMember.user.role}
+                    <Badge variant="outline" className={cn(
+                      "text-xs font-bold uppercase",
+                      isManagerRole(selectedMember.user.role)
+                        ? "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                        : "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    )}>
+                      {isManagerRole(selectedMember.user.role) ? 'Manager' : 'Employee'}
                     </Badge>
                   </div>
                   <CardDescription className="text-xs text-muted-foreground mt-0.5">
