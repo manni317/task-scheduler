@@ -58,6 +58,11 @@ export async function createTask(formData: FormData) {
     const isRecurring = formData.get('isRecurring') === 'true'
     const recurringSchedule = (formData.get('recurringSchedule') as string) || (isRecurring ? 'daily' : null)
 
+    const finalTags = [...tags]
+    if (isRecurring && !finalTags.includes('recurring')) {
+      finalTags.push('recurring')
+    }
+
     const { data, error } = await supabase
       .from('tasks')
       .insert({
@@ -69,7 +74,7 @@ export async function createTask(formData: FormData) {
         status: status,
         priority: priorityNum,
         due_date: dueDate || null,
-        tags: tags,
+        tags: finalTags,
         task_key: `TSK-${Math.floor(Math.random() * 10000)}`,
         audio_url: audioUrl || null,
         is_recurring: isRecurring,
@@ -264,7 +269,7 @@ export async function checkAndSpawnDailyRecurringTasks() {
             status: 'todo',
             priority: master.priority,
             due_date: endOfToday.toISOString(),
-            tags: master.tags || [],
+            tags: master.tags?.includes('recurring') ? master.tags : [...(master.tags || []), 'recurring'],
             task_key: `TSK-${Math.floor(1000 + Math.random() * 9000)}`,
             parent_task_id: master.id,
             is_recurring: false,
@@ -304,6 +309,56 @@ export async function checkAndSpawnDailyRecurringTasks() {
   } catch (err: any) {
     console.error('Error in checkAndSpawnDailyRecurringTasks:', err)
     return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Toggle (enable/disable) recurrence for a master task.
+ * When isRecurring is set to false, it stops auto-spawning daily tasks.
+ */
+export async function toggleTaskRecurrence(taskId: string, isRecurring: boolean, schedule: string = 'daily') {
+  try {
+    const cookieStore = cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) { return cookieStore.get(name)?.value },
+          set(name: string, value: string, options: any) {},
+          remove(name: string, options: any) {},
+        },
+      }
+    )
+
+    const updateData: any = {
+      is_recurring: isRecurring,
+      updated_at: new Date().toISOString(),
+    }
+    if (isRecurring) {
+      updateData.recurring_schedule = schedule
+    }
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updateData)
+      .eq('id', taskId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error toggling recurrence:', error)
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath('/dashboard')
+    revalidatePath('/tasks')
+    revalidatePath(`/tasks/${taskId}`)
+
+    return { success: true, task: data }
+  } catch (err: any) {
+    console.error('Error in toggleTaskRecurrence:', err)
+    return { success: false, error: err.message || 'Failed to update recurrence' }
   }
 }
 

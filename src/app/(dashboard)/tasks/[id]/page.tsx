@@ -65,6 +65,9 @@ export default function TaskDetailPage() {
           isCompleted: taskData.status === 'done',
           audioUrl: taskData.audio_url || null,
           rejectionReason: taskData.rejection_reason || null,
+          isRecurring: !!taskData.is_recurring,
+          recurringSchedule: taskData.recurring_schedule || (taskData.is_recurring ? 'daily' : null),
+          parentTaskId: taskData.parent_task_id || null,
           createdAt: new Date(taskData.created_at || Date.now()),
           updatedAt: new Date(taskData.updated_at || Date.now())
         }
@@ -107,6 +110,8 @@ export default function TaskDetailPage() {
       if (data.dueDate !== undefined) updateObj.due_date = data.dueDate?.toISOString() || null
       if (data.estimatedHours !== undefined) updateObj.time_spent = Math.round(Number(data.estimatedHours) || 0)
       if (data.rejectionReason !== undefined) updateObj.rejection_reason = data.rejectionReason
+      if (data.isRecurring !== undefined) updateObj.is_recurring = data.isRecurring
+      if (data.recurringSchedule !== undefined) updateObj.recurring_schedule = data.recurringSchedule
 
       const { error: updateError } = await supabase.from('tasks').update(updateObj).eq('id', taskId)
       if (updateError) {

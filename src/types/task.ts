@@ -121,6 +121,9 @@ export interface Task {
     audioUrl?: string | null
   }
   rejectionReason?: string
+  isRecurring?: boolean
+  recurringSchedule?: string | null
+  parentTaskId?: string | null
 }
 
 export interface Project {

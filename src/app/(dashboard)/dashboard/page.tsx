@@ -110,7 +110,10 @@ export default function DashboardPage() {
           isCompleted: t.status === 'done',
           createdAt: new Date(t.created_at || Date.now()),
           updatedAt: new Date(t.updated_at || Date.now()),
-          rejectionReason: t.rejection_reason || null
+          rejectionReason: t.rejection_reason || null,
+          isRecurring: !!t.is_recurring,
+          recurringSchedule: t.recurring_schedule || (t.is_recurring ? 'daily' : null),
+          parentTaskId: t.parent_task_id || null
         }))
       }
       return { tasks: mappedTasks, users: mappedUsers, projects: projectsData || [], organizations: orgsData || [] }

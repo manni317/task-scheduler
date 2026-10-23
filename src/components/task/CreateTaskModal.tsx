@@ -187,7 +187,11 @@ export function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
         }
       }
       
-      if (tags.length > 0) formData.append('tags', JSON.stringify(tags))
+      const finalTags = [...tags]
+      if (isRecurring && !finalTags.includes('recurring')) {
+        finalTags.push('recurring')
+      }
+      if (finalTags.length > 0) formData.append('tags', JSON.stringify(finalTags))
       if (checklistItems.length > 0) formData.append('checklistItems', JSON.stringify(checklistItems))
       
       formData.append('isRecurring', isRecurring ? 'true' : 'false')

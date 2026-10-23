@@ -39,6 +39,9 @@ export interface Task {
   reporter_id: string
   due_date: string | null
   position: number
+  is_recurring?: boolean
+  recurring_schedule?: string | null
+  parent_task_id?: string | null
   created_at: string
   updated_at: string
 }

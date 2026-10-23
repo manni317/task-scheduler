@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, Plus } from 'lucide-react'
+import { Search, Plus, RotateCw } from 'lucide-react'
 import { cn, normalizePriority } from '@/lib/utils'
 import { useUIStore } from '@/hooks/use-ui-store'
 import { useAuth } from '@/hooks/useAuth'
@@ -86,7 +86,10 @@ export default function TasksPage() {
             createdAt: latestUpdate.created_at,
             audioUrl: latestUpdate.content?.match(/\[audio:(.*?)\]/)?.[1] || null
           } : null,
-          rejectionReason: t.rejection_reason || null
+          rejectionReason: t.rejection_reason || null,
+          isRecurring: !!t.is_recurring,
+          recurringSchedule: t.recurring_schedule || (t.is_recurring ? 'daily' : null),
+          parentTaskId: t.parent_task_id || null
         }
       })
       }
@@ -344,6 +347,18 @@ export default function TasksPage() {
                           )}>
                             {task.status.replace('_', ' ')}
                           </span>
+                          {task.isRecurring && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300 inline-flex items-center gap-1 border border-purple-300/40 dark:border-purple-700/40">
+                              <RotateCw className="h-3 w-3 animate-spin-slow" />
+                              Recurring {task.recurringSchedule ? `(${task.recurringSchedule})` : ''}
+                            </span>
+                          )}
+                          {task.parentTaskId && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 inline-flex items-center gap-1 border border-blue-300/40 dark:border-blue-700/40">
+                              <RotateCw className="h-3 w-3" />
+                              Daily Copy
+                            </span>
+                          )}
                           {task.assignee && (
                             <span className="flex items-center gap-1 text-muted-foreground text-xs">
                               <span className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">

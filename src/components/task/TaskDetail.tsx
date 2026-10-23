@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Calendar, Clock, User, Tag, X, Edit, Trash2, MessageSquare, Paperclip, GitBranch, MoreHorizontal, Mic, StopCircle, Send, Upload, Play } from 'lucide-react'
+import { Calendar, Clock, User, Tag, X, Edit, Trash2, MessageSquare, Paperclip, GitBranch, MoreHorizontal, Mic, StopCircle, Send, Upload, Play, RotateCw, PauseCircle, PlayCircle } from 'lucide-react'
 import { format, isPast, isToday, isTomorrow } from 'date-fns'
+import Link from 'next/link'
 import { Task, User as UserType, ChecklistItem, Comment, Attachment, TimeEntry, ActivityLog } from '@/types/task'
 import { cn, normalizePriority } from '@/lib/utils'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -21,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/useAuth'
+import { toggleTaskRecurrence } from '@/app/actions/task'
 
 interface TaskDetailProps {
   task: Task
@@ -62,6 +64,7 @@ export function TaskDetail({
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [isUploadingFile, setIsUploadingFile] = useState(false)
+  const [isTogglingRecurrence, setIsTogglingRecurrence] = useState(false)
   
   // Comments/Updates state (loaded from DB)
   const [updates, setUpdates] = useState<any[]>([])
@@ -147,6 +150,28 @@ export function TaskDetail({
       toast.error('Failed to update status: ' + (err?.message || 'Server error'))
     } finally {
       setIsUpdatingStatus(false)
+    }
+  }
+
+  const handleToggleRecurrence = async () => {
+    setIsTogglingRecurrence(true)
+    try {
+      const newRecurrence = !task.isRecurring
+      const res = await toggleTaskRecurrence(task.id, newRecurrence, task.recurringSchedule || 'daily')
+      if (!res.success) {
+        toast.error(res.error || 'Failed to update recurrence')
+        return
+      }
+      await onUpdate({ isRecurring: newRecurrence, recurringSchedule: task.recurringSchedule || 'daily' })
+      if (newRecurrence) {
+        toast.success('🔁 Daily recurrence activated! Fresh task will spawn every morning.')
+      } else {
+        toast.success('⏸️ Recurrence stopped! Daily automatic task generation is now off.')
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error updating recurrence')
+    } finally {
+      setIsTogglingRecurrence(false)
     }
   }
 
@@ -279,6 +304,18 @@ export function TaskDetail({
             <Badge variant="outline" className={statusColors[task.status] || ''}>
               {task.status.replace('_', ' ')}
             </Badge>
+            {task.isRecurring && (
+              <Badge variant="outline" className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 font-semibold flex items-center gap-1 shadow-sm">
+                <RotateCw className="h-3 w-3 animate-spin-slow" />
+                Recurring {task.recurringSchedule ? `(${task.recurringSchedule})` : ''}
+              </Badge>
+            )}
+            {task.parentTaskId && (
+              <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 font-semibold flex items-center gap-1 shadow-sm">
+                <RotateCw className="h-3 w-3" />
+                Daily Copy
+              </Badge>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
             {dueDate && (
@@ -367,6 +404,26 @@ export function TaskDetail({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setEditDialogOpen(true)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
+                  {task.isRecurring && (
+                    <DropdownMenuItem 
+                      onClick={handleToggleRecurrence} 
+                      disabled={isTogglingRecurrence}
+                      className="text-purple-600 dark:text-purple-400 font-medium"
+                    >
+                      <PauseCircle className="h-4 w-4 mr-2" />
+                      Stop Recurrence (Band Karein)
+                    </DropdownMenuItem>
+                  )}
+                  {!task.isRecurring && task.recurringSchedule && !task.parentTaskId && (
+                    <DropdownMenuItem 
+                      onClick={handleToggleRecurrence} 
+                      disabled={isTogglingRecurrence}
+                      className="text-purple-600 dark:text-purple-400 font-medium"
+                    >
+                      <PlayCircle className="h-4 w-4 mr-2" />
+                      Resume Recurrence (Shuru Karein)
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-red-500" onClick={() => setDeleteDialogOpen(true)}><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -463,6 +520,91 @@ export function TaskDetail({
           )}
         </div>
       </div>
+
+      {/* Recurring Task Status Banner & Controls */}
+      {task.isRecurring && (
+        <div className="mx-4 sm:mx-6 mt-4 p-4 rounded-2xl bg-purple-500/10 border border-purple-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-md">
+              <RotateCw className="h-5 w-5 animate-spin-slow" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-purple-950 dark:text-purple-100">
+                  Daily Recurring Master Task
+                </h4>
+                <Badge className="bg-purple-600 text-white text-[10px] uppercase font-bold py-0.5 px-2">
+                  Active
+                </Badge>
+              </div>
+              <p className="text-xs text-purple-800/80 dark:text-purple-300/80 mt-0.5">
+                Automatically creates a fresh copy of this task every morning for {task.assignee?.name || 'the assignee'}.
+              </p>
+            </div>
+          </div>
+          {(userRole === 'manager' || userRole === 'admin') && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-200 hover:bg-purple-200/50 dark:hover:bg-purple-900/40 text-xs font-semibold shrink-0 shadow-sm"
+              onClick={handleToggleRecurrence}
+              disabled={isTogglingRecurrence}
+            >
+              <PauseCircle className="h-4 w-4 mr-1.5 text-purple-600 dark:text-purple-400" />
+              {isTogglingRecurrence ? 'Updating...' : 'Stop Recurrence (Band Karein)'}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {!task.isRecurring && task.recurringSchedule && !task.parentTaskId && (
+        <div className="mx-4 sm:mx-6 mt-4 p-4 rounded-2xl bg-muted/40 border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-muted text-muted-foreground">
+              <RotateCw className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-foreground">
+                  Recurrence Paused (Band Hai)
+                </h4>
+                <Badge variant="outline" className="text-[10px] uppercase font-bold py-0.5 px-2 text-muted-foreground">
+                  Stopped
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Daily task spawning is currently stopped. Turn it back on anytime to resume auto-spawning.
+              </p>
+            </div>
+          </div>
+          {(userRole === 'manager' || userRole === 'admin') && (
+            <Button
+              size="sm"
+              className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shrink-0 shadow-sm"
+              onClick={handleToggleRecurrence}
+              disabled={isTogglingRecurrence}
+            >
+              <PlayCircle className="h-4 w-4 mr-1.5" />
+              {isTogglingRecurrence ? 'Updating...' : 'Resume Daily Recurrence (Shuru Karein)'}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {task.parentTaskId && (
+        <div className="mx-4 sm:mx-6 mt-4 p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-between gap-3 text-xs shadow-sm">
+          <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 font-medium">
+            <RotateCw className="h-4 w-4 text-blue-600" />
+            <span>This is a daily spawned instance of a recurring task.</span>
+          </div>
+          <Link
+            href={`/tasks/${task.parentTaskId}`}
+            className="text-blue-600 dark:text-blue-400 hover:underline font-semibold flex items-center gap-1 shrink-0"
+          >
+            Open Master Task →
+          </Link>
+        </div>
+      )}
 
       {/* Rejection Banner */}
       {task.rejectionReason && task.status !== 'review' && task.status !== 'done' && (

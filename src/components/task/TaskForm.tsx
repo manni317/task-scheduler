@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { cn, formatDate } from '@/lib/utils'
-import { Calendar as CalendarIcon, Clock, User, Tag, X } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, User, Tag, X, RotateCw } from 'lucide-react'
 import { Task, TaskPriority, TaskStatus, User as UserType } from '@/types/task'
 
 interface TaskFormProps {
@@ -39,6 +39,8 @@ const taskFormSchema = z.object({
   dueDate: z.date().optional(),
   startDate: z.date().optional(),
   estimatedHours: z.number().min(0).optional(),
+  isRecurring: z.boolean().default(false),
+  recurringSchedule: z.string().nullable().optional(),
   tags: z.array(z.string()).default([]),
   checklistItems: z.array(z.object({
     id: z.string(),
@@ -68,6 +70,7 @@ export function TaskForm({
 
   const [tags, setTags] = useState<string[]>(initialData?.tags || [])
   const [newTag, setNewTag] = useState('')
+  const [isRecurring, setIsRecurring] = useState(initialData?.isRecurring || false)
   const [checklistItems, setChecklistItems] = useState<TaskFormData['checklistItems']>(
     initialData?.checklistItems || []
   )
@@ -86,6 +89,8 @@ export function TaskForm({
       dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : undefined,
       startDate: initialData?.startDate ? new Date(initialData.startDate) : undefined,
       estimatedHours: initialData?.estimatedHours,
+      isRecurring: initialData?.isRecurring || false,
+      recurringSchedule: initialData?.recurringSchedule || 'daily',
       tags: initialData?.tags || [],
       checklistItems: initialData?.checklistItems || [],
     },
@@ -354,6 +359,41 @@ export function TaskForm({
           />
         </div>
       </div>
+
+      {/* Daily Recurring Task Switch */}
+      {(userRole === 'manager' || userRole === 'admin') && (
+        <div className="flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-muted/20 hover:bg-muted/40 transition-all">
+          <div className="flex items-center gap-3">
+            <div className={cn("p-2 rounded-xl transition-colors", isRecurring ? "bg-purple-600 text-white" : "bg-muted text-muted-foreground")}>
+              <RotateCw className={cn("h-4 w-4", isRecurring && "animate-spin-slow")} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold flex items-center gap-2">
+                Daily Recurring Task
+                {isRecurring ? (
+                  <Badge className="bg-purple-500 text-white text-[10px] uppercase font-bold py-0 px-1.5">
+                    Active
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] uppercase font-bold py-0 px-1.5 text-muted-foreground">
+                    Off
+                  </Badge>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Automatically spawns a fresh copy for the assignee every morning. Turn off to stop spawning.
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={isRecurring}
+            onCheckedChange={(checked) => {
+              setIsRecurring(checked)
+              form.setValue('isRecurring', checked)
+            }}
+          />
+        </div>
+      )}
 
       <div className="space-y-4">
         <Label>Tags</Label>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Calendar, Clock, Flag, User, MessageSquare, Paperclip, GitBranch, Mic } from 'lucide-react'
+import { Calendar, Clock, Flag, User, MessageSquare, Paperclip, GitBranch, Mic, RotateCw } from 'lucide-react'
 import { format, isPast, isToday, isTomorrow } from 'date-fns'
 import { Task } from '@/types/task'
 import { TaskStatus } from '@/types/task'
@@ -82,6 +82,18 @@ export function TaskCard({
             <Badge variant="outline" className={priorityColors[task.priority]}>
               {task.priority}
             </Badge>
+            {task.isRecurring && (
+              <Badge variant="outline" className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 text-[10px] font-semibold flex items-center gap-1">
+                <RotateCw className="h-2.5 w-2.5 animate-spin-slow" />
+                Recurring
+              </Badge>
+            )}
+            {task.parentTaskId && (
+              <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 text-[10px] font-semibold flex items-center gap-1">
+                <RotateCw className="h-2.5 w-2.5" />
+                Daily Copy
+              </Badge>
+            )}
             {task.assignee && (
               <Avatar className="h-6 w-6">
                 <AvatarImage src={task.assignee.avatar} alt={task.assignee.name} />
@@ -129,9 +141,23 @@ export function TaskCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-medium text-lg line-clamp-1">{task.title}</h3>
-            <Badge variant="outline" className={priorityColors[task.priority]}>
-              {task.priority}
-            </Badge>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              {task.isRecurring && (
+                <Badge variant="outline" className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 text-xs font-semibold flex items-center gap-1 shadow-sm">
+                  <RotateCw className="h-3 w-3 animate-spin-slow" />
+                  Recurring
+                </Badge>
+              )}
+              {task.parentTaskId && (
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 text-xs font-semibold flex items-center gap-1 shadow-sm">
+                  <RotateCw className="h-3 w-3" />
+                  Daily Copy
+                </Badge>
+              )}
+              <Badge variant="outline" className={priorityColors[task.priority]}>
+                {task.priority}
+              </Badge>
+            </div>
           </div>
          
           {task.description && (
