@@ -578,7 +578,7 @@ export default function CalendarPage() {
                   <span>Estimated: {selectedTask.estimatedHours}h</span>
                 </div>
               )}
-              {selectedTask.tags.length > 0 && (
+              {Array.isArray(selectedTask.tags) && selectedTask.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {selectedTask.tags.map(tag => (
                     <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>

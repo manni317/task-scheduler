@@ -301,8 +301,12 @@ export async function checkAndSpawnDailyRecurringTasks() {
     }
 
     if (spawnedCount > 0) {
-      revalidatePath('/dashboard')
-      revalidatePath('/tasks')
+      try {
+        revalidatePath('/dashboard')
+        revalidatePath('/tasks')
+      } catch (e) {
+        // Safe ignore
+      }
     }
 
     return { success: true, spawnedCount }
@@ -351,9 +355,13 @@ export async function toggleTaskRecurrence(taskId: string, isRecurring: boolean,
       return { success: false, error: error.message }
     }
 
-    revalidatePath('/dashboard')
-    revalidatePath('/tasks')
-    revalidatePath(`/tasks/${taskId}`)
+    try {
+      revalidatePath('/dashboard')
+      revalidatePath('/tasks')
+      revalidatePath(`/tasks/${taskId}`)
+    } catch (e) {
+      // Safe ignore
+    }
 
     return { success: true, task: data }
   } catch (err: any) {
@@ -421,7 +429,7 @@ export async function notifyOverdueTasks() {
         adminProfiles.forEach(a => targetUserIds.add(a.id))
       }
 
-      for (const targetId of targetUserIds) {
+      for (const targetId of Array.from(targetUserIds)) {
         await sendPushNotification(
           targetId,
           '⚠️ Task Delayed Alert',

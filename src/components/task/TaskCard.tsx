@@ -28,6 +28,8 @@ export function TaskCard({
     }
   }, [propUserRole])
 
+  const tags = Array.isArray(task.tags) ? task.tags : []
+
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
   const isOverdueTask = dueDate && isPast(dueDate) && !isToday(dueDate)
   const isDueToday = dueDate && isToday(dueDate)
@@ -102,16 +104,16 @@ export function TaskCard({
             )}
           </div>
         </div>
-        {task.tags.length > 0 && (
+        {tags.length > 0 && (
           <div className="flex gap-1">
-            {task.tags.slice(0, 3).map((tag) => (
+            {tags.slice(0, 3).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">
                 {tag}
               </Badge>
             ))}
-            {task.tags.length > 3 && (
+            {tags.length > 3 && (
               <Badge variant="outline" className="text-xs">
-                +{task.tags.length - 3}
+                +{tags.length - 3}
               </Badge>
             )}
           </div>
@@ -224,18 +226,22 @@ export function TaskCard({
             </div>
           )}
 
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {task.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-            {task.dependencies?.length && (
+          {tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {tags.map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {task.dependencies?.length ? (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <GitBranch className="h-3 w-3" />
                 {task.dependencies.length} deps
               </span>
-            )}
+            ) : null}
             {task.commentsCount && task.commentsCount > 0 && (
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <MessageSquare className="h-3 w-3" />

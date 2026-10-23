@@ -24,6 +24,7 @@ export default function DashboardPage() {
 
   const userRole = profile?.role || 'employee'
   const userId = profile?.id || ''
+  const isManagement = userRole === 'admin' || userRole === 'manager'
 
   const [selectedOrgId, setSelectedOrgId] = useState<string>('all')
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all')

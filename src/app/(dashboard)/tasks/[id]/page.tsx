@@ -75,7 +75,7 @@ export default function TaskDetailPage() {
         mappedTask = null
       }
       
-      return { task: mappedTask, users: mappedUsers.length > 0 ? mappedUsers : mockUsers, projects: projectsData || [] }
+      return { task: mappedTask, users: mappedUsers, projects: projectsData || [] }
     }
   })
 
