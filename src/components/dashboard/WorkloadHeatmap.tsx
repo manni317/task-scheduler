@@ -217,9 +217,9 @@ export function WorkloadHeatmap({
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase()
           return (
-            item.user.name.toLowerCase().includes(q) ||
-            item.user.email.toLowerCase().includes(q) ||
-            item.user.role.toLowerCase().includes(q)
+            (item.user?.name || '').toLowerCase().includes(q) ||
+            (item.user?.email || '').toLowerCase().includes(q) ||
+            (item.user?.role || '').toLowerCase().includes(q)
           )
         }
         return true
@@ -422,7 +422,7 @@ export function WorkloadHeatmap({
                           <Avatar className="h-11 w-11 shrink-0 rounded-2xl border-2 border-background shadow-sm ring-1 ring-border">
                             <AvatarImage src={user.avatar} alt={user.name} />
                             <AvatarFallback className="rounded-2xl bg-primary/10 text-primary font-bold text-sm">
-                              {user.name.slice(0, 2).toUpperCase()}
+                              {(user?.name || 'User').slice(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
@@ -586,7 +586,7 @@ export function WorkloadHeatmap({
                 <Avatar className="h-12 w-12 rounded-2xl border-2 border-primary shadow-sm">
                   <AvatarImage src={selectedMember.user.avatar} alt={selectedMember.user.name} />
                   <AvatarFallback className="rounded-2xl bg-primary text-primary-foreground font-bold">
-                    {selectedMember.user.name.slice(0, 2).toUpperCase()}
+                    {(selectedMember.user?.name || 'User').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>

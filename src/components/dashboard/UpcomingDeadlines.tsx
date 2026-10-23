@@ -91,10 +91,10 @@ export function UpcomingDeadlines({ tasks, users }: UpcomingDeadlinesProps) {
                         {task.assignee ? (
                           <div className="flex items-center gap-2">
                             <Avatar className="h-6 w-6">
-                              <AvatarImage src={task.assignee.avatar} alt={task.assignee.name} />
-                              <AvatarFallback>{task.assignee.name[0]}</AvatarFallback>
+                              <AvatarImage src={task.assignee.avatar} alt={task.assignee.name || 'User'} />
+                              <AvatarFallback>{(task.assignee.name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                            <span>{task.assignee.name}</span>
+                            <span>{task.assignee.name || 'Unknown'}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground">Unassigned</span>

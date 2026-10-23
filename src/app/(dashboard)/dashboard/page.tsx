@@ -165,9 +165,16 @@ export default function DashboardPage() {
   displayTasks.forEach(task => {
     if (!task.assigneeId) return
     if (!performanceMap.has(task.assigneeId)) {
+      const assignedUser = task.assignee || users.find(u => u.id === task.assigneeId) || {
+        id: task.assigneeId,
+        name: 'Unknown User',
+        email: '',
+        avatar: '',
+        role: 'employee'
+      }
       performanceMap.set(task.assigneeId, {
         userId: task.assigneeId,
-        user: task.assignee,
+        user: assignedUser,
         tasksAssigned: 0,
         tasksCompleted: 0,
         tasksOverdue: 0,
@@ -179,7 +186,7 @@ export default function DashboardPage() {
     perf.tasksAssigned++
     if (task.status === 'done') perf.tasksCompleted++
     if (task.dueDate && task.dueDate < new Date() && task.status !== 'done') perf.tasksOverdue++
-    perf.completionRate = Math.round((perf.tasksCompleted / perf.tasksAssigned) * 100)
+    perf.completionRate = perf.tasksAssigned ? Math.round((perf.tasksCompleted / perf.tasksAssigned) * 100) : 0
   })
 
   let performanceData = Array.from(performanceMap.values())

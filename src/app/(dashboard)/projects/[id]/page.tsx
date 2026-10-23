@@ -321,11 +321,11 @@ export default function ProjectDetailPage() {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage src={member.avatar} />
-                        <AvatarFallback>{member.name.charAt(0).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>{(member?.name || 'U').charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{member.name}</p>
-                        <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                        <p className="font-medium">{member?.name || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{member?.role || 'member'}</p>
                       </div>
                     </div>
                     {isManagerOrAdmin && member.role !== 'admin' && (

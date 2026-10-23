@@ -44,8 +44,11 @@ export function ProjectList({
   const [editingProject, setEditingProject] = useState<Project | null>(null)
 
   const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.key.toLowerCase().includes(searchQuery.toLowerCase())
+    if (!project) return false
+    const projectName = (project.name || '').toLowerCase()
+    const projectKey = (project.key || '').toLowerCase()
+    const query = (searchQuery || '').toLowerCase()
+    const matchesSearch = projectName.includes(query) || projectKey.includes(query)
     const matchesFilter = filterStatus === 'all' || 
       (filterStatus === 'active' && !project.isArchived) ||
       (filterStatus === 'archived' && project.isArchived)

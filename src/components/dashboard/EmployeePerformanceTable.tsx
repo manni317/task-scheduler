@@ -50,30 +50,36 @@ export function EmployeePerformanceTable({ data, users }: EmployeePerformanceTab
               </TableHeader>
               <TableBody>
                 {data.map(perf => {
-                  const user = users.find(u => u.id === perf.userId)
+                  const matchedUser = users.find(u => u.id === perf.userId) || perf.user
+                  const userName = matchedUser?.name || 'Unknown'
+                  const userEmail = matchedUser?.email || ''
+                  const userAvatar = matchedUser?.avatar || ''
+                  const avatarFallback = userName.charAt(0).toUpperCase() || 'U'
+                  const completionRate = typeof perf.completionRate === 'number' && !isNaN(perf.completionRate) ? perf.completionRate : 0
+
                   return (
                     <TableRow key={perf.userId}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={perf.user.avatar} alt={perf.user.name} />
-                            <AvatarFallback>{perf.user.name[0]}</AvatarFallback>
+                            <AvatarImage src={userAvatar} alt={userName} />
+                            <AvatarFallback>{avatarFallback}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{perf.user.name}</p>
-                            <p className="text-xs text-muted-foreground">{perf.user.email}</p>
+                            <p className="font-medium">{userName}</p>
+                            <p className="text-xs text-muted-foreground">{userEmail}</p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-medium">{perf.tasksAssigned}</TableCell>
-                      <TableCell className="text-right font-medium text-green-500">{perf.tasksCompleted}</TableCell>
-                      <TableCell className="text-right font-medium text-red-500">{perf.tasksOverdue}</TableCell>
+                      <TableCell className="text-right font-medium">{perf.tasksAssigned || 0}</TableCell>
+                      <TableCell className="text-right font-medium text-green-500">{perf.tasksCompleted || 0}</TableCell>
+                      <TableCell className="text-right font-medium text-red-500">{perf.tasksOverdue || 0}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <span className={cn('font-medium', getPerformanceColor(perf.completionRate))}>
-                            {perf.completionRate.toFixed(1)}%
+                          <span className={cn('font-medium', getPerformanceColor(completionRate))}>
+                            {completionRate.toFixed(1)}%
                           </span>
-                          {getPerformanceIcon(perf.completionRate)}
+                          {getPerformanceIcon(completionRate)}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
