@@ -208,15 +208,11 @@ export default function DashboardPage() {
   }
   const isManagerRole = (role?: string) => (role || '').toLowerCase().trim() === 'manager'
 
-  const workloadMembersCount = useMemo(() => {
-    if (userRole === 'admin') {
-      return users.filter(u => isEmployeeRole(u.role) || isManagerRole(u.role)).length
-    }
-    if (userRole === 'manager') {
-      return users.filter(u => isEmployeeRole(u.role)).length
-    }
-    return 1
-  }, [users, userRole])
+  const workloadMembersCount = userRole === 'admin'
+    ? users.filter(u => isEmployeeRole(u.role) || isManagerRole(u.role)).length
+    : userRole === 'manager'
+      ? users.filter(u => isEmployeeRole(u.role)).length
+      : 1
 
   return (
     <div className="space-y-6">

@@ -20,8 +20,14 @@ export default function DashboardLayout({
     closeCreateTaskModal, 
     sidebarOpen, 
     setSidebarOpen, 
-    toggleSidebar 
+    toggleSidebar,
+    initSidebarState 
   } = useUIStore()
+
+  // Sync sidebar state from localStorage on mount (prevents SSR hydration mismatch)
+  useEffect(() => {
+    initSidebarState()
+  }, [initSidebarState])
 
   // Keyboard shortcut Ctrl+B or Cmd+B to toggle sidebar
   useEffect(() => {
