@@ -13,6 +13,7 @@ import {
   Users,
   Archive,
   Plus,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
   Calendar,
@@ -38,7 +39,15 @@ const secondaryNavigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
-export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?: () => void }) {
+export function Sidebar({ 
+  isOpen = true, 
+  onClose,
+  onToggle,
+}: { 
+  isOpen?: boolean; 
+  onClose?: () => void;
+  onToggle?: () => void;
+}) {
   const pathname = usePathname()
   const { openCreateTaskModal } = useUIStore()
   const { profile } = useAuth()
@@ -53,6 +62,13 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
 
   const userRole = profile?.role || 'employee'
 
+  const handleLinkClick = () => {
+    // Only close sidebar on mobile viewport (< 768px). Keep open on desktop.
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      onClose?.()
+    }
+  }
+
   return (
     <aside
       className={cn(
@@ -62,17 +78,46 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
       aria-label="Sidebar"
     >
       <div className="flex flex-col h-full">
-        <div className="flex h-16 items-center justify-between px-4 border-b">
-          {isOpen && (
-            <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
-              <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
-                <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
-              </div>
-              <span>TaskFlow</span>
-            </Link>
+        {/* Sidebar Header */}
+        <div className="flex h-16 items-center px-3 border-b">
+          {isOpen ? (
+            <div className="flex items-center justify-between w-full">
+              <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl min-w-0">
+                <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
+                  <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
+                </div>
+                <span className="truncate">TaskFlow</span>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggle}
+                className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 shrink-0 hidden md:flex"
+                title="Collapse Sidebar (Ctrl+B)"
+                aria-label="Collapse Sidebar"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggle}
+                className="h-10 w-10 rounded-xl hover:bg-muted p-0 text-muted-foreground hover:text-foreground transition-all group relative"
+                title="Expand Sidebar (Click to expand or Ctrl+B)"
+                aria-label="Expand Sidebar"
+              >
+                <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-all">
+                  <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
+                </div>
+              </Button>
+            </div>
           )}
         </div>
 
+        {/* Navigation list */}
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-6" aria-label="Main navigation">
           <div>
             {isOpen && (
@@ -100,7 +145,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
                     <li key={item.name}>
                       <Link
                         href={item.href}
-                        onClick={onClose}
+                        onClick={handleLinkClick}
                         className={cn(
                           'group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                           isActive
@@ -154,7 +199,7 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
                     <li key={item.name}>
                       <Link
                         href={item.href}
-                        onClick={onClose}
+                        onClick={handleLinkClick}
                         className={cn(
                           'group relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200',
                           isActive
@@ -189,21 +234,48 @@ export function Sidebar({ isOpen = true, onClose }: { isOpen?: boolean; onClose?
           )}
         </nav>
 
-        <div className="p-4 border-t">
+        {/* Sidebar Footer with Expand/Collapse Controls */}
+        <div className="p-3 border-t">
           {isOpen ? (
-            <div className="flex items-center gap-3 px-2">
-              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-medium uppercase">{profile?.full_name?.charAt(0) || 'U'}</span>
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <span className="text-sm font-semibold uppercase">{profile?.full_name?.charAt(0) || 'U'}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold truncate capitalize text-foreground">{profile?.full_name || 'User'}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{profile?.email || 'user@example.com'}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate capitalize">{profile?.full_name || 'User'}</p>
-                <p className="text-xs text-muted-foreground truncate">{profile?.email || 'user@example.com'}</p>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggle}
+                className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/70 shrink-0 hidden md:flex"
+                title="Collapse Sidebar (Ctrl+B)"
+                aria-label="Collapse Sidebar"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
             </div>
           ) : (
-            <div className="flex items-center justify-center">
-              <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                <span className="text-sm font-medium uppercase">{profile?.full_name?.charAt(0) || 'U'}</span>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggle}
+                className="h-8 w-8 rounded-xl text-primary hover:bg-primary/10 border border-primary/20 hover:border-primary/40 shadow-xs transition-all"
+                title="Expand Sidebar (Click to expand or Ctrl+B)"
+                aria-label="Expand Sidebar"
+              >
+                <ChevronRight className="h-4 w-4 animate-pulse" />
+              </Button>
+              <div 
+                className="h-7 w-7 rounded-full bg-muted flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all" 
+                onClick={onToggle} 
+                title={`${profile?.full_name || 'User'} (Click to expand)`}
+              >
+                <span className="text-xs font-medium uppercase">{profile?.full_name?.charAt(0) || 'U'}</span>
               </div>
             </div>
           )}

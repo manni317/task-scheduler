@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { BottomNav } from '@/components/layout/BottomNav'
@@ -15,13 +15,34 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const { isCreateTaskModalOpen, closeCreateTaskModal } = useUIStore()
+  const { 
+    isCreateTaskModalOpen, 
+    closeCreateTaskModal, 
+    sidebarOpen, 
+    setSidebarOpen, 
+    toggleSidebar 
+  } = useUIStore()
+
+  // Keyboard shortcut Ctrl+B or Cmd+B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault()
+        toggleSidebar()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [toggleSidebar])
 
   return (
     <div className="min-h-screen bg-background flex w-full max-w-[100vw] overflow-x-hidden">
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        onToggle={toggleSidebar} 
+        onClose={() => setSidebarOpen(false)} 
+      />
 
       <div
         className={cn(
@@ -30,7 +51,6 @@ export default function DashboardLayout({
         )}
       >
         <Header />
-
 
         {/* Page content */}
         <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 overflow-x-hidden overflow-y-auto w-full">

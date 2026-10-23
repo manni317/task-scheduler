@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, Calendar, Zap, Palette, Check, Flame } from 'lucide-react'
+import { Search, Bell, Menu, Sun, Moon, LogOut, User, Settings, ChevronDown, ChevronLeft, ChevronRight, Calendar, Zap, Palette, Check, Flame } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useColorTheme, COLOR_THEMES } from '@/contexts/ColorThemeContext'
 import { cn } from '@/lib/utils'
@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { InstallPWA } from '@/components/pwa/InstallPWA'
 import { testPushSubscription } from '@/components/pwa/PushManager'
+import { useUIStore } from '@/hooks/use-ui-store'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: 'LayoutDashboard' },
@@ -35,6 +36,7 @@ export function Header() {
   const { theme, setTheme } = useTheme()
   const { colorTheme, setColorTheme } = useColorTheme()
   const { profile } = useAuth()
+  const { sidebarOpen, toggleSidebar } = useUIStore()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -227,7 +229,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile hamburger */}
           <Button
             variant="ghost"
             size="icon"
@@ -237,6 +240,40 @@ export function Header() {
           >
             <Menu className="h-5 w-5" />
           </Button>
+
+          {/* Desktop sidebar toggle button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className={cn(
+              "hidden md:flex rounded-xl h-9 w-9 transition-all items-center justify-center",
+              !sidebarOpen 
+                ? "bg-primary/10 text-primary border border-primary/25 hover:bg-primary/20 shadow-sm" 
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+            )}
+            title={sidebarOpen ? "Collapse sidebar (Ctrl+B)" : "Expand sidebar (Ctrl+B)"}
+            aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {sidebarOpen ? (
+              <ChevronLeft className="h-5 w-5" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-primary animate-pulse" />
+            )}
+          </Button>
+
+          {/* Desktop quick indicator when collapsed */}
+          {!sidebarOpen && (
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold text-muted-foreground hover:text-primary bg-muted/60 hover:bg-primary/10 border border-border/70 hover:border-primary/30 transition-all cursor-pointer shadow-xs"
+              title="Click to expand sidebar (Ctrl+B)"
+            >
+              <Menu className="h-3.5 w-3.5 text-primary" />
+              <span>Show Menu</span>
+            </button>
+          )}
 
           <Link href="/dashboard" className="flex md:hidden items-center gap-2.5 font-extrabold text-lg">
             <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
