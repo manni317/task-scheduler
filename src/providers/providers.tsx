@@ -16,6 +16,7 @@ interface ProvidersProps {
 
 import { OrganizationProvider } from '@/contexts/OrganizationContext'
 import { ColorThemeProvider } from '@/contexts/ColorThemeContext'
+import { SysbStartupSplash } from '@/components/ui/SysbStartupSplash'
 
 export function Providers({ children }: ProvidersProps) {
   const [queryClient] = useState(
@@ -44,6 +45,7 @@ export function Providers({ children }: ProvidersProps) {
         <SupabaseProvider client={supabaseClient}>
           <OrganizationProvider>
             <ColorThemeProvider>
+              <SysbStartupSplash />
               {children}
               <Toaster />
               <SonnerToaster position="top-center" />
