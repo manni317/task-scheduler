@@ -348,4 +348,8 @@
   .label-field {
     @apply text-sm font-semibold leading-none text-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
   }
+
+  .splash-skip #sysb-startup-splash-overlay {
+    display: none !important;
+  }
 }

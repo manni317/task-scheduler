@@ -80,14 +80,14 @@ export default function LoginPage() {
           
           {/* Logo & title */}
           <div className="text-center mb-8 relative z-10">
-            <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 ring-1 ring-black/5 dark:ring-white/20">
-              <Zap className="w-7 h-7 text-white fill-white" />
+            <div className="mx-auto h-16 w-auto max-w-[240px] flex items-center justify-center mb-4">
+              <img src="/sysb-logo.png" alt="SysB International" className="max-h-16 w-auto object-contain" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
-              {isSignUp ? 'Create Account' : 'Task Manager'}
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">
+              {isSignUp ? 'Create SysB Account' : 'SysB International'}
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm">
-              {isSignUp ? 'Start managing tasks like a pro.' : 'Sign in to your high-performance workspace.'}
+              {isSignUp ? 'Start managing tasks like a pro.' : 'Sign in to your corporate task management system.'}
             </p>
           </div>
 

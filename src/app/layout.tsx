@@ -17,36 +17,36 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Task Manager',
-    template: '%s | Task Manager',
+    default: 'SysB International | Task Management Platform',
+    template: '%s | SysB International',
   },
-  description: 'A modern task management application built with Next.js 14, Supabase, and shadcn/ui',
-  keywords: ['task manager', 'project management', 'team collaboration', 'kanban', 'productivity'],
-  authors: [{ name: 'Task Manager' }],
-  creator: 'Task Manager',
-  publisher: 'Task Manager',
+  description: 'Enterprise task scheduling and workforce management by SysB International',
+  keywords: ['sysb international', 'task manager', 'project management', 'team collaboration', 'kanban', 'productivity'],
+  authors: [{ name: 'SysB International' }],
+  creator: 'SysB International',
+  publisher: 'SysB International',
   robots: 'index, follow',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://task-manager.vercel.app',
-    siteName: 'Task Manager',
-    title: 'Task Manager',
-    description: 'A modern task management application',
+    url: 'https://sysbinternational.com',
+    siteName: 'SysB International',
+    title: 'SysB International | Task Management Platform',
+    description: 'Enterprise task scheduling and workforce management by SysB International',
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Task Manager',
+        url: '/sysb-logo.png',
+        width: 1500,
+        height: 500,
+        alt: 'SysB International Logo',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Task Manager',
-    description: 'A modern task management application',
-    images: ['/og-image.png'],
+    title: 'SysB International | Task Management Platform',
+    description: 'Enterprise task scheduling and workforce management by SysB International',
+    images: ['/sysb-logo.png'],
   },
   icons: {
     icon: '/logo.png',
@@ -57,13 +57,13 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Task Manager',
+    title: 'SysB Tasks',
   },
   formatDetection: {
     telephone: false,
   },
   other: {
-    'theme-color': '#6366f1',
+    'theme-color': '#ffffff',
   },
 }
 
@@ -87,6 +87,17 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (sessionStorage.getItem('sysb_splash_played')) {
+                  document.documentElement.classList.add('splash-skip');
+                }
+              } catch(e) {}
+            `,
+          }}
+        />
       </head>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-background text-foreground`}

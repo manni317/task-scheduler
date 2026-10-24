@@ -275,11 +275,11 @@ export function Header() {
             </button>
           )}
 
-          <Link href="/dashboard" className="flex md:hidden items-center gap-2.5 font-extrabold text-lg">
-            <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
-              <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
+          <Link href="/dashboard" className="flex md:hidden items-center gap-2 font-extrabold text-base">
+            <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white p-0.5">
+              <img src="/logo.png" alt="SysB International" className="h-full w-full object-contain" />
             </div>
-            <span className="hidden sm:block tracking-tight">TaskFlow</span>
+            <span className="font-extrabold tracking-tight">SysB <span className="text-primary text-xs font-semibold">Intl</span></span>
           </Link>
         </div>
 

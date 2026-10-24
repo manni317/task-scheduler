@@ -3,23 +3,27 @@
 import React, { useEffect, useRef, useState } from 'react'
 
 export function SysbStartupSplash() {
-  const [mounted, setMounted] = useState(false)
-  const [isFadingOut, setIsFadingOut] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
+  const [isFadingOut, setIsFadingOut] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    // Check if splash was already shown in this browser session
-    const hasShown = sessionStorage.getItem('sysb_splash_played')
-    if (hasShown) {
-      setIsVisible(false)
-      return
+    // If already marked as seen in this browser session, hide immediately
+    try {
+      if (
+        sessionStorage.getItem('sysb_splash_played') ||
+        document.documentElement.classList.contains('splash-skip')
+      ) {
+        setIsVisible(false)
+        return
+      }
+      sessionStorage.setItem('sysb_splash_played', 'true')
+    } catch (e) {}
+
+    // Ensure video plays immediately upon hydration
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {})
     }
-
-    setMounted(true)
-
-    // Mark as shown so it doesn't replay on every single internal navigation
-    sessionStorage.setItem('sysb_splash_played', 'true')
 
     // Safety fallback timeout (dismisses after max 5.2s even if video stalls)
     const fallbackTimer = setTimeout(() => {
@@ -46,8 +50,7 @@ export function SysbStartupSplash() {
     }, 450)
   }
 
-  // If already shown in session or unmounted, don't render anything to keep app 100% lightweight
-  if (!isVisible || !mounted) {
+  if (!isVisible) {
     return null
   }
 

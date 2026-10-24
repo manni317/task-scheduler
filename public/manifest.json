@@ -1,7 +1,7 @@
 {
-  "name": "Task Manager",
-  "short_name": "Task Manager",
-  "description": "A beautiful, offline-first task manager with Google Calendar sync",
+  "name": "SysB International Task Platform",
+  "short_name": "SysB Tasks",
+  "description": "Enterprise SaaS task scheduling and workforce management by SysB International",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

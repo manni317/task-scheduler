@@ -82,11 +82,14 @@ export function Sidebar({
         <div className="flex h-16 items-center px-3 border-b">
           {isOpen ? (
             <div className="flex items-center justify-between w-full">
-              <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl min-w-0">
-                <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white">
-                  <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
+              <Link href="/dashboard" className="flex items-center gap-2.5 font-bold text-lg min-w-0">
+                <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white p-0.5">
+                  <img src="/logo.png" alt="SysB International" className="h-full w-full object-contain" />
                 </div>
-                <span className="truncate">TaskFlow</span>
+                <div className="flex flex-col leading-tight min-w-0">
+                  <span className="truncate font-extrabold tracking-tight text-foreground">SysB</span>
+                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider -mt-0.5">International</span>
+                </div>
               </Link>
               <Button
                 variant="ghost"
@@ -109,8 +112,8 @@ export function Sidebar({
                 title="Expand Sidebar (Click to expand or Ctrl+B)"
                 aria-label="Expand Sidebar"
               >
-                <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-all">
-                  <img src="/logo.png" alt="TaskFlow Logo" className="h-full w-full object-cover" />
+                <div className="h-8 w-8 rounded-xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm border bg-white p-0.5 group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-all">
+                  <img src="/logo.png" alt="SysB International" className="h-full w-full object-contain" />
                 </div>
               </Button>
             </div>
